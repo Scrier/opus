@@ -1,4 +1,4 @@
-package io.github.scrier.puqe.common.exception;
+package io.github.scrier.opus.common.exception;
 
 import org.junit.Test;
 

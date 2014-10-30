@@ -13,15 +13,15 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.puqe.common.node;
+package io.github.scrier.opus.common.node;
 
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 
-import io.github.scrier.puqe.common.ObjectDataInputMock;
-import io.github.scrier.puqe.common.ObjectDataOutputMock;
-import io.github.scrier.puqe.common.TestHelper;
+import io.github.scrier.opus.common.ObjectDataInputMock;
+import io.github.scrier.opus.common.ObjectDataOutputMock;
+import io.github.scrier.opus.common.TestHelper;
 
 import org.apache.logging.log4j.Level;
 import org.junit.BeforeClass;

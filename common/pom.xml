@@ -3,11 +3,11 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>puqe</groupId>
-    <artifactId>io.github.scrier.puqe</artifactId>
+    <groupId>opus</groupId>
+    <artifactId>io.github.scrier.opus</artifactId>
     <version>0.1.0</version>
   </parent>
-  <groupId>io.github.scrier.puqe</groupId>
+  <groupId>io.github.scrier.opus</groupId>
   <artifactId>common</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <name>common</name>

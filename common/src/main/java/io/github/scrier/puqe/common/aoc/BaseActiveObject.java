@@ -13,10 +13,10 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.puqe.common.aoc;
+package io.github.scrier.opus.common.aoc;
 
-import io.github.scrier.puqe.common.Shared;
-import io.github.scrier.puqe.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.Shared;
+import io.github.scrier.opus.common.exception.InvalidOperationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -13,7 +13,7 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.puqe.common.node;
+package io.github.scrier.opus.common.node;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

@@ -1,4 +1,4 @@
-package io.github.scrier.puqe.common.aoc;
+package io.github.scrier.opus.common.aoc;
 
 import com.hazelcast.core.HazelcastInstance;
 

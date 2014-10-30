@@ -13,7 +13,7 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.puqe.common;
+package io.github.scrier.opus.common;
 
 public class Shared {
 	public static final String NUKE_INFO_MAP = "hazelcast_nuke_info_map";

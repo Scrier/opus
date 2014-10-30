@@ -1,4 +1,4 @@
-package io.github.scrier.puqe.common;
+package io.github.scrier.opus.common;
 
 import static org.junit.Assert.*;
 

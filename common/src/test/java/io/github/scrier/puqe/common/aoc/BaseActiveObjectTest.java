@@ -1,4 +1,4 @@
-package io.github.scrier.puqe.common.aoc;
+package io.github.scrier.opus.common.aoc;
 
 import static org.junit.Assert.*;
 
@@ -6,9 +6,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
-import io.github.scrier.puqe.common.Shared;
-import io.github.scrier.puqe.common.TestHelper;
-import io.github.scrier.puqe.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.Shared;
+import io.github.scrier.opus.common.TestHelper;
+import io.github.scrier.opus.common.exception.InvalidOperationException;
 
 import org.apache.logging.log4j.Level;
 import org.junit.After;

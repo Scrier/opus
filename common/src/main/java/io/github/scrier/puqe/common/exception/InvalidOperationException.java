@@ -13,7 +13,7 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.puqe.common.exception;
+package io.github.scrier.opus.common.exception;
 
 public class InvalidOperationException extends Exception {
 
