@@ -1,3 +1,18 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
 package io.github.scrier.puqe.common.node;
 
 import java.io.IOException;
@@ -28,6 +43,9 @@ public class NukeInfo implements IdentifiedDataSerializable {
 		state = NukeState.UNDEFINED;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")");
@@ -38,6 +56,9 @@ public class NukeInfo implements IdentifiedDataSerializable {
 		setState(NukeState.valueOf(in.readUTF()));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
@@ -48,12 +69,18 @@ public class NukeInfo implements IdentifiedDataSerializable {
 		out.writeUTF(getState().toString());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int getFactoryId() {
 		log.trace("getFactoryId()");
 		return NukeFactory.FACTORY_ID;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int getId() {
 		log.trace("getId()");

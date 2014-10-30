@@ -13,12 +13,21 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.puqe.common;
+package io.github.scrier.puqe.common.exception;
 
-public class Shared {
-	public static final String NUKE_INFO_MAP = "hazelcast_nuke_info_map";
+public class InvalidOperationException extends Exception {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7221176383714121430L;
 	
-	public static final String SETTINGS_MAP = "hazelcast_settings_map";
+	public InvalidOperationException() {
+		super();
+	}
 	
-	public static final String COMMON_NODE_ID = "hazelcast_node_id";
+	public InvalidOperationException(String message) {
+		super(message);
+	}
+
 }
