@@ -43,6 +43,15 @@ public class NukeInfo implements IdentifiedDataSerializable {
 		state = NukeState.UNDEFINED;
 	}
 	
+	public NukeInfo(NukeInfo obj2copy) {
+		log.trace("NukeInfo(" + obj2copy + ")");
+		setNukeID(obj2copy.getNukeID());
+		setNumberOfUsers(obj2copy.getNumberOfUsers());
+		setRequestedUsers(obj2copy.getRequestedUsers());
+		setRepeated(obj2copy.isRepeated());
+		setState(obj2copy.getState());
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */

@@ -22,16 +22,16 @@ import org.apache.logging.log4j.Logger;
 
 import com.hazelcast.core.HazelcastInstance;
 
-public class DukeRunnerAOC extends BaseActiveObject {
+public class DukeAOC extends BaseActiveObject {
 	
-	public static Logger log = LogManager.getLogger(DukeRunnerAOC.class);
+	public static Logger log = LogManager.getLogger(DukeAOC.class);
 	
-	public DukeRunnerAOC(HazelcastInstance instance) {
+	public DukeAOC(HazelcastInstance instance) {
 		super(instance);
 		log.trace("DukeRunner(" + instance + ")");
 	}
 	
-	public DukeRunnerAOC(HazelcastInstance instance, String xmlFile) {
+	public DukeAOC(HazelcastInstance instance, String xmlFile) {
 		super(instance);
 		log.trace("DukeRunner(" + instance + ", " + xmlFile + ")");
 	}

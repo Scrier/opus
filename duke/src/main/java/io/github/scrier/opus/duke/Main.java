@@ -37,13 +37,13 @@ public class Main {
 		for( String str : args ) {
 			log.info("Argument: " + str);
 		}
-		DukeRunnerAOC runner = null;
+		DukeAOC runner = null;
 		if( args.length > 0 && args[0].contains(".xml") ) {
 			log.info("Running custom xml file: " + args[0] + ".");
-			runner = new DukeRunnerAOC(instance, args[0]);
+			runner = new DukeAOC(instance, args[0]);
 		} else {
 			log.info("Running standard settings");
-			runner = new DukeRunnerAOC(instance);
+			runner = new DukeAOC(instance);
 		}
 		runner.preInit();
 	}
