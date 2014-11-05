@@ -8,13 +8,16 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.node.NukeInfo;
+import io.github.scrier.opus.common.aoc.BaseListener;
+import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeInfo;
 
 import com.hazelcast.core.EntryEvent;
 import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.MapEvent;
 
-public class DukeCommander implements EntryListener<Long, NukeInfo> {
+public class DukeCommander extends BaseListener {
 	
 	private static Logger log = LogManager.getLogger(DukeCommander.class);
 	private static Long sendToAll = -123456L;
@@ -159,14 +162,44 @@ public class DukeCommander implements EntryListener<Long, NukeInfo> {
 	}
 
 	@Override
-	public void entryAdded(EntryEvent<Long, NukeInfo> added) {
-		log.trace("entryAdded(" + added + ")");
-		registerProcedure(new NukeProcedure(added.getValue()), added.getKey());
+	public void mapCleared(MapEvent cleared) {
+		log.trace("mapCleared(" + cleared + ")");
+		log.error("Map was cleared, removing all.");
+		removeAllProcedures();
 	}
 
 	@Override
-	public void entryEvicted(EntryEvent<Long, NukeInfo> evicted) {
-		log.trace("entryEvicted(" + evicted + ")");
+	public void mapEvicted(MapEvent evicted) {
+		log.trace("mapEvicted(" + evicted + ")");
+		log.error("Map was evicted, removing all.");
+		removeAllProcedures();
+	}
+
+	@Override
+	public void entryAdded(Long component, BaseNukeC data) {
+		log.trace("entryAdded(" + component + ", " + data + ")");
+		switch( data.getId() ) {
+			case NukeFactory.NUKE_INFO:
+			{
+				registerProcedure(new NukeProcedure(component, new NukeInfo(data));
+				break;
+			}
+			case NukeFactory.NUKE_COMMAND: 
+			{
+				// do nothing
+				break;
+			}
+			default:
+			{
+				log.error("Unknown id of data handler with id: " + data.getId() + ".");
+				break;
+			}
+		}
+	}	
+
+	@Override
+	public void entryEvicted(Long component, BaseNukeC data) {
+		log.trace("entryEvicted(" + component + ", " + data + ")");
 		preProcedureCall();
 		for( BaseProcedure procedure : proceduresMap.get(evicted.getKey()) ) {
 			int result = procedure.handleOnEvicted(evicted.getValue());
@@ -182,14 +215,14 @@ public class DukeCommander implements EntryListener<Long, NukeInfo> {
 	}
 
 	@Override
-	public void entryRemoved(EntryEvent<Long, NukeInfo> removed) {
-		log.trace("entryRemoved(" + removed + ")");
+	public void entryRemoved(Long component, BaseNukeC data) {
+		log.trace("entryRemoved(" + component + ", " + data + ")");
 		removeProcedure(removed.getKey());
 	}
 
 	@Override
-	public void entryUpdated(EntryEvent<Long, NukeInfo> updated) {
-		log.trace("entryUpdated(" + updated + ")");
+	public void entryUpdated(Long component, BaseNukeC data) {
+		log.trace("entryUpdated(" + component + ", " + data + ")");
 		preProcedureCall();
 		for( BaseProcedure procedure : proceduresMap.get(updated.getKey()) ) {
 			int result = procedure.handleOnUpdated(updated.getValue());
@@ -202,20 +235,6 @@ public class DukeCommander implements EntryListener<Long, NukeInfo> {
 			}
 		}
 		postProcedureCall();
-	}
-
-	@Override
-	public void mapCleared(MapEvent cleared) {
-		log.trace("mapCleared(" + cleared + ")");
-		log.error("Map was cleared, removing all.");
-		removeAllProcedures();
-	}
-
-	@Override
-	public void mapEvicted(MapEvent evicted) {
-		log.trace("mapEvicted(" + evicted + ")");
-		log.error("Map was evicted, removing all.");
-		removeAllProcedures();
 	}
 	
 }

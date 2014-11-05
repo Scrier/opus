@@ -32,6 +32,18 @@ public class NukeCommand extends BaseNukeC {
 		setRepeated(obj2copy.isRepeated());
 	}
 	
+	public NukeCommand(BaseNukeC input) throws ClassCastException {
+		super(input);
+		if( input instanceof NukeInfo ) {
+			NukeCommand obj2copy = (NukeCommand)input;
+			setCommand(obj2copy.getCommand());
+			setResponse(obj2copy.getResponse());
+			setState(obj2copy.getState());
+			setRepeated(obj2copy.isRepeated());
+		} else {
+			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeCommand[" + NukeFactory.NUKE_COMMAND + "], are you using correct class?");
+		}
+	}
 	
 	/**
 	 * {@inheritDoc}

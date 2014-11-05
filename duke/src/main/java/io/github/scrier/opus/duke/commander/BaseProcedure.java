@@ -1,6 +1,6 @@
 package io.github.scrier.opus.duke.commander;
 
-import io.github.scrier.opus.common.node.NukeInfo;
+import io.github.scrier.opus.common.nuke.NukeInfo;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
