@@ -13,14 +13,14 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.node;
+package io.github.scrier.opus.common.nuke;
 
 public enum NukeState {
-	UNDEFINED,
-	CREATED,
-	INTITIALIZED,
-	RUNNING,
-	UNRESPONSIVE,
-	COMPLETED,
-	ABORTED
+	UNDEFINED,		// Initialized state
+	CREATED,		// Set by nuke
+	INTITIALIZED,	// Set by nuke
+	RUNNING,		// Set by nuke
+	UNRESPONSIVE,	// Set by duke
+	COMPLETED,		// Set by nuke
+	ABORTED			// Set by nuke
 }

@@ -13,7 +13,9 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.node;
+package io.github.scrier.opus.common.nuke;
+
+import io.github.scrier.opus.common.aoc.BaseNukeC;
 
 import java.io.IOException;
 
@@ -22,9 +24,8 @@ import org.apache.logging.log4j.LogManager;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
-public class NukeInfo implements IdentifiedDataSerializable {
+public class NukeInfo extends BaseNukeC {
 	
 	private static Logger log = LogManager.getLogger(NukeInfo.class);
 	
@@ -33,8 +34,12 @@ public class NukeInfo implements IdentifiedDataSerializable {
 	private int requestedUsers;
 	private boolean repeated;
 	private NukeState state;
+	private int activeCommands;
+	private int requestedCommands;
+	private int completedCommands;
 	
 	public NukeInfo() {
+		super(NukeFactory.FACTORY_ID, NukeFactory.NUKE_INFO);
 		log.trace("NukeInfo()");
 		nukeID = 0L;
 		numberOfUsers = 0;
@@ -44,6 +49,7 @@ public class NukeInfo implements IdentifiedDataSerializable {
 	}
 	
 	public NukeInfo(NukeInfo obj2copy) {
+		super(obj2copy);
 		log.trace("NukeInfo(" + obj2copy + ")");
 		setNukeID(obj2copy.getNukeID());
 		setNumberOfUsers(obj2copy.getNumberOfUsers());
@@ -58,11 +64,15 @@ public class NukeInfo implements IdentifiedDataSerializable {
 	@Override
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")");
+		super.readData(in);
 		setNukeID(in.readLong());
 		setNumberOfUsers(in.readInt());
 		setRequestedUsers(in.readInt());
 		setRepeated(in.readBoolean());
 		setState(NukeState.valueOf(in.readUTF()));
+		setActiveCommands(in.readInt());
+		setRequestedCommands(in.readInt());
+		setCompletedCommands(in.readInt());
 	}
 
 	/**
@@ -71,29 +81,15 @@ public class NukeInfo implements IdentifiedDataSerializable {
 	@Override
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
+		super.writeData(out);
 		out.writeLong(getNukeID());
 		out.writeInt(getNumberOfUsers());
 		out.writeInt(getRequestedUsers());
 		out.writeBoolean(isRepeated());
 		out.writeUTF(getState().toString());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int getFactoryId() {
-		log.trace("getFactoryId()");
-		return NukeFactory.FACTORY_ID;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int getId() {
-		log.trace("getId()");
-		return NukeFactory.NUKE_INFO;
+		out.writeInt(getActiveCommands());
+		out.writeInt(getRequestedCommands());
+		out.writeInt(getCompletedCommands());
 	}
 
 	/**
@@ -164,6 +160,55 @@ public class NukeInfo implements IdentifiedDataSerializable {
 	 */
 	public void setState(NukeState state) {
 		this.state = state;
-	}	
+	}
+	
+	/**
+	 * @return the activeCommands
+	 */
+	public int getActiveCommands() {
+		return activeCommands;
+	}
+
+	/**
+	 * @param activeCommands the activeCommands to set
+	 */
+	public void setActiveCommands(int activeCommands) {
+		this.activeCommands = activeCommands;
+	}
+
+	/**
+	 * @return the requestedCommands
+	 */
+	public int getRequestedCommands() {
+		return requestedCommands;
+	}
+
+	/**
+	 * @param requestedCommands the requestedCommands to set
+	 */
+	public void setRequestedCommands(int requestedCommands) {
+		this.requestedCommands = requestedCommands;
+	}
+
+	/**
+	 * @return the completedCommands
+	 */
+	public int getCompletedCommands() {
+		return completedCommands;
+	}
+
+	/**
+	 * @param completedCommands the completedCommands to set
+	 */
+	public void setCompletedCommands(int completedCommands) {
+		this.completedCommands = completedCommands;
+	}
+
+	@Override
+	public String toString() {
+		return "NukeInfo{nukeID:"+nukeID+",numberOfUsers:"+numberOfUsers+ ",requestedUsers:"+requestedUsers+
+				",repeated:"+repeated+",state:"+state+",activeCommands:"+activeCommands+",requestedCommands:"+
+				requestedCommands+",completedCommands:"+completedCommands+"}";
+	}
 
 }

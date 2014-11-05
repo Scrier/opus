@@ -17,6 +17,8 @@ package io.github.scrier.opus.common.node;
 
 import static org.junit.Assert.*;
 import io.github.scrier.opus.common.TestHelper;
+import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeInfo;
 
 import org.apache.logging.log4j.Level;
 import org.junit.After;

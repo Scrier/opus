@@ -13,7 +13,7 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.node;
+package io.github.scrier.opus.common.nuke;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -32,6 +32,7 @@ public class NukeFactory implements DataSerializableFactory {
 	public static final int FACTORY_ID = 801023;
 	
 	public static final int NUKE_INFO = 1;
+	public static final int NUKE_COMMAND = 2;
 
 	/**
 	 * {@inheritDoc}
@@ -43,6 +44,9 @@ public class NukeFactory implements DataSerializableFactory {
 		switch(dataID) {
 			case NUKE_INFO:
 				retValue = new NukeInfo();
+				break;
+			case NUKE_COMMAND:
+				retValue = new NukeCommand();
 				break;
 		}
 		return retValue;
