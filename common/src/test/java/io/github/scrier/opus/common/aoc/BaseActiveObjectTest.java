@@ -40,8 +40,8 @@ public class BaseActiveObjectTest {
 		idGen = Mockito.mock(IdGenerator.class);
 		settings = Mockito.mock(IMap.class);
 		Mockito.when(idGen.newId()).thenReturn(id).thenReturn(-1L);
-		Mockito.when(instance.getIdGenerator(Shared.COMMON_NODE_ID)).thenReturn(idGen);
-		Mockito.when(instance.getMap(Shared.SETTINGS_MAP)).thenReturn(settings);
+		Mockito.when(instance.getIdGenerator(Shared.Hazelcast.COMMON_NODE_ID)).thenReturn(idGen);
+		Mockito.when(instance.getMap(Shared.Hazelcast.SETTINGS_MAP)).thenReturn(settings);
 	}
 
 	@After

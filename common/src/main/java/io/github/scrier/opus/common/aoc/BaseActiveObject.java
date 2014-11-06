@@ -102,8 +102,8 @@ public abstract class BaseActiveObject {
 	public void preInit() {
 		log.trace("preInit()");
 		setCorrectInitPerformed(true);
-		setIdentity(getInstance().getIdGenerator(Shared.COMMON_NODE_ID).newId());
-		settings = getInstance().getMap(Shared.SETTINGS_MAP);
+		setIdentity(getInstance().getIdGenerator(Shared.Hazelcast.COMMON_NODE_ID).newId());
+		settings = getInstance().getMap(Shared.Hazelcast.SETTINGS_MAP);
 		init();
 	}
 	

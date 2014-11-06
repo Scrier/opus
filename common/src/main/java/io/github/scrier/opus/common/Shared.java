@@ -16,9 +16,30 @@
 package io.github.scrier.opus.common;
 
 public class Shared {
-	public static final String NUKE_INFO_MAP = "hazelcast_nuke_info_map";
+	public static class Hazelcast {
+		public static final String BASE_NUKE_MAP = "hazelcast-base-nuke-map";
+		public static final String SETTINGS_MAP = "hazelcast-settings-map";
+
+		public static final String COMMON_NODE_ID = "hazelcast-node-id";
+	}
 	
-	public static final String SETTINGS_MAP = "hazelcast_settings_map";
+	public static class Settings {
+		public static final String GIT_REPO = "git-repository";
+		public static final String GIT_FOLDER = "git-folder";
+		public static final String GIT_BRANCH = "git-branch";
+		public static final String GIT_HASH = "git-hash";
+		public static final String EXECUTE_MINIMUM_NODES = "execute-min-nodes";
+		public static final String EXECUTE_MAX_USERS = "execute-max-users";
+		public static final String EXECUTE_REPEATED = "execute-repeat";
+		public static final String EXECUTE_INTERVAL = "execute-interval";
+		public static final String EXECUTE_USER_INCREASE = "execute-user-inc";
+		public static final String EXECUTE_PEAK_DELAY = "execute-peak-delay";
+		public static final String EXECUTE_TERMINATE = "execute-terminate";
+		public static final String EXECUTE_FOLDER = "execute-folder";
+		public static final String EXECUTE_COMMAND = "execute-command";
+	}
 	
-	public static final String COMMON_NODE_ID = "hazelcast_node_id";
+	public static class Commands {
+		public static final String GIT_CHECKOUT = "git-checkout";
+	}
 }

@@ -21,7 +21,10 @@ public class NukeCommand extends BaseNukeC {
 	
 	public NukeCommand() {
 		super(NukeFactory.FACTORY_ID, NukeFactory.NUKE_COMMAND);
-		
+		setCommand("");
+		setResponse("");
+		setState(CommandState.UNDEFINED);
+		setRepeated(false);
 	}
 	
 	public NukeCommand(NukeCommand obj2copy) {

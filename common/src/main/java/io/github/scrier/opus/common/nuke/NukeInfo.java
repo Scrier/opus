@@ -26,9 +26,9 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 
 public class NukeInfo extends BaseNukeC {
-	
+
 	private static Logger log = LogManager.getLogger(NukeInfo.class);
-	
+
 	private long nukeID;
 	private int numberOfUsers;
 	private int requestedUsers;
@@ -37,7 +37,18 @@ public class NukeInfo extends BaseNukeC {
 	private int activeCommands;
 	private int requestedCommands;
 	private int completedCommands;
-	
+
+	public static final long NUKE_ID_MODIFIED            = 0x0000000000000001L;
+	public static final long NUMBER_OF_USERS_MODIFIED    = 0x0000000000000002L;
+	public static final long REQUESTED_USERS_MODIFIED    = 0x0000000000000004L;
+	public static final long REPEATED_MODIFIED           = 0x0000000000000008L;
+	public static final long STATE_MODIFIED              = 0x0000000000000010L;
+	public static final long ACTIVE_COMMANDS_MODIFIED    = 0x0000000000000020L;
+	public static final long REQUESTED_COMMANDS_MODIFIED = 0x0000000000000040L;
+	public static final long COMPLETED_COMMANDS_MODIFIED = 0x0000000000000080L;
+
+	private long valuesModified;
+
 	public NukeInfo() {
 		super(NukeFactory.FACTORY_ID, NukeFactory.NUKE_INFO);
 		log.trace("NukeInfo()");
@@ -46,8 +57,9 @@ public class NukeInfo extends BaseNukeC {
 		requestedUsers = 0;
 		repeated = false;
 		state = NukeState.UNDEFINED;
+		setValuesModified(0L);
 	}
-	
+
 	public NukeInfo(NukeInfo obj2copy) {
 		super(obj2copy);
 		log.trace("NukeInfo(" + obj2copy + ")");
@@ -57,7 +69,7 @@ public class NukeInfo extends BaseNukeC {
 		setRepeated(obj2copy.isRepeated());
 		setState(obj2copy.getState());
 	}
-	
+
 	public NukeInfo(BaseNukeC input) throws ClassCastException {
 		super(input);
 		if( input instanceof NukeInfo ) {
@@ -71,7 +83,32 @@ public class NukeInfo extends BaseNukeC {
 			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeInfo[" + NukeFactory.NUKE_INFO + "], are you using correct class?");
 		}
 	}
+
+	public void resetValuesModified() {
+		setValuesModified(0L);
+	}
+
+	public boolean isValueModified(long value) {
+		return (value & getValuesModified()) > 0; 
+	}
 	
+	public long compare(NukeInfo obj2compare) {
+		long retValue = 0L;
+		retValue |= ( getNukeID() != obj2compare.getNukeID() ) ? NUKE_ID_MODIFIED : 0L;
+		retValue |= ( getNumberOfUsers() != obj2compare.getNumberOfUsers() ) ? NUMBER_OF_USERS_MODIFIED : 0L;
+		retValue |= ( getRequestedUsers() != obj2compare.getRequestedUsers() ) ? REQUESTED_USERS_MODIFIED : 0L;
+		retValue |= ( isRepeated() != obj2compare.isRepeated() ) ? REPEATED_MODIFIED : 0L;
+		retValue |= ( getState() != obj2compare.getState() ) ? STATE_MODIFIED : 0L;
+		retValue |= ( getActiveCommands() != obj2compare.getActiveCommands() ) ? ACTIVE_COMMANDS_MODIFIED : 0L;
+		retValue |= ( getRequestedCommands() != obj2compare.getRequestedCommands() ) ? REQUESTED_COMMANDS_MODIFIED : 0L;
+		retValue |= ( getCompletedCommands() != obj2compare.getCompletedCommands() ) ? COMPLETED_COMMANDS_MODIFIED : 0L;
+		return retValue;
+	}
+
+	private void addValueModified(long value) {
+		setValuesModified(getValuesModified() | value); 
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -117,7 +154,10 @@ public class NukeInfo extends BaseNukeC {
 	 * @param nukeID the nukeID to set
 	 */
 	public void setNukeID(long nukeID) {
-		this.nukeID = nukeID;
+		if( this.nukeID != nukeID ) {
+			this.nukeID = nukeID;
+			addValueModified(NUKE_ID_MODIFIED);
+		}
 	}
 
 	/**
@@ -131,7 +171,10 @@ public class NukeInfo extends BaseNukeC {
 	 * @param numberOfUsers the numberOfUsers to set
 	 */
 	public void setNumberOfUsers(int numberOfUsers) {
-		this.numberOfUsers = numberOfUsers;
+		if( this.numberOfUsers != numberOfUsers ) {
+			this.numberOfUsers = numberOfUsers;
+			addValueModified(NUMBER_OF_USERS_MODIFIED);
+		}
 	}
 
 	/**
@@ -145,7 +188,10 @@ public class NukeInfo extends BaseNukeC {
 	 * @param requestedUsers the requestedUsers to set
 	 */
 	public void setRequestedUsers(int requestedUsers) {
-		this.requestedUsers = requestedUsers;
+		if( this.requestedUsers != requestedUsers ) {
+			this.requestedUsers = requestedUsers;
+			addValueModified(REQUESTED_USERS_MODIFIED);
+		}
 	}
 
 	/**
@@ -159,7 +205,10 @@ public class NukeInfo extends BaseNukeC {
 	 * @param repeated the repeated to set
 	 */
 	public void setRepeated(boolean repeated) {
-		this.repeated = repeated;
+		if( this.repeated != repeated ) {
+			this.repeated = repeated;
+			addValueModified(REPEATED_MODIFIED);
+		}
 	}
 
 	/**
@@ -173,9 +222,12 @@ public class NukeInfo extends BaseNukeC {
 	 * @param state the state to set
 	 */
 	public void setState(NukeState state) {
-		this.state = state;
+		if( this.state != state ) {
+			this.state = state;
+			addValueModified(STATE_MODIFIED);
+		}
 	}
-	
+
 	/**
 	 * @return the activeCommands
 	 */
@@ -187,7 +239,10 @@ public class NukeInfo extends BaseNukeC {
 	 * @param activeCommands the activeCommands to set
 	 */
 	public void setActiveCommands(int activeCommands) {
-		this.activeCommands = activeCommands;
+		if( this.activeCommands != activeCommands ) {
+			this.activeCommands = activeCommands;
+			addValueModified(ACTIVE_COMMANDS_MODIFIED);
+		}
 	}
 
 	/**
@@ -201,7 +256,10 @@ public class NukeInfo extends BaseNukeC {
 	 * @param requestedCommands the requestedCommands to set
 	 */
 	public void setRequestedCommands(int requestedCommands) {
-		this.requestedCommands = requestedCommands;
+		if( this.requestedCommands != requestedCommands ) {
+			this.requestedCommands = requestedCommands;
+			addValueModified(REQUESTED_COMMANDS_MODIFIED);
+		}
 	}
 
 	/**
@@ -215,7 +273,24 @@ public class NukeInfo extends BaseNukeC {
 	 * @param completedCommands the completedCommands to set
 	 */
 	public void setCompletedCommands(int completedCommands) {
-		this.completedCommands = completedCommands;
+		if( this.completedCommands != completedCommands ) {
+			this.completedCommands = completedCommands;
+			addValueModified(COMPLETED_COMMANDS_MODIFIED);
+		}
+	}
+
+	/**
+	 * @return the valuesModified
+	 */
+	private long getValuesModified() {
+		return valuesModified;
+	}
+
+	/**
+	 * @param valuesModified the valuesModified to set
+	 */
+	private void setValuesModified(long valuesModified) {
+		this.valuesModified = valuesModified;
 	}
 
 	@Override

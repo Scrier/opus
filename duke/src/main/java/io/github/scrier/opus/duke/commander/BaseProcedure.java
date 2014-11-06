@@ -1,6 +1,7 @@
 package io.github.scrier.opus.duke.commander;
 
-import io.github.scrier.opus.common.nuke.NukeInfo;
+import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.exception.InvalidOperationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,8 @@ public abstract class BaseProcedure {
 	private int state;
 	private Context theContext;
 	
+	private int txID;
+	
 	public final int ABORTED = 0;
 	public final int CREATED = 1;
 	public final int COMPLETED = 9999;
@@ -19,26 +22,49 @@ public abstract class BaseProcedure {
 	public BaseProcedure() {
 		setState(CREATED);
 		theContext = Context.INSTANCE;
+		setTxID(theContext.getNextTxID());
 	}
 	
 	public abstract void init() throws Exception;
 	
 	public abstract void shutDown() throws Exception;
 
-	public abstract int handleOnUpdated(NukeInfo info);
+	public abstract int handleOnUpdated(BaseNukeC data);
 	
-	public abstract int handleOnEvicted(NukeInfo info);
+	public abstract int handleOnEvicted(BaseNukeC data);
+	
+	public abstract int handleOnRemoved(BaseNukeC data);
+	
+	public long addEntry(BaseNukeC data) {
+		return theContext.addEntry(data);
+	}
+	
+	public void addEntry(BaseNukeC data, Long component) {
+		theContext.addEntry(data, component);
+	}
+	
+	public boolean updateEntry(BaseNukeC data, Long component) {
+		return theContext.updateEntry(data, component);
+	}
+	
+	public boolean removeEntry(Long component) {
+		return theContext.removeEntry(component);
+	}
 	
 	public boolean registerProcedure(BaseProcedure procedure) {
 		log.trace("registerProcedure(" + procedure + ")");
 		return theContext.registerProcedure(procedure);
 	}
 	
-	public boolean registerProcedure(BaseProcedure procedure, Long componentID) {
-		log.trace("registerProcedure(" + procedure + ", " + componentID + ")");
-		return theContext.registerProcedure(procedure, componentID);
+	public long getIdentity() {
+		try {
+	    return theContext.getIdentity();
+    } catch (InvalidOperationException e) {
+	    log.error("Threw InvalidOperationException when calling Context.getIdentity.", e);
+    }
+		return -1;
 	}
-
+	
 	/**
 	 * @return the state
 	 */
@@ -52,5 +78,19 @@ public abstract class BaseProcedure {
 	public void setState(int state) {
 		this.state = state;
 	}
+
+	/**
+	 * @return the txID
+	 */
+  protected int getTxID() {
+	  return txID;
+  }
+
+	/**
+	 * @param txID the txID to set
+	 */
+  private void setTxID(int txID) {
+	  this.txID = txID;
+  }
 
 }

@@ -1,6 +1,7 @@
 package io.github.scrier.opus.common;
 
 import static org.junit.Assert.*;
+import io.github.scrier.opus.common.Shared.Hazelcast;
 
 import org.junit.Test;
 
@@ -8,10 +9,10 @@ public class SharedTest {
 
 	@Test
 	public void testConstructor() {
-		Shared testObject = new Shared();
-		assertEquals(Shared.COMMON_NODE_ID, testObject.COMMON_NODE_ID);
-		assertEquals(Shared.NUKE_INFO_MAP, testObject.NUKE_INFO_MAP);
-		assertEquals(Shared.SETTINGS_MAP, testObject.SETTINGS_MAP);
+		Hazelcast testObject = new Shared.Hazelcast();
+		assertEquals(Shared.Hazelcast.COMMON_NODE_ID, testObject.COMMON_NODE_ID);
+		assertEquals(Shared.Hazelcast.BASE_NUKE_MAP, testObject.BASE_NUKE_MAP);
+		assertEquals(Shared.Hazelcast.SETTINGS_MAP, testObject.SETTINGS_MAP);
 	}
 
 }

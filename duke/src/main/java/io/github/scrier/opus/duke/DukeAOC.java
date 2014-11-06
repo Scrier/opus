@@ -15,7 +15,13 @@
  */
 package io.github.scrier.opus.duke;
 
+import java.util.Map;
+
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
+import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.duke.commander.Context;
+import io.github.scrier.opus.duke.commander.DukeCommander;
+import io.github.scrier.opus.duke.io.XmlSettings;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,26 +32,50 @@ public class DukeAOC extends BaseActiveObject {
 	
 	public static Logger log = LogManager.getLogger(DukeAOC.class);
 	
+	private DukeCommander commander;
+	private XmlSettings settings;
+	
 	public DukeAOC(HazelcastInstance instance) {
 		super(instance);
 		log.trace("DukeRunner(" + instance + ")");
+		commander = null;
+		settings = new XmlSettings();
 	}
 	
 	public DukeAOC(HazelcastInstance instance, String xmlFile) {
 		super(instance);
 		log.trace("DukeRunner(" + instance + ", " + xmlFile + ")");
+		commander = null;
+		settings = new XmlSettings(xmlFile);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void init() {
-		// TODO Auto-generated method stub
-		
+		log.trace("init()");
+		commander = new DukeCommander(getInstance());
+		Context.INSTANCE.init(commander, this);
+		settings.init();
+		for( Map.Entry<String, String> item : settings.getSettings().entrySet() ) {
+			try {
+	      getSettings().put(item.getKey(), item.getValue());
+      } catch (InvalidOperationException e) {
+	      log.error("Received error on put method call to distributed settings.", e);
+      }
+		}
+		commander.init();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void shutDown() {
-		// TODO Auto-generated method stub
-		
+		log.trace("shutDown()");
+		commander.shutDown();
+		Context.INSTANCE.shutDown();
 	}
 
 	
