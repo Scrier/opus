@@ -1,8 +1,5 @@
 package io.github.scrier.opus.duke.commander;
 
-import java.util.Collection;
-
-import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
@@ -40,7 +37,10 @@ public enum Context {
 	}
 	
 	public void shutDown() {
-		
+		this.doOnce = true;
+		setCommander(null);
+		setBaseAoC(null);
+		setTxID(0);
 	}
 	
 	public boolean registerProcedure(BaseProcedure procedure) {
@@ -52,6 +52,11 @@ public enum Context {
 		return getBaseAoC().getIdentity();
 	}
 	
+	/**
+	 * Method to add a new entry to the map.
+	 * @param data BaseNukeC to add to the map.
+	 * @return long with the unique ID that this data has.
+	 */
 	public long addEntry(BaseNukeC data) {
 		return getCommander().addEntry(data);
 	}
@@ -100,10 +105,11 @@ public enum Context {
 	 * @return the txID
 	 */
   public int getNextTxID() {
+  	log.trace("getNextTxID()");
   	if( txID + 1 == Integer.MAX_VALUE ) {
   		txID = 0;
   	} else {
-  		txID ++;
+  		txID++;
   	}
 	  return txID;
   }

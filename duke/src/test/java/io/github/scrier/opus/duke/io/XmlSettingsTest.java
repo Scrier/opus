@@ -26,7 +26,7 @@ public class XmlSettingsTest {
 	public void testDefautSettings() {
 		XmlSettings testObject = new XmlSettings(getClass().getResource("/DefaultSettings.xml").getPath());
 		assertTrue(testObject.init());
-		assertEquals(11, testObject.getSettings().size());
+		assertEquals(13, testObject.getSettings().size());
 		log.info(testObject);
 	}
 	

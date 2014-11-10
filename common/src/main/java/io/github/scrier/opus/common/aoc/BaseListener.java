@@ -37,6 +37,11 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	
 	public abstract void postEntry();
 	
+	/**
+	 * Method to add a new entry to the map.
+	 * @param data BaseNukeC to add to the map.
+	 * @return long with the unique ID that this data has.
+	 */
 	public long addEntry(BaseNukeC data) {
 		long value = getInstance().getIdGenerator(Shared.Hazelcast.COMMON_NODE_ID).newId();
 		sharedMap.put(value, data);

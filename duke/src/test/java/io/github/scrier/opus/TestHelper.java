@@ -20,9 +20,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.mockito.Mockito;
+
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
+import com.hazelcast.core.IdGenerator;
+
+import io.github.scrier.opus.common.Shared;
+import io.github.scrier.opus.common.aoc.BaseNukeC;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 public enum TestHelper {
 	INSTANCE;
@@ -37,6 +46,23 @@ public enum TestHelper {
 		LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME); 
 		loggerConfig.setLevel(level);
 		ctx.updateLoggers();
+	}
+	
+	public HazelcastInstance mockHazelcast() {
+		return Mockito.mock(HazelcastInstance.class);
+	}
+	
+	public IdGenerator mockIdGen(HazelcastInstance instance, String key, long values) {
+		IdGenerator idGen = Mockito.mock(IdGenerator.class);
+		Mockito.when(idGen.newId()).thenReturn(values).thenReturn(-1L);
+		Mockito.when(instance.getIdGenerator(key)).thenReturn(idGen);
+		return idGen;
+	}
+	
+	public IMap mockMap(HazelcastInstance instance, String key) {
+		IMap map = Mockito.mock(IMap.class);
+		Mockito.when(instance.getMap(key)).thenReturn(map);
+		return map;
 	}
 
 	@SuppressWarnings("rawtypes")

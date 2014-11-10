@@ -20,9 +20,10 @@ public abstract class BaseProcedure {
 	public final int COMPLETED = 9999;
 	
 	public BaseProcedure() {
-		setState(CREATED);
-		theContext = Context.INSTANCE;
-		setTxID(theContext.getNextTxID());
+		log.trace("BaseProcedure()");
+		this.state = CREATED;
+		this.theContext = Context.INSTANCE;
+		this.txID = theContext.getNextTxID();
 	}
 	
 	public abstract void init() throws Exception;
@@ -76,7 +77,10 @@ public abstract class BaseProcedure {
 	 * @param state the state to set
 	 */
 	public void setState(int state) {
-		this.state = state;
+		// We cannot change a complete of aborted procedure.
+		if( ABORTED != getState() && COMPLETED != getState() ) {
+			this.state = state;
+		}
 	}
 
 	/**
@@ -84,13 +88,6 @@ public abstract class BaseProcedure {
 	 */
   protected int getTxID() {
 	  return txID;
-  }
-
-	/**
-	 * @param txID the txID to set
-	 */
-  private void setTxID(int txID) {
-	  this.txID = txID;
   }
 
 }
