@@ -23,16 +23,32 @@ public class DukeCommander extends BaseListener {
 	private List<BaseProcedure> proceduresToAdd;
 	private List<BaseProcedure> toRemove;
 
-	private Context theContext;
-
 	public DukeCommander(HazelcastInstance instance) {
 		super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		procedures = new ArrayList<BaseProcedure>();
 		proceduresToAdd = new ArrayList<BaseProcedure>();
 		toRemove = new ArrayList<BaseProcedure>();
-		theContext = Context.INSTANCE;
 	}
-
+	
+	public void init() {
+		log.trace("init()");
+		log.debug("Size is: " + getEntries().size() );
+		for( BaseNukeC nuke : getEntries() ) {
+			log.debug("Instance is: " + nuke + ".");
+			if( NukeFactory.NUKE_INFO == nuke.getId() ) {
+				log.debug("Register Procedure");
+				registerProcedure(new NukeProcedure(new NukeInfo(nuke)));
+			}
+		}
+	}
+	
+	public void shutDown() {
+		log.trace("shutDown()");
+		clear(getProceduresToAdd());
+		clear(getProcedures());
+		clear(getProceduresToRemove());
+	}
+	
 	public boolean registerProcedure(BaseProcedure procedure) {
 		log.trace("registerProcedure(" + procedure + ")");
 		boolean retValue = true;
@@ -42,22 +58,6 @@ public class DukeCommander extends BaseListener {
 			retValue = proceduresToAdd.add(procedure);
 		}
 		return retValue;
-	}
-	
-	public void init() {
-		log.trace("init()");
-		for( BaseNukeC nuke : getEntries() ) {
-			if( NukeFactory.NUKE_INFO == nuke.getId() ) {
-				registerProcedure(new NukeProcedure(new NukeInfo(nuke)));
-			}
-		}
-	}
-	
-	public void shutDown() {
-		log.trace("shutDown()");
-		clear(proceduresToAdd);
-		clear(procedures);
-		clear(toRemove);
 	}
 	
 	public void clear(List<BaseProcedure> toClear) {
@@ -82,12 +82,11 @@ public class DukeCommander extends BaseListener {
 	private void removeProcedure(BaseProcedure procedure) {
 		log.trace("removeProcedure(" + procedure + ")");
 		toRemove.add(procedure);
-		procedures.remove(procedure);
 	}
 
 	private void removeAllProcedures() {
 		log.trace("removeAllProcedures()");
-		clear(procedures);
+		clear(getProcedures());
 	}
 
 	/**
@@ -112,7 +111,7 @@ public class DukeCommander extends BaseListener {
 
 	@Override
   public void preEntry() {
-	  for( BaseProcedure procedure : proceduresToAdd ) {
+	  for( BaseProcedure procedure : getProceduresToAdd() ) {
 	  	try {
 	      procedure.init();
 	      procedures.add(procedure);
@@ -154,7 +153,7 @@ public class DukeCommander extends BaseListener {
 	@Override
 	public void entryEvicted(Long component, BaseNukeC data) {
 		log.trace("entryEvicted(" + component + ", " + data + ")");
-		for( BaseProcedure procedure : procedures ) {
+		for( BaseProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnEvicted(data);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
@@ -172,7 +171,7 @@ public class DukeCommander extends BaseListener {
 	@Override
 	public void entryRemoved(Long component, BaseNukeC data) {
 		log.trace("entryRemoved(" + component + ", " + data + ")");
-		for( BaseProcedure procedure : procedures ) {
+		for( BaseProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnRemoved(data);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
@@ -190,7 +189,7 @@ public class DukeCommander extends BaseListener {
 	@Override
 	public void entryUpdated(Long component, BaseNukeC data) {
 		log.trace("entryUpdated(" + component + ", " + data + ")");
-		for( BaseProcedure procedure : procedures ) {
+		for( BaseProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnUpdated(data);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
@@ -202,16 +201,41 @@ public class DukeCommander extends BaseListener {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
   public void postEntry() {
-	  for( BaseProcedure procedure : toRemove ) {
+	  for( BaseProcedure procedure : getProceduresToRemove() ) {
 	  	try {
 	      procedure.shutDown();
+	      procedures.remove(procedure);
       } catch (Exception e) {
       	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
       }
 	  }
 	  toRemove.clear();
   }
+	
+	/**
+	 * @return the procedures
+	 */
+	protected List<BaseProcedure> getProcedures() {
+		return procedures;
+	}
+	
+	/**
+	 * @return the proceduresToAdd
+	 */
+	protected List<BaseProcedure> getProceduresToAdd() {
+		return proceduresToAdd;
+	}
+	
+	/**
+	 * @return the toRemove
+	 */
+	protected List<BaseProcedure> getProceduresToRemove() {
+		return toRemove;
+	}
 
 }

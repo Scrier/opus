@@ -26,12 +26,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IdGenerator;
 
-import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
-
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 public enum TestHelper {
 	INSTANCE;
@@ -59,13 +54,18 @@ public enum TestHelper {
 		return idGen;
 	}
 	
-	public IMap mockMap(HazelcastInstance instance, String key) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+  public IMap mockMap(HazelcastInstance instance, String key) {
 		IMap map = Mockito.mock(IMap.class);
 		Mockito.when(instance.getMap(key)).thenReturn(map);
 		return map;
 	}
-
-	@SuppressWarnings("rawtypes")
+	
+	public void mockException(Method method, Exception exception) {
+		Mockito.doThrow(exception).when(method);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	/**
 	 * Method to invoke private method calls for testing. Example:
 	 * 
@@ -92,14 +92,13 @@ public enum TestHelper {
 	 */
 	public Object invokeSingleArg(Class methodClass, String methodName, Class parameterType, 
 			Object instance, Object parameter) throws Exception {
-		@SuppressWarnings("unchecked")
 		Method privateInvoke = null;
 		privateInvoke = methodClass.getDeclaredMethod(methodName, parameterType);
 		privateInvoke.setAccessible(true);
 		return privateInvoke.invoke(instance, parameter);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	/**
 	 * Method to invoke private method calls for testing. Example:
 	 * 
@@ -119,7 +118,6 @@ public enum TestHelper {
 	 * @return Object with the return value, if any, from the method invoked.
 	 */
 	public Object invokeMethod(Class methodClass, String methodName,Object instance) throws Exception {
-		@SuppressWarnings("unchecked")
 		Method privateInvoke = null;
 		privateInvoke = methodClass.getDeclaredMethod(methodName);
 		privateInvoke.setAccessible(true);

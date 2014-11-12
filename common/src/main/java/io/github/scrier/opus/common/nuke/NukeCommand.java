@@ -37,7 +37,7 @@ public class NukeCommand extends BaseNukeC {
 	
 	public NukeCommand(BaseNukeC input) throws ClassCastException {
 		super(input);
-		if( input instanceof NukeInfo ) {
+		if( input instanceof NukeCommand ) {
 			NukeCommand obj2copy = (NukeCommand)input;
 			setCommand(obj2copy.getCommand());
 			setResponse(obj2copy.getResponse());

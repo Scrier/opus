@@ -87,6 +87,7 @@ public class NukeProcedure extends BaseProcedure {
 	 */
 	@Override
   public int handleOnRemoved(BaseNukeC data) {
+		log.trace("handleOnRemoved(" + data + ")");
 		switch( data.getId() ) {
 			case NukeFactory.NUKE_INFO:
 			{
