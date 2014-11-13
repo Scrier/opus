@@ -6,8 +6,9 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
+import io.github.scrier.opus.common.nuke.NukeState;
 
-public class NukeProcedure extends BaseProcedure {
+public class NukeProcedure extends BaseProcedure implements INukeInfo {
 	
 	private static Logger log = LogManager.getLogger(NukeProcedure.class);
 	
@@ -16,6 +17,7 @@ public class NukeProcedure extends BaseProcedure {
 	private final int WORKING = CREATED + 1;
 	
 	public NukeProcedure(NukeInfo info) {
+		log.trace("NukeProcedure(" + info + ")");
 		local = new NukeInfo(info);
 		
 	}
@@ -25,6 +27,7 @@ public class NukeProcedure extends BaseProcedure {
 	 */
 	@Override
 	public void init() throws Exception {
+		log.trace("init()");
 		setState(WORKING);
 	}
 
@@ -33,6 +36,7 @@ public class NukeProcedure extends BaseProcedure {
 	 */
 	@Override
 	public void shutDown() throws Exception {
+		log.trace("shutDown()");
 		local = null;
 	}
 
@@ -159,5 +163,53 @@ public class NukeProcedure extends BaseProcedure {
 			setState(ABORTED);
 		}
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int getNoOfUsers() {
+	  return local.getNumberOfUsers();
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int getRequestedNoOfUsers() {
+	  return local.getRequestedUsers();
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public NukeState getInfoState() {
+	  return local.getState();
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int getNoOfActiveCommands() {
+	  return local.getActiveCommands();
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int getNoOfRequestedCommands() {
+	  return local.getRequestedCommands();
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int getNoOfCompletedCommands() {
+	  return local.getCompletedCommands();
+  }
 
 }

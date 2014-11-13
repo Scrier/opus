@@ -1,5 +1,10 @@
 package io.github.scrier.opus.duke.commander;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
@@ -16,6 +21,8 @@ public enum Context {
 	private DukeCommander commander;
 	private BaseActiveObject baseAoC;
 	
+	private Map<Long, INukeInfo> Nukes;
+	
 	private boolean doOnce;
 	private int txID;
 	
@@ -24,6 +31,7 @@ public enum Context {
 		setCommander(null);
 		setBaseAoC(null);
 		setTxID(0);
+		setNukes(new HashMap<Long, INukeInfo>());
 	}
 	
 	public void init(DukeCommander commander, BaseActiveObject baseAoC) {
@@ -41,6 +49,7 @@ public enum Context {
 		setCommander(null);
 		setBaseAoC(null);
 		setTxID(0);
+		setNukes(null);
 	}
 	
 	public boolean registerProcedure(BaseProcedure procedure) {
@@ -119,6 +128,51 @@ public enum Context {
 	 */
   private void setTxID(int txID) {
 	  this.txID = txID;
+  }
+  
+  /**
+   * Method to add nuke to the map of existing monitored items.
+   * @param identity
+   * @param info
+   * @return
+   */
+  public boolean addNuke(Long identity, INukeInfo info) {
+		if (true == getNukesMap().containsKey(identity)) {
+			return false;
+		} else {
+			return (null == getNukesMap().put(identity, info));
+		}
+	}
+  
+  /**
+   * Return a list with all nuke nodes and their available info.
+   * @return List<INukeInfo>
+   */
+  public Collection<INukeInfo> getNukes() {
+  	return getNukesMap().values();
+  }
+  
+  /**
+   * Returns the nuke object related to an identity.
+   * @param identity long with the unique id key.
+   * @return INukeInfo or null.
+   */
+  public INukeInfo getNuke(Long identity) {
+  	return getNukesMap().get(identity);
+  }
+
+	/**
+	 * @return the nukes
+	 */
+  private Map<Long, INukeInfo> getNukesMap() {
+	  return Nukes;
+  }
+
+	/**
+	 * @param nukes the nukes to set
+	 */
+  private void setNukes(Map<Long, INukeInfo> nukes) {
+	  Nukes = nukes;
   }
 
 }
