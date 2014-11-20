@@ -119,7 +119,7 @@ public class CommandProcedure extends BaseProcedure {
 		}
 	}
 	
-//  Might be used later. Therefor we dont remove it for now.
+//  Might be used later. Therefore we don't remove it for now.
 //	/**
 //	 * Method to handle update of the command data and set to aborted if not working.
 //	 * @param data BaseNukeC instance to update.
@@ -152,5 +152,5 @@ public class CommandProcedure extends BaseProcedure {
   private void setID(long id) {
 	  this.id = id;
   }
-	
+
 }

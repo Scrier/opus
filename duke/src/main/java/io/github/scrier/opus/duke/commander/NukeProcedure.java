@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
@@ -14,12 +15,11 @@ public class NukeProcedure extends BaseProcedure implements INukeInfo {
 	
 	private NukeInfo local;
 	
-	private final int WORKING = CREATED + 1;
+	public final int WORKING = CREATED + 1;
 	
 	public NukeProcedure(NukeInfo info) {
 		log.trace("NukeProcedure(" + info + ")");
 		local = new NukeInfo(info);
-		
 	}
 	
 	/**
@@ -28,7 +28,12 @@ public class NukeProcedure extends BaseProcedure implements INukeInfo {
 	@Override
 	public void init() throws Exception {
 		log.trace("init()");
-		setState(WORKING);
+		if( true == theContext.addNuke(local.getNukeID(), this) ) {
+			setState(WORKING);
+		} else {
+			log.error("Unable to add " + this + " to the common map.");
+			setState(ABORTED);
+		}
 	}
 
 	/**
@@ -37,6 +42,9 @@ public class NukeProcedure extends BaseProcedure implements INukeInfo {
 	@Override
 	public void shutDown() throws Exception {
 		log.trace("shutDown()");
+		if( true != theContext.removeNuke(local.getNukeID(), this) ) {
+			throw new InvalidOperationException("Unable to remove " + this + " from shared map.");
+		}
 		local = null;
 	}
 
@@ -115,7 +123,7 @@ public class NukeProcedure extends BaseProcedure implements INukeInfo {
 		if( 0 < ( NukeInfo.NUKE_ID_MODIFIED & modified ) ) {
 			log.error("Received modified id of the NukeInfo object. cannot continue.");
 			setState(ABORTED);
-		} else {
+		} else if( local.getNukeID() == info.getNukeID() ){
 			if( 0 < ( NukeInfo.ACTIVE_COMMANDS_MODIFIED & modified ) ) {
 				log.debug("Active commands changed from " + local.getActiveCommands() + " to " + info.getActiveCommands() + ".");
 				local.setActiveCommands(info.getActiveCommands());
@@ -145,6 +153,8 @@ public class NukeProcedure extends BaseProcedure implements INukeInfo {
 				local.setState(info.getState());
 			}
 			info.resetValuesModified();
+		} else {
+			// do nothing, another nuke procedure will take care of it.
 		}
 	}
 	

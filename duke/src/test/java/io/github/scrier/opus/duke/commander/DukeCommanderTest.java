@@ -5,10 +5,12 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
@@ -24,8 +26,6 @@ import org.mockito.Mockito;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapEvent;
-import com.hazelcast.map.client.MapClearRequest;
-import com.hazelcast.queue.impl.AddAllBackupOperation;
 
 public class DukeCommanderTest {
 	
@@ -35,7 +35,8 @@ public class DukeCommanderTest {
 	HazelcastInstance instance;
 	BaseActiveObjectMock theBaseAOC;
 	Context theContext = Context.INSTANCE;
-	IMap map;
+	@SuppressWarnings("rawtypes")
+  IMap map;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -49,7 +50,7 @@ public class DukeCommanderTest {
 	@Before
 	public void setUp() throws Exception {
 		instance = helper.mockHazelcast();
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_NODE_ID, identity);
+		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
 		map = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
@@ -341,6 +342,32 @@ public class DukeCommanderTest {
 		assertFalse(testObject.getProcedures().isEmpty());
 		assertTrue(testObject.getProceduresToAdd().isEmpty());
 		assertTrue(procedure.isInitCalled());
+  }
+  
+  @Test
+  public void testGetClasses() {
+  	DukeCommander testObject = new DukeCommander(instance);
+		theContext.init(testObject, theBaseAOC);
+		BaseProcedureMock procedure1 = new BaseProcedureMock();
+		procedure1.setOnEvictedReturn(1);
+		BaseProcedureMock procedure2 = new BaseProcedureMock();
+		procedure2.setOnEvictedReturn(2);
+		BaseProcedureMock procedure3 = new BaseProcedureMock();
+		procedure3.setOnEvictedReturn(3);
+		BaseProcedureMock procedure4 = new BaseProcedureMock();
+		procedure4.setOnEvictedReturn(4);
+		BaseProcedureMock procedure5 = new BaseProcedureMock();
+		procedure5.setOnEvictedReturn(5);
+		testObject.getProcedures().add(procedure1);
+		testObject.getProcedures().add(procedure2);
+		testObject.getProcedures().add(procedure3);
+		testObject.getProcedures().add(procedure4);
+		testObject.getProcedures().add(new ClusterDistributorProcedure());
+		testObject.getProcedures().add(new CommandProcedure("this is command", CommandState.QUERY));
+		testObject.getProcedures().add(new NukeProcedure(new NukeInfo()));
+		testObject.getProceduresToRemove().add(procedure5);
+		List<BaseProcedure> check = testObject.getProcedures(BaseProcedureMock.class);
+		assertEquals(4, check.size());
   }
 
 }

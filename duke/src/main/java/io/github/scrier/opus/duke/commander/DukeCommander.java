@@ -22,12 +22,14 @@ public class DukeCommander extends BaseListener {
 	private List<BaseProcedure> procedures;
 	private List<BaseProcedure> proceduresToAdd;
 	private List<BaseProcedure> toRemove;
+	private boolean distributorRunning;
 
 	public DukeCommander(HazelcastInstance instance) {
 		super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		procedures = new ArrayList<BaseProcedure>();
 		proceduresToAdd = new ArrayList<BaseProcedure>();
 		toRemove = new ArrayList<BaseProcedure>();
+		setDistributorRunning(false);
 	}
 	
 	public void init() {
@@ -40,6 +42,7 @@ public class DukeCommander extends BaseListener {
 				registerProcedure(new NukeProcedure(new NukeInfo(nuke)));
 			}
 		}
+		startDistributor();
 	}
 	
 	public void shutDown() {
@@ -129,22 +132,23 @@ public class DukeCommander extends BaseListener {
 	public void entryAdded(Long component, BaseNukeC data) {
 		log.trace("entryAdded(" + component + ", " + data + ")");
 		switch( data.getId() ) {
-		case NukeFactory.NUKE_INFO:
-		{
-			registerProcedure(new NukeProcedure(new NukeInfo(data)));
-			break;
+			case NukeFactory.NUKE_INFO:
+			{
+				registerProcedure(new NukeProcedure(new NukeInfo(data)));
+				break;
+			}
+			case NukeFactory.NUKE_COMMAND: 
+			{
+				// do nothing
+				break;
+			}
+			default:
+			{
+				log.error("Unknown id of data handler with id: " + data.getId() + ".");
+				break;
+			}
 		}
-		case NukeFactory.NUKE_COMMAND: 
-		{
-			// do nothing
-			break;
-		}
-		default:
-		{
-			log.error("Unknown id of data handler with id: " + data.getId() + ".");
-			break;
-		}
-		}
+		startDistributor();
 	}	
 
 	/**
@@ -218,6 +222,27 @@ public class DukeCommander extends BaseListener {
   }
 	
 	/**
+	 * Method to get a list of procedures of a specific class.
+	 * @param procs the class to look for.
+	 * @return List<BaseProcedure>
+	 * {@code
+	 * List<BaseProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
+	 * for( BaseProcedure procedure : commandProcedures ) {
+	 *   ...
+	 * }
+	 * }
+	 */
+	public List<BaseProcedure> getProcedures(Class<?> procs) {
+		List<BaseProcedure> retVal = new ArrayList<BaseProcedure>();
+		for( BaseProcedure procedure : getProcedures() ) {
+			if( procs.getName() == procedure.getClass().getName() ) {
+				retVal.add(procedure);
+			}
+		}
+		return retVal;
+	}
+	
+	/**
 	 * @return the procedures
 	 */
 	protected List<BaseProcedure> getProcedures() {
@@ -237,5 +262,35 @@ public class DukeCommander extends BaseListener {
 	protected List<BaseProcedure> getProceduresToRemove() {
 		return toRemove;
 	}
+	
+	/**
+	 * Method to check and start distributor procedure when initialized.
+	 */
+	private void startDistributor() {
+		log.trace("startDistributor()");
+		if( isDistributorRunning() ) {
+			log.debug("Distributor already running");
+		} else if ( getProcedures(NukeProcedure.class).isEmpty() ) {
+			log.info("No nuke procedures running, waiting for first nuke to connect.");
+		} else {
+			log.info("Starting cluster distribution.");
+			setDistributorRunning(true);
+			registerProcedure(new ClusterDistributorProcedure());
+		}
+	}
+
+	/**
+	 * @return the distributorRunning
+	 */
+  public boolean isDistributorRunning() {
+	  return distributorRunning;
+  }
+
+	/**
+	 * @param distributorRunning the distributorRunning to set
+	 */
+  public void setDistributorRunning(boolean distributorRunning) {
+	  this.distributorRunning = distributorRunning;
+  }
 
 }

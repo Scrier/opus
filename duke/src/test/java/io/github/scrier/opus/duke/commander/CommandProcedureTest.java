@@ -29,7 +29,8 @@ public class CommandProcedureTest {
 	long identity = 8239421L;
 	Context theContext = Context.INSTANCE;
 	BaseActiveObjectMock theBaseAOC;
-	IMap theMap;
+	@SuppressWarnings("rawtypes")
+  IMap theMap;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -39,7 +40,7 @@ public class CommandProcedureTest {
   @Before
 	public void setUp() throws Exception {
 		instance = theHelper.mockHazelcast();
-		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_NODE_ID, identity);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
 		theMap = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
@@ -79,7 +80,8 @@ public class CommandProcedureTest {
 		assertEquals(true, check.isRepeated());
 	}
 	
-	@Test
+	@SuppressWarnings("unchecked")
+  @Test
 	public void testInit() throws Exception {
 		CommandProcedure testObject = new CommandProcedure("this is yet another command", CommandState.EXECUTE, true);
 		testObject.init();

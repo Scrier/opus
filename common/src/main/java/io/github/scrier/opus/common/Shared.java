@@ -15,12 +15,15 @@
  */
 package io.github.scrier.opus.common;
 
+import java.util.concurrent.TimeUnit;
+
 public class Shared {
 	public static class Hazelcast {
 		public static final String BASE_NUKE_MAP = "hazelcast-base-nuke-map";
 		public static final String SETTINGS_MAP = "hazelcast-settings-map";
 
-		public static final String COMMON_NODE_ID = "hazelcast-node-id";
+		public static final String COMMON_MAP_UNIQUE_ID = "hazelcast-map-unique-id";
+		public static final String COMMON_UNIQUE_ID = "hazelcast-unique-id";
 	}
 	
 	public static class Settings {
@@ -42,4 +45,52 @@ public class Shared {
 	public static class Commands {
 		public static final String GIT_CHECKOUT = "git-checkout";
 	}
+	
+	public static class Methods {
+		
+		/**
+		 * Method to convert seconds to hour format.
+		 * @param seconds to convert
+		 * @return String in format HHH:MM:SS
+		 */
+		public static String formatTime(int seconds) {
+			return formatTime(seconds, TimeUnit.HOURS);
+		}
+		
+		/**
+		 * Method to convert seconds to a specified format.
+		 * @param second to convert
+		 * @param timeUnit to convert to, no bigger than days supported
+		 * @return String in format according to TimeUnit
+		 * {@code
+		 * formatTime(70, TimeUnit.MINUTES); // <- 1:10
+		 * formatTime(93915, TimeUnit.MINUTES) // <- 1565:15
+		 * formatTime(Integer.MAX_VALUE, TimeUnit.DAYS); // <- 24855:03:14:07
+		 * }
+		 */
+		public static String formatTime(int second, TimeUnit timeUnit) {
+			String retValue;
+			if( TimeUnit.SECONDS == timeUnit ) {
+				retValue = String.format("%d", second);
+			} else {
+				int secondPart = second % 60;
+				int minutes = second / 60;
+				if( TimeUnit.MINUTES == timeUnit ) {
+					retValue = String.format("%d:%02d", minutes, secondPart);
+				} else {
+					int minutesPart = minutes % 60;
+					int hours = minutes / 60;
+					if( TimeUnit.HOURS == timeUnit ) {
+						retValue = String.format("%d:%02d:%02d", hours, minutesPart, secondPart);
+					} else {
+						int hoursPart = hours % 24;
+						int days = hours / 24;
+						retValue = String.format("%d:%02d:%02d:%02d", days, hoursPart, minutesPart, secondPart);
+					}
+				}
+			}
+			return retValue;
+		}
+	}
+	
 }
