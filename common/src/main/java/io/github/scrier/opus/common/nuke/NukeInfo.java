@@ -68,6 +68,9 @@ public class NukeInfo extends BaseNukeC {
 		setRequestedUsers(obj2copy.getRequestedUsers());
 		setRepeated(obj2copy.isRepeated());
 		setState(obj2copy.getState());
+		setActiveCommands(obj2copy.getActiveCommands());
+		setRequestedCommands(obj2copy.getRequestedCommands());
+		setCompletedCommands(obj2copy.getCompletedCommands());
 	}
 
 	public NukeInfo(BaseNukeC input) throws ClassCastException {
@@ -79,6 +82,9 @@ public class NukeInfo extends BaseNukeC {
 			setRequestedUsers(obj2copy.getRequestedUsers());
 			setRepeated(obj2copy.isRepeated());
 			setState(obj2copy.getState());
+			setActiveCommands(obj2copy.getActiveCommands());
+			setRequestedCommands(obj2copy.getRequestedCommands());
+			setCompletedCommands(obj2copy.getCompletedCommands());
 		} else {
 			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeInfo[" + NukeFactory.NUKE_INFO + "], are you using correct class?");
 		}

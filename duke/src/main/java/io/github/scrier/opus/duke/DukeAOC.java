@@ -58,8 +58,10 @@ public class DukeAOC extends BaseActiveObject {
 		commander = new DukeCommander(getInstance());
 		Context.INSTANCE.init(commander, this);
 		settings.init();
+		log.info("Settings read: ");
 		for( Map.Entry<String, String> item : settings.getSettings().entrySet() ) {
 			try {
+				log.info(item.getKey() + " => " + item.getValue() + ".");
 	      getSettings().put(item.getKey(), item.getValue());
       } catch (InvalidOperationException e) {
 	      log.error("Received error on put method call to distributed settings.", e);

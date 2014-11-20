@@ -43,7 +43,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	 * @return long with the unique ID that this data has.
 	 */
 	public long addEntry(BaseNukeC data) {
-		long value = getInstance().getIdGenerator(Shared.Hazelcast.COMMON_NODE_ID).newId();
+		long value = getInstance().getIdGenerator(Shared.Hazelcast.COMMON_MAP_UNIQUE_ID).newId();
 		sharedMap.put(value, data);
 		return value;
 	}
