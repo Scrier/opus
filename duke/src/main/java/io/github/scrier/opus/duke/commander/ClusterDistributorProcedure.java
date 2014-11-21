@@ -23,6 +23,8 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	private String command;
 	private String folder;
 
+	private int localUserRampedUp;
+	
 	private long timerID;
 	private long terminateID;
 
@@ -40,6 +42,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		setFolder("");
 		setTimerID(-1L);
 		setTerminateID(-1L);
+		setLocalUserRampedUp(0);
 	}
 
 	/**
@@ -245,6 +248,20 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	}
 
 	/**
+	 * @return the userRampedUp
+	 */
+  public int getLocalUserRampedUp() {
+	  return localUserRampedUp;
+  }
+
+	/**
+	 * @param userRampedUp the userRampedUp to set
+	 */
+  public void setLocalUserRampedUp(int userRampedUp) {
+	  this.localUserRampedUp = userRampedUp;
+  }
+
+	/**
 	 * @return the timerID
 	 */
 	private long getTimerID() {
@@ -363,6 +380,13 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	 * }
 	 */
 	private class RampingUp extends State {
+		
+		/**
+		 * Constructor
+		 */
+		public RampingUp() {
+			
+		}
 
 		/**
 		 * RampingUp handling on update methods.
@@ -374,7 +398,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}  
 
 		/**
-		 * RampingUp handling on evicted mmethods.
+		 * RampingUp handling on evicted methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -383,7 +407,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}
 
 		/**
-		 * RampingUp handling on removed mmethods.
+		 * RampingUp handling on removed methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -392,19 +416,53 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}
 
 		/**
-		 * RampingUp handling on timeout mmethods.
+		 * RampingUp handling on timeout methods.
 		 * @param id long
 		 */
 		@Override
 		public void timeout(long id) {
 			log.trace("timeout(" + id + ")");
 			if( id == getTimerID() ) {
-				
+				handleTimerTick();
 			} else if ( id == getTerminateID() ) {
+				log.error("Received terminate timeout during state RAMP_UP.");
+				setState(ABORTED);
+			} else {
+				log.error("Received unknown timer id: " + id + " in state RAMP_UP.");
+				setState(ABORTED);
+			}
+		}
+		
+		/**
+		 * Method to handle next timer tick to create new instances of commands to execute.
+		 */
+		private void handleTimerTick() {
+			log.trace("handleTimerTick()");
+			if( getLocalUserRampedUp() < getMaxUsers() ) {
+				int usersToAdd = ( getMaxUsers() - getLocalUserRampedUp() ) > getUserIncrease() ? 
+						getUserIncrease() : getMaxUsers() - getLocalUserRampedUp();
 				
 			} else {
 				
 			}
+		}
+		
+		private int getDistributedNumberOfUsers() {
+			log.trace("getDistributedNumberOfUsers()");
+			int retValue = 0;
+			for( INukeInfo info : theContext.getNukes() ) {
+				retValue += info.getNoOfUsers();
+			}
+			return retValue;
+		}
+		
+		private int getDistributedNumberOfRequestedUsers() {
+			log.trace("getDistributedNumberOfRequestedUsers()");
+			int retValue = 0;
+			for( INukeInfo info : theContext.getNukes() ) {
+				retValue += info.getRequestedNoOfUsers();
+			}
+			return retValue;
 		}
 		
 	}
@@ -418,6 +476,13 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	 * }
 	 */
 	private class PeakDelay extends State {
+		
+		/**
+		 * Constructor
+		 */
+		public PeakDelay() {
+			
+		}
 
 		/**
 		 * PeakDelay handling on update methods.
@@ -429,7 +494,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}  
 
 		/**
-		 * PeakDelay handling on evicted mmethods.
+		 * PeakDelay handling on evicted methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -438,7 +503,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}
 
 		/**
-		 * PeakDelay handling on removed mmethods.
+		 * PeakDelay handling on removed methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -447,7 +512,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}
 
 		/**
-		 * PeakDelay handling on timeout mmethods.
+		 * PeakDelay handling on timeout methods.
 		 * @param id long
 		 */
 		@Override
@@ -468,6 +533,13 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	private class RampingDown extends State {
 		
 		/**
+		 * Constructor
+		 */
+		public RampingDown() {
+			
+		}
+		
+		/**
 		 * RampingDown handling on update methods.
 		 * @param data BaseNukeC
 		 */
@@ -477,7 +549,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}  
 
 		/**
-		 * RampingDown handling on evicted mmethods.
+		 * RampingDown handling on evicted methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -486,7 +558,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}
 
 		/**
-		 * RampingDown handling on removed mmethods.
+		 * RampingDown handling on removed methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -495,7 +567,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		}
 
 		/**
-		 * RampingDown handling on timeout mmethods.
+		 * RampingDown handling on timeout methods.
 		 * @param id long
 		 */
 		@Override

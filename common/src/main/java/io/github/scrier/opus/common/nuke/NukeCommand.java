@@ -17,6 +17,7 @@ public class NukeCommand extends BaseNukeC {
 	private String command;
 	private String response;
 	private CommandState state;
+	private long component;
 	private boolean repeated;
 	
 	public NukeCommand() {
