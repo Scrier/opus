@@ -25,6 +25,7 @@ public class NukeCommand extends BaseNukeC {
 		setCommand("");
 		setResponse("");
 		setState(CommandState.UNDEFINED);
+		setComponent(-1L);
 		setRepeated(false);
 	}
 	
@@ -33,6 +34,7 @@ public class NukeCommand extends BaseNukeC {
 		setCommand(obj2copy.getCommand());
 		setResponse(obj2copy.getResponse());
 		setState(obj2copy.getState());
+		setComponent(obj2copy.getComponent());
 		setRepeated(obj2copy.isRepeated());
 	}
 	
@@ -43,6 +45,7 @@ public class NukeCommand extends BaseNukeC {
 			setCommand(obj2copy.getCommand());
 			setResponse(obj2copy.getResponse());
 			setState(obj2copy.getState());
+			setComponent(obj2copy.getComponent());
 			setRepeated(obj2copy.isRepeated());
 		} else {
 			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeCommand[" + NukeFactory.NUKE_COMMAND + "], are you using correct class?");
@@ -59,6 +62,7 @@ public class NukeCommand extends BaseNukeC {
 		setCommand(in.readUTF());
 		setResponse(in.readUTF());
 		setState(CommandState.valueOf(in.readUTF()));
+		setComponent(in.readLong());
 		setRepeated(in.readBoolean());
 	}
 
@@ -72,6 +76,7 @@ public class NukeCommand extends BaseNukeC {
 		out.writeUTF(getCommand());
 		out.writeUTF(getResponse());
 		out.writeUTF(getState().toString());
+		out.writeLong(getComponent());
 		out.writeBoolean(isRepeated());
 	}
 
@@ -116,6 +121,20 @@ public class NukeCommand extends BaseNukeC {
 	public void setState(CommandState state) {
 		this.state = state;
 	}
+
+	/**
+	 * @return the component
+	 */
+  public long getComponent() {
+	  return component;
+  }
+
+	/**
+	 * @param component the component to set
+	 */
+  public void setComponent(long component) {
+	  this.component = component;
+  }
 
 	/**
 	 * @return the repeated

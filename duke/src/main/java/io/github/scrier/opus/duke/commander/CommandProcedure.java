@@ -16,19 +16,33 @@ public class CommandProcedure extends BaseProcedure {
 	public final int REMOVING = CREATED + 2;
 	
 	private NukeCommand nukeCommand;
+	private CommandState initialComand;
 	private long id;
+	
+	private ICommandCallback callback;
 
-	public CommandProcedure(String command, CommandState state) {
-		this(command, state, false);
+	public CommandProcedure(long component, String command, CommandState state) {
+		this(component, command, state, false, null);
 	}
 	
-	public CommandProcedure(String command, CommandState state, boolean repeated) {
-		log.trace("CommandProcedure(" + command + ", " + state + ", " + repeated + ")");
+	public CommandProcedure(long component, String command, CommandState state, ICommandCallback callback) {
+		this(component, command, state, false, callback);
+	}
+	
+	public CommandProcedure(long component, String command, CommandState state, boolean repeated) {
+		this(component, command, state, repeated, null);
+	}
+	
+	public CommandProcedure(long component, String command, CommandState state, boolean repeated, ICommandCallback callback) {
+		log.trace("CommandProcedure(" + component + ", " + command + ", " + state + ", " + repeated + ", " + callback + ")");
 		this.nukeCommand = new NukeCommand();
+		this.nukeCommand.setComponent(component);
 		this.nukeCommand.setCommand(command);
 		this.nukeCommand.setRepeated(repeated);
 		this.nukeCommand.setState(state);
 		this.nukeCommand.setTxID(getTxID());
+		setInitialCommand(state);
+		setCallback(callback);
 	}
 
 	@Override
@@ -41,6 +55,10 @@ public class CommandProcedure extends BaseProcedure {
 	@Override
 	public void shutDown() throws Exception {
 		log.trace("shutDown()");
+		if( null != getCallback() ) {
+			getCallback().finished(getNukeCommand().getComponent(),
+					getState(), getNukeCommand().getCommand(), getNukeCommand().getResponse());
+		}
 	}
 
 	@Override
@@ -91,32 +109,36 @@ public class CommandProcedure extends BaseProcedure {
 	private void handleUpdate(NukeCommand command) {
 		log.trace("handleUpdate(" + command + ")");
 		if( getTxID() == command.getTxID() ) {
-			switch( command.getState() ) {
-				case EXECUTE: {
-					log.info("Command is working.");
-					break;
-				} 
-				case DONE: {
-					log.info("Command is done, lets remove it.");
-					removeEntry(getID());
-					setState(REMOVING);
-					break;
-				}
-				case ABORTED:
-				case QUERY:
-				case UNDEFINED:
-				case WORKING: {
-					log.error("Unimplemented command " + command.getState() + ", aborting.");
-					setState(ABORTED);
-					break;
-				}
-				default: {
-					log.error("Unknown state of command " + command.getState() + ", aborting.");
-					setState(ABORTED);
-					break;
-				}
+			if( getNukeCommand().getComponent() != command.getComponent() ) {
+				throw new RuntimeException("Stored command: " +  getNukeCommand() + " and incoming command: " + command + " differs after txid check.");
+			} else {
+				switch( command.getState() ) {
+					case EXECUTE:
+					case QUERY: {
+						log.info("Command is working.");
+						break;
+					} 
+					case DONE: {
+						log.info("Command is done, lets remove it.");
+						removeEntry(getID());
+						setState(REMOVING);
+						break;
+					}
+					case ABORTED:
+					case UNDEFINED:
+					case WORKING: {
+						log.error("Unimplemented command " + command.getState() + ", aborting.");
+						setState(ABORTED);
+						break;
+					}
+					default: {
+						log.error("Unknown state of command " + command.getState() + ", aborting.");
+						setState(ABORTED);
+						break;
+					}
+				} // switch( command.getState() ) {
 			}
-		}
+		} // if( getTxID() == command.getTxID() ) {
 	}
 	
 //  Might be used later. Therefore we don't remove it for now.
@@ -140,6 +162,20 @@ public class CommandProcedure extends BaseProcedure {
 	}
 
 	/**
+	 * @return the command
+	 */
+  public CommandState getInitialCommand() {
+	  return initialComand;
+  }
+
+	/**
+	 * @param command the command to set
+	 */
+  public void setInitialCommand(CommandState command) {
+	  this.initialComand = command;
+  }
+
+	/**
 	 * @return the id
 	 */
   private long getID() {
@@ -151,6 +187,20 @@ public class CommandProcedure extends BaseProcedure {
 	 */
   private void setID(long id) {
 	  this.id = id;
+  }
+
+	/**
+	 * @return the callback
+	 */
+  public ICommandCallback getCallback() {
+	  return callback;
+  }
+
+	/**
+	 * @param callback the callback to set
+	 */
+  public void setCallback(ICommandCallback callback) {
+	  this.callback = callback;
   }
 
 }

@@ -363,7 +363,7 @@ public class DukeCommanderTest {
 		testObject.getProcedures().add(procedure3);
 		testObject.getProcedures().add(procedure4);
 		testObject.getProcedures().add(new ClusterDistributorProcedure());
-		testObject.getProcedures().add(new CommandProcedure("this is command", CommandState.QUERY));
+		testObject.getProcedures().add(new CommandProcedure(12345L, "this is command", CommandState.QUERY));
 		testObject.getProcedures().add(new NukeProcedure(new NukeInfo()));
 		testObject.getProceduresToRemove().add(procedure5);
 		List<BaseProcedure> check = testObject.getProcedures(BaseProcedureMock.class);

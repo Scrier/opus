@@ -13,11 +13,13 @@ import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.nuke.NukeState;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.hazelcast.core.IdGenerator;
+import com.hazelcast.query.SqlPredicate;
 
 public enum Context {
 	INSTANCE;
@@ -188,8 +190,30 @@ public enum Context {
    * Return a list with all nuke nodes and their available info.
    * @return List<INukeInfo>
    */
-  public Collection<INukeInfo> getNukes() {
-  	return getNukesMap().values();
+  public List<INukeInfo> getNukes() {
+  	return (List<INukeInfo>) getNukesMap().values();
+  }
+  
+  /**
+   * Method to get a Collection with nukes in the state(s) specified.
+   * @param states one to many NukeState to look for.
+   * @return Collection<INukeInfo> tat is in the states specified.
+   * {@code
+   * List<INukeInfo> singleState = getNukes(NukeState.RUNNING);
+   * List<INukeInfo> multiState = getNukes(NukeState.INTITIALIZED, NukeState.RUNNING);
+   * }
+   */
+  public List<INukeInfo> getNukes(NukeState... states) {
+  	List<INukeInfo> retValue = new ArrayList<INukeInfo>();
+  	for( INukeInfo info : getNukes() ) {
+  		for( NukeState state : states ) {
+  			if( info.getInfoState() == state ) {
+  				retValue.add(info);
+  				break;
+  			}
+  		}
+  	}
+  	return retValue;
   }
   
   /**

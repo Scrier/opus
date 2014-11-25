@@ -1,10 +1,21 @@
 package io.github.scrier.opus.duke.commander;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.hazelcast.partition.impl.IsReplicaVersionSync;
+
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.nuke.CommandState;
+import io.github.scrier.opus.common.nuke.NukeState;
 
 public class ClusterDistributorProcedure extends BaseProcedure implements ITimeOutCallback {
 
@@ -20,6 +31,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	private int userIncrease;
 	private int peakDelaySeconds;
 	private int terminateSeconds;
+	private boolean repeated;
 	private String command;
 	private String folder;
 
@@ -38,6 +50,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		setUserIncrease(0);
 		setPeakDelaySeconds(0);
 		setTerminateSeconds(0);
+		setRepeated(false);
 		setCommand("");
 		setFolder("");
 		setTimerID(-1L);
@@ -61,6 +74,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 			setUserIncrease(Integer.parseInt(getSetting(Shared.Settings.EXECUTE_USER_INCREASE)));
 			setPeakDelaySeconds(Integer.parseInt(getSetting(Shared.Settings.EXECUTE_PEAK_DELAY)));
 			setTerminateSeconds(Integer.parseInt(getSetting(Shared.Settings.EXECUTE_TERMINATE)));
+			setRepeated(Boolean.parseBoolean(getSetting(Shared.Settings.EXECUTE_REPEATED)));
 			setCommand(getSetting(Shared.Settings.EXECUTE_COMMAND));
 			setFolder(getSetting(Shared.Settings.EXECUTE_FOLDER));
 			setTimerID(getUniqueID());
@@ -220,6 +234,20 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	}
 
 	/**
+	 * @return the repeated
+	 */
+	private boolean isRepeated() {
+		return repeated;
+	}
+
+	/**
+	 * @param repeated the repeated to set
+	 */
+	private void setRepeated(boolean repeated) {
+		this.repeated = repeated;
+	}
+
+	/**
 	 * @return the command
 	 */
 	private String getCommand() {
@@ -301,6 +329,51 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 				log.error("Received out of bound exception in state: " + getState() + ".", e);
 			}
 		}
+	}
+	
+	public Map<Long, Integer> getDistributionSuggestion(int noOfUsers) {
+		log.trace("getDistribution(" + noOfUsers + ")");
+		Map<Long, Integer> retValue = new HashMap<Long, Integer>();
+		List<INukeInfo> availableNukes = theContext.getNukes(NukeState.RUNNING);
+		int toExecute = noOfUsers;
+		if( availableNukes.isEmpty() ) {
+			log.error("No available nodes in state " + NukeState.RUNNING + ", cannot continue.");
+			return null;
+		} else {
+			while( toExecute > 0 ) {
+				INukeInfo minInfo = null;
+				for( INukeInfo info : availableNukes ) {
+					if( minInfo == null ) {
+						minInfo = info;
+					} else {
+						int minAmount = getTotalUsers(retValue, minInfo);
+						int infoAmount = getTotalUsers(retValue, info);
+						if( minAmount > infoAmount ) {
+							log.debug("Changing info object from " + minInfo + " to " + info + ".");
+							minInfo = info;
+						}
+					}
+				}
+				if( null == minInfo ) {
+					throw new RuntimeException("Variable minInfo of type INukeInfo is null although no possible codepath leads to that.");
+				} else if ( retValue.containsKey(minInfo.getNukeID()) ) {
+					int value = retValue.get(minInfo.getNukeID());
+					retValue.put(minInfo.getNukeID(), value + 1);
+				} else {
+					retValue.put(minInfo.getNukeID(), 1);
+				}
+			}
+		}
+		return retValue;
+	}
+	
+	private int getTotalUsers(Map<Long, Integer> availableNukes, INukeInfo info) {
+		log.trace("getTotalUsers(" + availableNukes + ", " + info + ")");
+		int retValue = info.getRequestedNoOfUsers();
+		if( availableNukes.containsKey(info.getNukeID()) ) {
+			retValue += availableNukes.get(info.getNukeID());
+		}
+		return retValue;
 	}
 	
 	/**
@@ -441,9 +514,21 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 			if( getLocalUserRampedUp() < getMaxUsers() ) {
 				int usersToAdd = ( getMaxUsers() - getLocalUserRampedUp() ) > getUserIncrease() ? 
 						getUserIncrease() : getMaxUsers() - getLocalUserRampedUp();
-				
-			} else {
-				
+				Map<Long, Integer> distribution = getDistributionSuggestion(usersToAdd);
+				for( Entry<Long, Integer> command : distribution.entrySet() ) {
+					log.debug("Sending " + command.getValue() + " commands to nuke with id: " + command.getKey() + ".");
+					for( int i = 0; i < command.getValue(); i++ ) {
+						registerProcedure(new CommandProcedure(command.getKey(), getCommand(), CommandState.EXECUTE, isRepeated()));
+					}
+				}
+				log.info("Ramping up from " + getLocalUserRampedUp() + " to " + (getLocalUserRampedUp() + usersToAdd) + ", of a total of " + getMaxUsers() + ".");
+				setLocalUserRampedUp(getLocalUserRampedUp() + usersToAdd);
+				startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
+			} else { ///@TODO could add checks here against the distributed status instead of local, lets wait and see how it works though.
+				startTimeout(getPeakDelaySeconds(), getTimerID(), ClusterDistributorProcedure.this);
+				// Maybe start shorter timer and let the PEAK DELAY state handle when dist users is synced to max before starting peak delay.
+				log.info("We have reached peak and we stay idle for " + Shared.Methods.formatTime(getPeakDelaySeconds()) + " before ramping down.");
+				setState(PEAK_DELAY);
 			}
 		}
 		
@@ -518,6 +603,29 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		@Override
 		public void timeout(long id) {
 			log.trace("timeout(" + id + ")");
+			if( id == getTimerID() ) {
+				handleTimerTick();
+			} else if ( id == getTerminateID() ) {
+				log.error("Received terminate timeout during state PEAK_DELAY.");
+				setState(ABORTED);
+			} else {
+				log.error("Received unknown timer id: " + id + " in state PEAK_DELAY.");
+				setState(ABORTED);
+			}
+		}
+		
+		/**
+		 * Method to handle next timer tick to create new instances of commands to execute.
+		 */
+		private void handleTimerTick() {
+			log.trace("handleTimerTick()");
+			List<INukeInfo> nukes = theContext.getNukes();
+			log.info("Sending stop command to " + nukes.size() + " nukes.");
+			for( INukeInfo info : nukes ) {
+				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.STOP_EXECUTION, CommandState.EXECUTE));
+			}
+			startTimeout(1, getTimerID(), ClusterDistributorProcedure.this);
+			setState(RAMPING_DOWN);
 		}
 		
 	}
@@ -530,13 +638,15 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	 * RAMPIND_DOWN -> COMPLETED
 	 * }
 	 */
-	private class RampingDown extends State {
+	private class RampingDown extends State implements ICommandCallback {
+		
+		private Map<Long, Integer> nukeState;
 		
 		/**
 		 * Constructor
 		 */
 		public RampingDown() {
-			
+			nukeState = new HashMap<Long, Integer>();
 		}
 		
 		/**
@@ -573,6 +683,62 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		@Override
 		public void timeout(long id) {
 			log.trace("timeout(" + id + ")");
+			if( id == getTimerID() ) {
+				handleTimerTick();
+			} else if ( id == getTerminateID() ) {
+				log.error("Received terminate timeout during state RAMPING_DOWN.");
+				setState(ABORTED);
+			} else {
+				log.error("Received unknown timer id: " + id + " in state RAMPING_DOWN.");
+				setState(ABORTED);
+			}
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+    public void finished(long nukeID, int state, String query, String result) {
+			log.trace("finished(" + nukeID +", " + state + ")");
+			if( getNukeState().containsKey(nukeID) ) {
+	    	if( COMPLETED == state ) {
+	    		log.info("Nuke with id " + nukeID + " completed with state COMPLETED.");
+	    		if( Shared.Commands.Query.STATUS == query ) {
+	    			
+	    		} else {
+	    			log.error("Unhandled command for callback");
+	    			throw new RuntimeException("Received unknown command complete: " + query + ".");
+	    		}
+	    	} else if (ABORTED == state ) {
+	    		log.info("Nuke with id " + nukeID + " completed with state ABORTED.");
+	    		// handle better if happend.
+	    		throw new RuntimeException("Unimplemented handling for ABORTED command.");
+	    	} else {
+	    		log.error("Unknown state " + state + " received from command performed by nukeID: " + nukeID + ".");
+	    		throw new RuntimeException("Unimplemented handling unknown finished state " + state + ".");
+	    	}
+	    }
+    }
+		
+		private void handleTimerTick() {
+			log.trace("handleTimerTick()");
+			for( INukeInfo info : theContext.getNukes() ) {
+				if( true != getNukeState().containsKey(info.getNukeID()) ) {
+					registerProcedure(new CommandProcedure(info.getNukeID(), 
+																								 Shared.Commands.Query.STATUS, 
+																								 CommandState.QUERY, 
+																								 this));
+					getNukeState().put(info.getNukeID(), CREATED);
+				}
+			}
+		}
+		
+		/**
+		 * Method to get the nuke state map.
+		 * @return nukeState
+		 */
+		private Map<Long, Integer> getNukeState() {
+			return nukeState;
 		}
 		
 	}

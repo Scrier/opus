@@ -173,6 +173,14 @@ public class NukeProcedure extends BaseProcedure implements INukeInfo {
 			setState(ABORTED);
 		}
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public long getNukeID() {
+	  return local.getNukeID();
+  }
 
 	/**
 	 * {@inheritDoc}

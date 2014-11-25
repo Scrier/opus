@@ -5,6 +5,12 @@ import io.github.scrier.opus.common.nuke.NukeState;
 public interface INukeInfo {
 	
 	/**
+	 * Method to get the component associated with the info.
+	 * @return long
+	 */
+	public long getNukeID();
+	
+	/**
 	 * Method to get the number of users that is executing.
 	 * @return int
 	 */
