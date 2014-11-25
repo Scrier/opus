@@ -149,5 +149,19 @@ public class NukeCommand extends BaseNukeC {
 	public void setRepeated(boolean repeated) {
 		this.repeated = repeated;
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		String retValue = super.toString();
+		retValue += " - NukeCommand{command:" + getCommand();
+		retValue += ", response:" + getResponse();
+		retValue += ", state:" + getState();
+		retValue += ", component:" + getComponent();
+		retValue += ", repeated:" + isRepeated() + "}";
+		return retValue;
+	}
+
 }

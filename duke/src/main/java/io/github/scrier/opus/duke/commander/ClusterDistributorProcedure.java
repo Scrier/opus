@@ -1,7 +1,6 @@
 package io.github.scrier.opus.duke.commander;
 
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,14 +9,12 @@ import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.hazelcast.partition.impl.IsReplicaVersionSync;
-
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeState;
 
-public class ClusterDistributorProcedure extends BaseProcedure implements ITimeOutCallback {
+public class ClusterDistributorProcedure extends BaseDukeProcedure implements ITimeOutCallback {
 
 	private static Logger log = LogManager.getLogger(ClusterDistributorProcedure.class);
 
@@ -31,6 +28,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	private int userIncrease;
 	private int peakDelaySeconds;
 	private int terminateSeconds;
+	private int rampDownUpdateSeconds;
 	private boolean repeated;
 	private String command;
 	private String folder;
@@ -50,6 +48,7 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		setUserIncrease(0);
 		setPeakDelaySeconds(0);
 		setTerminateSeconds(0);
+		setRampDownUpdateSeconds(5);
 		setRepeated(false);
 		setCommand("");
 		setFolder("");
@@ -234,6 +233,20 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	}
 
 	/**
+	 * @return the rampDownUpdateSeconds
+	 */
+  public int getRampDownUpdateSeconds() {
+	  return rampDownUpdateSeconds;
+  }
+
+	/**
+	 * @param rampDownUpdateSeconds the rampDownUpdateSeconds to set
+	 */
+  public void setRampDownUpdateSeconds(int rampDownUpdateSeconds) {
+	  this.rampDownUpdateSeconds = rampDownUpdateSeconds;
+  }
+
+	/**
 	 * @return the repeated
 	 */
 	private boolean isRepeated() {
@@ -372,6 +385,19 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		int retValue = info.getRequestedNoOfUsers();
 		if( availableNukes.containsKey(info.getNukeID()) ) {
 			retValue += availableNukes.get(info.getNukeID());
+		}
+		return retValue;
+	}
+	
+	/**
+	 * Method to get the number of users from the distributed nukes.
+	 * @return int
+	 */
+	private int getDistributedNumberOfUsers() {
+		log.trace("getDistributedNumberOfUsers()");
+		int retValue = 0;
+		for( INukeInfo info : theContext.getNukes() ) {
+			retValue += info.getNoOfUsers();
 		}
 		return retValue;
 	}
@@ -532,24 +558,6 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 			}
 		}
 		
-		private int getDistributedNumberOfUsers() {
-			log.trace("getDistributedNumberOfUsers()");
-			int retValue = 0;
-			for( INukeInfo info : theContext.getNukes() ) {
-				retValue += info.getNoOfUsers();
-			}
-			return retValue;
-		}
-		
-		private int getDistributedNumberOfRequestedUsers() {
-			log.trace("getDistributedNumberOfRequestedUsers()");
-			int retValue = 0;
-			for( INukeInfo info : theContext.getNukes() ) {
-				retValue += info.getRequestedNoOfUsers();
-			}
-			return retValue;
-		}
-		
 	}
 
 	/**
@@ -619,11 +627,6 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		 */
 		private void handleTimerTick() {
 			log.trace("handleTimerTick()");
-			List<INukeInfo> nukes = theContext.getNukes();
-			log.info("Sending stop command to " + nukes.size() + " nukes.");
-			for( INukeInfo info : nukes ) {
-				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.STOP_EXECUTION, CommandState.EXECUTE));
-			}
 			startTimeout(1, getTimerID(), ClusterDistributorProcedure.this);
 			setState(RAMPING_DOWN);
 		}
@@ -640,13 +643,17 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 	 */
 	private class RampingDown extends State implements ICommandCallback {
 		
-		private Map<Long, Integer> nukeState;
+		private int oldUsers;
+		private boolean doOnce;
+		private List<Long> activeNukeCommands;
 		
 		/**
 		 * Constructor
 		 */
 		public RampingDown() {
-			nukeState = new HashMap<Long, Integer>();
+			setOldUsers(-1);
+			setDoOnce(true);
+			setActiveNukeCommands(new ArrayList<Long>());
 		}
 		
 		/**
@@ -699,47 +706,95 @@ public class ClusterDistributorProcedure extends BaseProcedure implements ITimeO
 		 */
 		@Override
     public void finished(long nukeID, int state, String query, String result) {
-			log.trace("finished(" + nukeID +", " + state + ")");
-			if( getNukeState().containsKey(nukeID) ) {
-	    	if( COMPLETED == state ) {
-	    		log.info("Nuke with id " + nukeID + " completed with state COMPLETED.");
-	    		if( Shared.Commands.Query.STATUS == query ) {
-	    			
-	    		} else {
-	    			log.error("Unhandled command for callback");
-	    			throw new RuntimeException("Received unknown command complete: " + query + ".");
-	    		}
-	    	} else if (ABORTED == state ) {
-	    		log.info("Nuke with id " + nukeID + " completed with state ABORTED.");
-	    		// handle better if happend.
-	    		throw new RuntimeException("Unimplemented handling for ABORTED command.");
-	    	} else {
-	    		log.error("Unknown state " + state + " received from command performed by nukeID: " + nukeID + ".");
-	    		throw new RuntimeException("Unimplemented handling unknown finished state " + state + ".");
-	    	}
-	    }
-    }
-		
-		private void handleTimerTick() {
-			log.trace("handleTimerTick()");
-			for( INukeInfo info : theContext.getNukes() ) {
-				if( true != getNukeState().containsKey(info.getNukeID()) ) {
-					registerProcedure(new CommandProcedure(info.getNukeID(), 
-																								 Shared.Commands.Query.STATUS, 
-																								 CommandState.QUERY, 
-																								 this));
-					getNukeState().put(info.getNukeID(), CREATED);
+			log.trace("finished(" + nukeID + ", " + state + ", " + query + ", " + result + ")");
+			if( COMPLETED == getState() ) {
+				log.info("Stop Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
+				if( getActiveNukeCommands().contains(nukeID) ) {
+					getActiveNukeCommands().remove(nukeID);
+					if( true != isTimeoutActive(getTimerID()) ) {
+						log.info("Starting the first timeout for RAMPING_DOWN class as we received the first command acceptance.");
+						startTimeout(getRampDownUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
+					}
+				} else {
+					throw new RuntimeException("Received status from unknown nuke with id: " + nukeID + ".");
 				}
+			} else {
+				throw new RuntimeException("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
 			}
 		}
 		
 		/**
-		 * Method to get the nuke state map.
-		 * @return nukeState
+		 * Handle timer ticks.
 		 */
-		private Map<Long, Integer> getNukeState() {
-			return nukeState;
+		private void handleTimerTick() {
+			log.trace("handleTimerTick()");
+			if( true == isDoOnce() ) {
+				setOldUsers(getMaxUsers());
+				List<INukeInfo> nukes = theContext.getNukes();
+				log.info("Sending stop command to " + nukes.size() + " nukes.");
+				for( INukeInfo info : nukes ) {
+					registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.STOP_EXECUTION, CommandState.EXECUTE, this));
+					getActiveNukeCommands().add(info.getNukeID());
+				}
+				setDoOnce(false);
+			} else {
+				int activeUsers = getDistributedNumberOfUsers();
+				if( activeUsers != getOldUsers() ) {
+					log.info("Ramping down from " + getOldUsers() + " to " + activeUsers + ".");
+					setOldUsers(activeUsers);
+				} else {
+					log.info("Ramping down unchanged at " + getOldUsers() + ".");
+				}
+				if( 0 == activeUsers ) {
+					log.info("All users ramped down. we are done.");
+					setState(COMPLETED);
+				} else {
+					startTimeout(getRampDownUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
+				}
+			}
 		}
+
+		/**
+		 * @return the oldUsers
+		 */
+    public int getOldUsers() {
+	    return oldUsers;
+    }
+
+		/**
+		 * @param oldUsers the oldUsers to set
+		 */
+    public void setOldUsers(int oldUsers) {
+	    this.oldUsers = oldUsers;
+    }
+
+		/**
+		 * @return the doOnce
+		 */
+    public boolean isDoOnce() {
+	    return doOnce;
+    }
+
+		/**
+		 * @param doOnce the doOnce to set
+		 */
+    public void setDoOnce(boolean doOnce) {
+	    this.doOnce = doOnce;
+    }
+
+		/**
+		 * @return the activeNukeCommands
+		 */
+    public List<Long> getActiveNukeCommands() {
+	    return activeNukeCommands;
+    }
+
+		/**
+		 * @param activeNukeCommands the activeNukeCommands to set
+		 */
+    public void setActiveNukeCommands(List<Long> activeNukeCommands) {
+	    this.activeNukeCommands = activeNukeCommands;
+    }
 		
 	}
 

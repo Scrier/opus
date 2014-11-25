@@ -1,43 +1,29 @@
 package io.github.scrier.opus.duke.commander;
 
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.commander.BaseProcedureC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class BaseProcedure {
+public abstract class BaseDukeProcedure extends BaseProcedureC {
 	
-	private static Logger log = LogManager.getLogger(BaseProcedure.class);
+	private static Logger log = LogManager.getLogger(BaseDukeProcedure.class);
 	
-	private int state;
 	protected Context theContext;
-	
-	private int txID;
 	
 	public final int ABORTED = 0;
 	public final int CREATED = 1;
 	public final int COMPLETED = 9999;
 	
-	public BaseProcedure() {
+	public BaseDukeProcedure() {
 		log.trace("BaseProcedure()");
-		this.state = CREATED;
 		this.theContext = Context.INSTANCE;
-		this.txID = theContext.getNextTxID();
+		super.setTxID(theContext.getNextTxID());;
 	}
-	
-	public abstract void init() throws Exception;
-	
-	public abstract void shutDown() throws Exception;
-
-	public abstract int handleOnUpdated(BaseNukeC data);
-	
-	public abstract int handleOnEvicted(BaseNukeC data);
-	
-	public abstract int handleOnRemoved(BaseNukeC data);
 	
 	public long getUniqueID() {
 		return theContext.getUniqueID();
@@ -59,7 +45,7 @@ public abstract class BaseProcedure {
 		return theContext.removeEntry(component);
 	}
 	
-	public boolean registerProcedure(BaseProcedure procedure) {
+	public boolean registerProcedure(BaseDukeProcedure procedure) {
 		log.trace("registerProcedure(" + procedure + ")");
 		return theContext.registerProcedure(procedure);
 	}
@@ -71,42 +57,6 @@ public abstract class BaseProcedure {
 	    log.error("Threw InvalidOperationException when calling Context.getIdentity.", e);
     }
 		return -1;
-	}
-	
-	/**
-	 * @return the state
-	 */
-	public int getState() {
-		return state;
-	}
-
-	/**
-	 * @param state the state to set
-	 */
-	public void setState(int state) {
-		// We cannot change a complete of aborted procedure.
-		if( ABORTED != getState() && COMPLETED != getState() ) {
-			this.state = state;
-			switch (getState()) {
-				case ABORTED: { onAborted(); break; }
-				case COMPLETED: { onCompleted(); break; }
-				default: { break; }
-			}
-		}
-	}
-	
-	/**
-	 * Method is called when the state is changed to ABORTED. Method is called once and only once.
-	 */
-	public void onAborted() {
-		log.trace("onAborted()");
-	}
-
-	/**
-	 * Method is called when state is changed to COMPLETED. Method is called once and only once.
-	 */
-	public void onCompleted() {
-		log.trace("onCompleted()");
 	}
 	
   /**
@@ -141,6 +91,16 @@ public abstract class BaseProcedure {
   	log.trace("startTimeout(" + time + ", " + id + ", " + callback + ", " + timeUnit + ")");
   	theContext.startTimeout(time, id, callback, timeUnit);
   }
+  
+	/**
+	 * Method to check if a specific timeout is active.
+	 * @param id long with the id of the timeout to check for.
+	 * @return boolean
+	 */
+  public boolean isTimeoutActive(long id) {
+  	log.trace("isTimeoutActive(" + id + ")");
+  	return theContext.isTimeoutActive(id);
+  }
 	
 	/**
 	 * @return the commander
@@ -149,11 +109,4 @@ public abstract class BaseProcedure {
 		return theContext.getCommander();
 	}
 	
-	/**
-	 * @return the txID
-	 */
-  protected int getTxID() {
-	  return txID;
-  }
-
 }

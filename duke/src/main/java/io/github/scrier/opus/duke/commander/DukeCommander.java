@@ -19,16 +19,16 @@ public class DukeCommander extends BaseListener {
 
 	private static Logger log = LogManager.getLogger(DukeCommander.class);
 
-	private List<BaseProcedure> procedures;
-	private List<BaseProcedure> proceduresToAdd;
-	private List<BaseProcedure> toRemove;
+	private List<BaseDukeProcedure> procedures;
+	private List<BaseDukeProcedure> proceduresToAdd;
+	private List<BaseDukeProcedure> toRemove;
 	private boolean distributorRunning;
 
 	public DukeCommander(HazelcastInstance instance) {
 		super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
-		procedures = new ArrayList<BaseProcedure>();
-		proceduresToAdd = new ArrayList<BaseProcedure>();
-		toRemove = new ArrayList<BaseProcedure>();
+		procedures = new ArrayList<BaseDukeProcedure>();
+		proceduresToAdd = new ArrayList<BaseDukeProcedure>();
+		toRemove = new ArrayList<BaseDukeProcedure>();
 		setDistributorRunning(false);
 	}
 	
@@ -52,7 +52,7 @@ public class DukeCommander extends BaseListener {
 		clear(getProceduresToRemove());
 	}
 	
-	public boolean registerProcedure(BaseProcedure procedure) {
+	public boolean registerProcedure(BaseDukeProcedure procedure) {
 		log.trace("registerProcedure(" + procedure + ")");
 		boolean retValue = true;
 		if( contains(procedure) ) {
@@ -63,9 +63,9 @@ public class DukeCommander extends BaseListener {
 		return retValue;
 	}
 	
-	public void clear(List<BaseProcedure> toClear) {
+	public void clear(List<BaseDukeProcedure> toClear) {
 		log.trace("clear(" + toClear + ")");
-		for( BaseProcedure procedure : toClear ) {
+		for( BaseDukeProcedure procedure : toClear ) {
 			try {
 	      procedure.shutDown();
       } catch (Exception e) {
@@ -75,14 +75,14 @@ public class DukeCommander extends BaseListener {
 		toClear.clear();
 	}
 
-	private boolean contains(BaseProcedure procedure) {
+	private boolean contains(BaseDukeProcedure procedure) {
 		log.trace("contains(" + procedure + ")");
 		boolean retValue = procedures.contains(procedure);
 		retValue = ( true == retValue ) ? true : proceduresToAdd.contains(procedure);
 		return retValue;
 	}
 
-	private void removeProcedure(BaseProcedure procedure) {
+	private void removeProcedure(BaseDukeProcedure procedure) {
 		log.trace("removeProcedure(" + procedure + ")");
 		toRemove.add(procedure);
 	}
@@ -114,7 +114,7 @@ public class DukeCommander extends BaseListener {
 
 	@Override
   public void preEntry() {
-	  for( BaseProcedure procedure : getProceduresToAdd() ) {
+	  for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
 	  	try {
 	      procedure.init();
 	      procedures.add(procedure);
@@ -157,7 +157,7 @@ public class DukeCommander extends BaseListener {
 	@Override
 	public void entryEvicted(Long component, BaseNukeC data) {
 		log.trace("entryEvicted(" + component + ", " + data + ")");
-		for( BaseProcedure procedure : getProcedures() ) {
+		for( BaseDukeProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnEvicted(data);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
@@ -175,7 +175,7 @@ public class DukeCommander extends BaseListener {
 	@Override
 	public void entryRemoved(Long component, BaseNukeC data) {
 		log.trace("entryRemoved(" + component + ", " + data + ")");
-		for( BaseProcedure procedure : getProcedures() ) {
+		for( BaseDukeProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnRemoved(data);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
@@ -193,7 +193,7 @@ public class DukeCommander extends BaseListener {
 	@Override
 	public void entryUpdated(Long component, BaseNukeC data) {
 		log.trace("entryUpdated(" + component + ", " + data + ")");
-		for( BaseProcedure procedure : getProcedures() ) {
+		for( BaseDukeProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnUpdated(data);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
@@ -210,7 +210,7 @@ public class DukeCommander extends BaseListener {
 	 */
 	@Override
   public void postEntry() {
-	  for( BaseProcedure procedure : getProceduresToRemove() ) {
+	  for( BaseDukeProcedure procedure : getProceduresToRemove() ) {
 	  	try {
 	      procedure.shutDown();
 	      procedures.remove(procedure);
@@ -232,9 +232,9 @@ public class DukeCommander extends BaseListener {
 	 * }
 	 * }
 	 */
-	public List<BaseProcedure> getProcedures(Class<?> procs) {
-		List<BaseProcedure> retVal = new ArrayList<BaseProcedure>();
-		for( BaseProcedure procedure : getProcedures() ) {
+	public List<BaseDukeProcedure> getProcedures(Class<?> procs) {
+		List<BaseDukeProcedure> retVal = new ArrayList<BaseDukeProcedure>();
+		for( BaseDukeProcedure procedure : getProcedures() ) {
 			if( procs.getName() == procedure.getClass().getName() ) {
 				retVal.add(procedure);
 			}
@@ -245,21 +245,21 @@ public class DukeCommander extends BaseListener {
 	/**
 	 * @return the procedures
 	 */
-	protected List<BaseProcedure> getProcedures() {
+	protected List<BaseDukeProcedure> getProcedures() {
 		return procedures;
 	}
 	
 	/**
 	 * @return the proceduresToAdd
 	 */
-	protected List<BaseProcedure> getProceduresToAdd() {
+	protected List<BaseDukeProcedure> getProceduresToAdd() {
 		return proceduresToAdd;
 	}
 	
 	/**
 	 * @return the toRemove
 	 */
-	protected List<BaseProcedure> getProceduresToRemove() {
+	protected List<BaseDukeProcedure> getProceduresToRemove() {
 		return toRemove;
 	}
 	

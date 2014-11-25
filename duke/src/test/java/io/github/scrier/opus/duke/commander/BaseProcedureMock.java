@@ -2,7 +2,7 @@ package io.github.scrier.opus.duke.commander;
 
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 
-public class BaseProcedureMock extends BaseProcedure {
+public class BaseProcedureMock extends BaseDukeProcedure {
 	
 	private boolean initCalled;
 	private boolean shutDownCalled;

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.hazelcast.management.request.GetMemberSystemPropertiesRequest;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
@@ -95,6 +96,15 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 		this.txID = txID;
 	}
 
-
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		String retValue = "BaseNukeC{txID:" + getTxID();
+		retValue += ", factoryID:" + getFactoryId();
+		retValue += ", messageID:" + getId() + "}";
+		return retValue;
+	}
 
 }

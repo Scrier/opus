@@ -8,7 +8,7 @@ import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 
-public class CommandProcedure extends BaseProcedure {
+public class CommandProcedure extends BaseDukeProcedure {
 	
 	private static Logger log = LogManager.getLogger(CommandProcedure.class);
 	

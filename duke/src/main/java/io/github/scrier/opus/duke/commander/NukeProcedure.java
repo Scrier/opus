@@ -9,7 +9,7 @@ import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 
-public class NukeProcedure extends BaseProcedure implements INukeInfo {
+public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	
 	private static Logger log = LogManager.getLogger(NukeProcedure.class);
 	

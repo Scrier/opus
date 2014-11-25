@@ -117,6 +117,7 @@ public class CommandProcedureTest {
 		NukeCommand command = new NukeCommand();
 		command.setTxID(testObject.getTxID());
 		command.setState(CommandState.ABORTED);
+		command.setComponent(component);
 		testObject.handleOnUpdated(command);
 		assertEquals(testObject.ABORTED, testObject.getState());
 	}
@@ -127,7 +128,8 @@ public class CommandProcedureTest {
 		testObject.init();
 		NukeCommand command = new NukeCommand();
 		command.setTxID(testObject.getTxID());
-		command.setState(CommandState.QUERY);
+		command.setComponent(component);
+		command.setState(CommandState.ABORTED);
 		testObject.handleOnUpdated(command);
 		assertEquals(testObject.ABORTED, testObject.getState());
 	}
@@ -137,7 +139,9 @@ public class CommandProcedureTest {
 		CommandProcedure testObject = new CommandProcedure(component, "this is yet another command", CommandState.EXECUTE, true);
 		testObject.init();
 		NukeCommand command = new NukeCommand();
+		command.setComponent(component);
 		command.setTxID(testObject.getTxID());
+		command.setComponent(component);
 		command.setState(CommandState.UNDEFINED);
 		testObject.handleOnUpdated(command);
 		assertEquals(testObject.ABORTED, testObject.getState());
@@ -148,6 +152,7 @@ public class CommandProcedureTest {
 		CommandProcedure testObject = new CommandProcedure(component, "this is yet another command", CommandState.EXECUTE, true);
 		testObject.init();
 		NukeCommand command = new NukeCommand();
+		command.setComponent(component);
 		command.setTxID(testObject.getTxID());
 		command.setState(CommandState.WORKING);
 		testObject.handleOnUpdated(command);
@@ -160,6 +165,7 @@ public class CommandProcedureTest {
 		testObject.init();
 		NukeCommand command = new NukeCommand();
 		command.setTxID(testObject.getTxID());
+		command.setComponent(component);
 		command.setState(CommandState.EXECUTE);
 		testObject.handleOnUpdated(command);
 		assertEquals(testObject.WORKING, testObject.getState());
@@ -171,6 +177,7 @@ public class CommandProcedureTest {
 		testObject.init();
 		NukeCommand command = new NukeCommand();
 		command.setTxID(testObject.getTxID());
+		command.setComponent(component);
 		command.setState(CommandState.DONE);
 		testObject.handleOnUpdated(command);
 		assertEquals(testObject.REMOVING, testObject.getState());

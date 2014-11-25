@@ -67,7 +67,7 @@ public enum Context {
 		setNukes(null);
 	}
 	
-	public boolean registerProcedure(BaseProcedure procedure) {
+	public boolean registerProcedure(BaseDukeProcedure procedure) {
 		log.trace("registerProcedure(" + procedure + ")");
 		return (null == getCommander()) ? false : getCommander().registerProcedure(procedure);
 	}

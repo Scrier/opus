@@ -1,5 +1,7 @@
 package io.github.scrier.opus.nuke;
 
+import io.github.scrier.opus.common.exception.InvalidOperationException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,12 +14,12 @@ public class Main {
 	
 	private HazelcastInstance instance;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InvalidOperationException {
 		log.trace("Main(" + args + ")");
 		new Main(args);
 	}
 	
-	public Main(String[] args) {
+	public Main(String[] args) throws InvalidOperationException {
 		log.trace("Main(" + args + ")");
 		
 		instance = Hazelcast.newHazelcastInstance(null);

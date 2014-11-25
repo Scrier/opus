@@ -131,9 +131,9 @@ public class DukeCommanderTest {
 	public void testClearException() throws Exception {
 		DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);
-		BaseProcedure mock = Mockito.mock(BaseProcedure.class);
+		BaseDukeProcedure mock = Mockito.mock(BaseDukeProcedure.class);
 		Mockito.doThrow(new Exception()).when(mock).shutDown();
-		ArrayList<BaseProcedure> list = new ArrayList<BaseProcedure>();
+		ArrayList<BaseDukeProcedure> list = new ArrayList<BaseDukeProcedure>();
 		list.add(mock);
 		testObject.clear(list);
 		assertTrue(testObject.getProcedures().isEmpty());
@@ -366,7 +366,7 @@ public class DukeCommanderTest {
 		testObject.getProcedures().add(new CommandProcedure(12345L, "this is command", CommandState.QUERY));
 		testObject.getProcedures().add(new NukeProcedure(new NukeInfo()));
 		testObject.getProceduresToRemove().add(procedure5);
-		List<BaseProcedure> check = testObject.getProcedures(BaseProcedureMock.class);
+		List<BaseDukeProcedure> check = testObject.getProcedures(BaseProcedureMock.class);
 		assertEquals(4, check.size());
   }
 
