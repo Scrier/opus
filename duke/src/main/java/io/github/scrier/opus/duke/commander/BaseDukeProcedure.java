@@ -29,20 +29,16 @@ public abstract class BaseDukeProcedure extends BaseProcedureC {
 		return theContext.getUniqueID();
 	}
 	
-	public long addEntry(BaseNukeC data) {
-		return theContext.addEntry(data);
+	public void addEntry(BaseNukeC data) {
+		theContext.addEntry(data);
 	}
 	
-	public void addEntry(BaseNukeC data, Long component) {
-		theContext.addEntry(data, component);
+	public boolean updateEntry(BaseNukeC data) {
+		return theContext.updateEntry(data);
 	}
 	
-	public boolean updateEntry(BaseNukeC data, Long component) {
-		return theContext.updateEntry(data, component);
-	}
-	
-	public boolean removeEntry(Long component) {
-		return theContext.removeEntry(component);
+	public boolean removeEntry(BaseNukeC data) {
+		return theContext.removeEntry(data);
 	}
 	
 	public boolean registerProcedure(BaseDukeProcedure procedure) {

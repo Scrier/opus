@@ -25,6 +25,10 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 		sharedMap.addEntryListener(this, true);
 	}
 	
+	public abstract void init();
+	
+	public abstract void shutDown();
+	
 	public abstract void preEntry();
 	
 	public abstract void entryAdded(Long component, BaseNukeC data);
@@ -42,28 +46,25 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	 * @param data BaseNukeC to add to the map.
 	 * @return long with the unique ID that this data has.
 	 */
-	public long addEntry(BaseNukeC data) {
-		long value = getInstance().getIdGenerator(Shared.Hazelcast.COMMON_MAP_UNIQUE_ID).newId();
-		sharedMap.put(value, data);
-		return value;
+	public void addEntry(BaseNukeC data) {
+		if( 0 > data.getKey() ) {
+			data.setKey(getInstance().getIdGenerator(Shared.Hazelcast.COMMON_MAP_UNIQUE_ID).newId());
+		}
+		sharedMap.put(data.getKey(), data);
 	}
 	
-	public void addEntry(BaseNukeC data, Long component) {
-		sharedMap.put(component, data);
-	}
-	
-	public boolean updateEntry(BaseNukeC data, Long component) {
+	public boolean updateEntry(BaseNukeC data) {
 		boolean retValue = true;
-		if( sharedMap.containsKey(component) ) {
-			sharedMap.put(component, data);
+		if( sharedMap.containsKey(data.getKey()) ) {
+			sharedMap.put(data.getKey(), data);
 		} else {
 			retValue = false;
 		}
 		return retValue;
 	}
 	
-	public boolean removeEntry(Long component) {
-		return null != sharedMap.remove(component);
+	public boolean removeEntry(BaseNukeC component) {
+		return null != sharedMap.remove(component.getKey());
 	}
 	
 	public Collection<BaseNukeC> getEntries() {

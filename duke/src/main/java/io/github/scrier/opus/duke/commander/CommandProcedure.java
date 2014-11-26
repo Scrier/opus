@@ -17,7 +17,6 @@ public class CommandProcedure extends BaseDukeProcedure {
 	
 	private NukeCommand nukeCommand;
 	private CommandState initialComand;
-	private long id;
 	
 	private ICommandCallback callback;
 
@@ -48,7 +47,7 @@ public class CommandProcedure extends BaseDukeProcedure {
 	@Override
 	public void init() throws Exception {
 		log.trace("init()");
-		setID(addEntry(getNukeCommand()));
+		addEntry(getNukeCommand());
 		setState(WORKING);
 	}
 
@@ -120,7 +119,7 @@ public class CommandProcedure extends BaseDukeProcedure {
 					} 
 					case DONE: {
 						log.info("Command is done, lets remove it.");
-						removeEntry(getID());
+						removeEntry(getNukeCommand());
 						setState(REMOVING);
 						break;
 					}
@@ -173,20 +172,6 @@ public class CommandProcedure extends BaseDukeProcedure {
 	 */
   public void setInitialCommand(CommandState command) {
 	  this.initialComand = command;
-  }
-
-	/**
-	 * @return the id
-	 */
-  private long getID() {
-	  return id;
-  }
-
-	/**
-	 * @param id the id to set
-	 */
-  private void setID(long id) {
-	  this.id = id;
   }
 
 	/**

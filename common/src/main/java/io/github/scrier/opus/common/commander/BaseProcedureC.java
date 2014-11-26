@@ -67,7 +67,8 @@ public abstract class BaseProcedureC {
   }
   
 	/**
-	 * Method to set 
+	 * Method to set txid
+	 * @param txID int with txID to set.
 	 */
   protected void setTxID(int txID) {
 	  this.txID = txID;

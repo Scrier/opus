@@ -1,5 +1,7 @@
 package io.github.scrier.opus.nuke.task;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -7,10 +9,13 @@ import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseListener;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.nuke.NukeCommand;
+import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
+import io.github.scrier.opus.nuke.task.procedures.ExecuteTaskProcedure;
+import io.github.scrier.opus.nuke.task.procedures.QueryTaskProcedure;
+import io.github.scrier.opus.nuke.task.procedures.RepeatedExecuteTaskProcedure;
 
-import com.hazelcast.core.EntryEvent;
-import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
 
@@ -21,19 +26,56 @@ public class NukeTasks extends BaseListener {
 	private Context theContext;
 	private Long identity;
 	
-	public NukeTasks(HazelcastInstance instance) throws InvalidOperationException {
+	private NukeInfo nukeInfo;
+	
+	private List<BaseTaskProcedure> procedures;
+	private List<BaseTaskProcedure> proceduresToAdd;
+	private List<BaseTaskProcedure> toRemove;
+	
+	public NukeTasks(HazelcastInstance instance) {
 	  super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 	  theContext = Context.INSTANCE;
-	  setIdentity(theContext.getIdentity());
+	  setNukeInfo(new NukeInfo());
   }
+	
+	public void init() {
+		log.trace("init()");
+		try {
+		  setIdentity(theContext.getIdentity());
+			getNukeInfo().setNukeID(getIdentity());
+			getNukeInfo().setKey(getIdentity());
+			// Add the info about this nuke to the map.
+			addEntry(getNukeInfo());
+		} catch(InvalidOperationException e) {
+	    log.error("Received InvalidOperationException when calling NukeTasks init.", e);
+		}
+	}
+	
+	public void shutDown() {
+		log.trace("shutDown()");
+		clear(getProceduresToAdd());
+		clear(getProcedures());
+		clear(getProceduresToRemove());
+		// Remove the info about this nuke from the map.
+		removeEntry(getNukeInfo());
+	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
   public void preEntry() {
-	  // TODO Auto-generated method stub
-	  
+		// put this first so that any init method comes with the updates to nuke info.
+	  getNukeInfo().resetValuesModified();
+	  for( BaseTaskProcedure procedure : getProceduresToAdd() ) {
+	  	try {
+	      procedure.init();
+	      procedures.add(procedure);
+      } catch (Exception e) {
+	      log.error("init of procedure: " + procedure + " threw Exception", e);
+      }
+	  }
+	  proceduresToAdd.clear();
   }
 
 	/**
@@ -41,8 +83,48 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void entryAdded(Long component, BaseNukeC data) {
-	  // TODO Auto-generated method stub
-	  
+		log.trace("entryAdded(" + component + ", " + data + ")");
+		switch( data.getId() ) {
+			case NukeFactory.NUKE_INFO:
+			{
+				// do nothing
+				break;
+			}
+			case NukeFactory.NUKE_COMMAND: 
+			{
+				NukeCommand command = new NukeCommand(data);
+				switch( command.getState() ) {
+					case EXECUTE: {
+						if( command.isRepeated() ) {
+							registerProcedure(new RepeatedExecuteTaskProcedure(command));
+						} else {
+							registerProcedure(new ExecuteTaskProcedure(command));
+						}
+						break;
+					}
+					case QUERY: {
+						registerProcedure(new QueryTaskProcedure(command));
+						break;
+					}
+					case ABORTED: 
+					case DONE: 
+					case UNDEFINED: 
+					case WORKING: {
+						log.error("Unhandled data: " + command.getState() + ", from NukeCommand: " + command + ".");
+						break;
+					}
+					default: {
+						throw new RuntimeException("Unimplemented state " + command.getState() + " from class NukeCommand in class NukeTasks.");
+					}
+				}
+				break;
+			}
+			default:
+			{
+				log.error("Unknown id of data handler with id: " + data.getId() + ".");
+				break;
+			}
+		}
   }
 
 	/**
@@ -50,8 +132,17 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void entryEvicted(Long component, BaseNukeC data) {
-	  // TODO Auto-generated method stub
-	  
+		log.trace("entryEvicted(" + component + ", " + data + ")");
+		for( BaseTaskProcedure procedure : getProcedures() ) {
+			int result = procedure.handleOnEvicted(data);
+			if( procedure.COMPLETED == result ) {
+				log.debug("Procedure " + procedure + " completed.");
+				removeProcedure(procedure);
+			} else if ( procedure.ABORTED == result ) {
+				log.debug("Procedure " + procedure + " aborted.");
+				removeProcedure(procedure);
+			}
+		}
   }
 
 	/**
@@ -59,8 +150,17 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void entryRemoved(Long component, BaseNukeC data) {
-	  // TODO Auto-generated method stub
-	  
+		log.trace("entryRemoved(" + component + ", " + data + ")");
+		for( BaseTaskProcedure procedure : getProcedures() ) {
+			int result = procedure.handleOnRemoved(data);
+			if( procedure.COMPLETED == result ) {
+				log.debug("Procedure " + procedure + " completed.");
+				removeProcedure(procedure);
+			} else if ( procedure.ABORTED == result ) {
+				log.debug("Procedure " + procedure + " aborted.");
+				removeProcedure(procedure);
+			}
+		}
   }
 
 	/**
@@ -68,8 +168,17 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void entryUpdated(Long component, BaseNukeC data) {
-	  // TODO Auto-generated method stub
-	  
+		log.trace("entryUpdated(" + component + ", " + data + ")");
+		for( BaseTaskProcedure procedure : getProcedures() ) {
+			int result = procedure.handleOnUpdated(data);
+			if( procedure.COMPLETED == result ) {
+				log.debug("Procedure " + procedure + " completed.");
+				removeProcedure(procedure);
+			} else if ( procedure.ABORTED == result ) {
+				log.debug("Procedure " + procedure + " aborted.");
+				removeProcedure(procedure);
+			}
+		}
   }
 
 	/**
@@ -77,26 +186,39 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void postEntry() {
-	  // TODO Auto-generated method stub
-	  
+	  for( BaseTaskProcedure procedure : getProceduresToRemove() ) {
+	  	try {
+	      procedure.shutDown();
+	      procedures.remove(procedure);
+      } catch (Exception e) {
+      	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
+      }
+	  }
+	  toRemove.clear();
+	  // Update entry in global map if change is made, put this last if shutdown method is calling them.
+	  if( true == getNukeInfo().isValuesModified() ) {
+	  	updateEntry(getNukeInfo());
+	  }
   }
 	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void mapCleared(MapEvent event) {
-	  // TODO Auto-generated method stub
-	  
+  public void mapCleared(MapEvent cleared) {
+		log.trace("mapCleared(" + cleared + ")");
+		log.error("Map was cleared, removing all.");
+		removeAllProcedures();
   }
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void mapEvicted(MapEvent event) {
-	  // TODO Auto-generated method stub
-	  
+  public void mapEvicted(MapEvent evicted) {
+		log.trace("mapEvicted(" + evicted + ")");
+		log.error("Map was evicted, removing all.");
+		removeAllProcedures();
   }
 	
 	/**
@@ -112,5 +234,80 @@ public class NukeTasks extends BaseListener {
 	private void setIdentity(Long identity) {
 		this.identity = identity;
 	}
+	
+	/**
+	 * @return the procedures
+	 */
+	protected List<BaseTaskProcedure> getProcedures() {
+		return procedures;
+	}
+	
+	/**
+	 * @return the proceduresToAdd
+	 */
+	protected List<BaseTaskProcedure> getProceduresToAdd() {
+		return proceduresToAdd;
+	}
+	
+	/**
+	 * @return the toRemove
+	 */
+	protected List<BaseTaskProcedure> getProceduresToRemove() {
+		return toRemove;
+	}
+	
+	private void removeProcedure(BaseTaskProcedure procedure) {
+		log.trace("removeProcedure(" + procedure + ")");
+		toRemove.add(procedure);
+	}
+	
+	public boolean registerProcedure(BaseTaskProcedure procedure) {
+		log.trace("registerProcedure(" + procedure + ")");
+		boolean retValue = true;
+		if( contains(procedure) ) {
+			retValue = false;
+		} else {
+			retValue = proceduresToAdd.add(procedure);
+		}
+		return retValue;
+	}
+	
+	private boolean contains(BaseTaskProcedure procedure) {
+		log.trace("contains(" + procedure + ")");
+		boolean retValue = procedures.contains(procedure);
+		retValue = ( true == retValue ) ? true : proceduresToAdd.contains(procedure);
+		return retValue;
+	}
+	
+	private void removeAllProcedures() {
+		log.trace("removeAllProcedures()");
+		clear(getProcedures());
+	}
+	
+	public void clear(List<BaseTaskProcedure> toClear) {
+		log.trace("clear(" + toClear + ")");
+		for( BaseTaskProcedure procedure : toClear ) {
+			try {
+	      procedure.shutDown();
+      } catch (Exception e) {
+      	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
+      }
+		}
+		toClear.clear();
+	}
+
+	/**
+	 * @return the nukeInfo
+	 */
+  public NukeInfo getNukeInfo() {
+	  return nukeInfo;
+  }
+
+	/**
+	 * @param nukeInfo the nukeInfo to set
+	 */
+  public void setNukeInfo(NukeInfo nukeInfo) {
+	  this.nukeInfo = nukeInfo;
+  }
 
 }

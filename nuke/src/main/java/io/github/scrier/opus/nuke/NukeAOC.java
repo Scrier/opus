@@ -13,7 +13,7 @@ public class NukeAOC extends BaseActiveObject {
 	
 	public NukeAOC(HazelcastInstance instance) throws InvalidOperationException {
 		super(instance);
-		nukeTasks = new NukeTasks();
+		nukeTasks = new NukeTasks(instance);
 	}
 
 	/**
@@ -21,7 +21,8 @@ public class NukeAOC extends BaseActiveObject {
 	 */
 	@Override
 	public void init() {
-		Context.INSTANCE.init(this);
+		Context.INSTANCE.init(nukeTasks, this);
+    nukeTasks.init();  
 	}
 
 	/**
@@ -30,6 +31,7 @@ public class NukeAOC extends BaseActiveObject {
 	@Override
 	public void shutDown() {
 		Context.INSTANCE.shutDown();
+		nukeTasks.shutDown();
 	}
 
 }

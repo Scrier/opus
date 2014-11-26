@@ -98,6 +98,10 @@ public class NukeInfo extends BaseNukeC {
 		return (value & getValuesModified()) > 0; 
 	}
 	
+	public boolean isValuesModified() {
+		return 0 != getValuesModified();
+	}
+	
 	public long compare(NukeInfo obj2compare) {
 		long retValue = 0L;
 		retValue |= ( getNukeID() != obj2compare.getNukeID() ) ? NUKE_ID_MODIFIED : 0L;

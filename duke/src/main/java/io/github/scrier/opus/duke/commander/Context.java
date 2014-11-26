@@ -1,7 +1,6 @@
 package io.github.scrier.opus.duke.commander;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.hazelcast.core.IdGenerator;
-import com.hazelcast.query.SqlPredicate;
 
 public enum Context {
 	INSTANCE;
@@ -81,19 +79,15 @@ public enum Context {
 	 * @param data BaseNukeC to add to the map.
 	 * @return long with the unique ID that this data has.
 	 */
-	public long addEntry(BaseNukeC data) {
-		return getCommander().addEntry(data);
+	public void addEntry(BaseNukeC data) {
+		getCommander().addEntry(data);
 	}
 	
-	public void addEntry(BaseNukeC data, Long component) {
-		getCommander().addEntry(data, component);
+	public boolean updateEntry(BaseNukeC data) {
+		return getCommander().updateEntry(data);
 	}
 	
-	public boolean updateEntry(BaseNukeC data, Long component) {
-		return getCommander().updateEntry(data, component);
-	}
-	
-	public boolean removeEntry(Long component) {
+	public boolean removeEntry(BaseNukeC component) {
 		return getCommander().removeEntry(component);
 	}
 	
