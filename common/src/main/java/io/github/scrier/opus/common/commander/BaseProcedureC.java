@@ -58,6 +58,14 @@ public abstract class BaseProcedureC {
 	public void onStateChanged(int state) {
 		log.trace("onStateChanged(" + state + ")");
 	}
+	
+	/**
+	 * Method to check if the procedure has reached a finished state (COMPLETED or ABORTED).
+	 * @return boolean
+	 */
+	public boolean isProcedureFinished() {
+		return ( ABORTED == getState() ) || ( COMPLETED == getState() );
+	}
 
 	/**
 	 * @return the txID

@@ -19,6 +19,7 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	private int messageID;
 	
 	public BaseNukeC(int factoryID, int messageID) {
+		log.trace("BaseNukeC(" + factoryID + ", " + messageID + ")");
 		setTxID(-1);
 		setKey(-1L);
 		setFactoryID(factoryID);
@@ -26,6 +27,7 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	}
 	
 	public BaseNukeC(BaseNukeC obj2copy) {
+		log.trace("BaseNukeC(" + obj2copy + ")");
 		setTxID(obj2copy.getTxID());
 		setKey(obj2copy.getKey());
 		setFactoryID(obj2copy.getFactoryId());

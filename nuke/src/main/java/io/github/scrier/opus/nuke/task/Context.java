@@ -4,9 +4,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
-import io.github.scrier.opus.nuke.NukeAOC;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,7 +20,7 @@ public enum Context {
 	
 	private HazelcastInstance instance;
 	private boolean initialized;
-	private NukeAOC parent;
+	private BaseActiveObject parent;
 	private NukeTasks task;
 	private ThreadPoolExecutor executor;
 	
@@ -30,9 +30,12 @@ public enum Context {
 		initialized = false;
 		txID = 0;
 		executor = null;
+		task = null;
+		parent = null;
+		instance = null;
 	}
 	
-	public boolean init(NukeTasks task, NukeAOC parent) {
+	public boolean init(NukeTasks task, BaseActiveObject parent) {
 		boolean retValue = true;
 		if( true == initialized ) {
 			log.error("Already, initialized, you have an invalid call to init.");
@@ -48,10 +51,15 @@ public enum Context {
 	}
 
 	public void shutDown() {
-		
+		initialized = false;
+		txID = 0;
+		executor = null;
+		task = null;
+		parent = null;
+		instance = null;
 	}
 	
-	public Long getIdentity() throws InvalidOperationException {
+	public long getIdentity() throws InvalidOperationException {
 		return getParent().getIdentity();
 	}
 	
@@ -72,14 +80,14 @@ public enum Context {
 	/**
 	 * @return the parent
 	 */
-	private NukeAOC getParent() {
+	private BaseActiveObject getParent() {
 		return parent;
 	}
 
 	/**
 	 * @param parent the parent to set
 	 */
-	private void setParent(NukeAOC parent) {
+	private void setParent(BaseActiveObject parent) {
 		this.parent = parent;
 	}
 	

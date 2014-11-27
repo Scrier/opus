@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.commander.BaseProcedureC;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.nuke.process.ProcessHandler;
@@ -17,32 +18,42 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 
 	private Context theContext;
 	private ProcessHandler processHandler;
+	private Process process;
 
 	public BaseTaskProcedure() {
 		log.trace("BaseTaskProcedure");
 		theContext = Context.INSTANCE;
 		setTxID(theContext.getNextTxID());
 		setProcessHandler(null);
+		setProcess(null);
 	}
 
+	/**
+	 * Method to execute a process.
+	 * @param executeString String to process.
+	 * @param directory File optional of where to execute command.
+	 * @param gobbler StreamGobbler optional for handling process output. 
+	 * @return boolean
+	 */
 	public boolean executeProcess(String executeString, File directory, StreamGobbler gobbler) {
+		log.trace("executeProcess(" + executeString + ", " + directory + ", " + gobbler + ")");
 		boolean retValue = true;
 		setProcessHandler(new ProcessHandler(executeString.split(" ")));
 		if( null != directory ) {
 			getProcessHandler().directory(directory);
 		}
 		getProcessHandler().redirectErrorStream(true);
-		Process process = null;
+		setProcess(null);
 		try {
-			process = getProcessHandler().start();
+			setProcess(getProcessHandler().start());
 			if ( null == gobbler ) {
-				gobbler = new StreamGobblerToNull(process.getInputStream());
+				gobbler = new StreamGobblerToNull(getProcess().getInputStream());
 			} else {
-				gobbler.setInputStream(process.getInputStream());
+				gobbler.setInputStream(getProcess().getInputStream());
 			}
-			int retCode = process.waitFor();
+			int retCode = getProcess().waitFor();
 			if( 0 != retCode ) {
-				log.error("Receoved returncode: " + retCode);
+				log.error("Received returncode: " + retCode);
 				retValue = false;
 			}
 		} catch ( IOException e ) {
@@ -51,7 +62,7 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 		} catch ( InterruptedException e ) {
 			log.error("InterruptedException received when waiting for process.", e);
 			retValue = false;
-		} 
+		}
 		return retValue;
 	}
 
@@ -69,8 +80,33 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 		this.processHandler = processHandler;
 	}
 	
+	/**
+	 * @return the process
+	 */
+	private Process getProcess() {
+		return process;
+	}
+
+	/**
+	 * @param process the process to set
+	 */
+	private void setProcess(Process process) {
+		this.process = process;
+	}
+
+	/**
+	 * Method to get the process started by executor.
+	 * @return
+	 */
 	protected ThreadPoolExecutor getExecutor() {
 		return theContext.getExecutor();
+	}
+	
+	protected void terminateProcess() {
+		log.trace("terminateProcess()");
+		if( null != getProcess() ) {
+			getProcess().destroy();
+		}
 	}
 
 	/**
@@ -79,6 +115,10 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 	 */
 	public NukeInfo getNukeInfo() {
 		return theContext.getTask().getNukeInfo();
+	}
+	
+	public boolean updateEntry(BaseNukeC data) {
+		return theContext.updateEntry(data);
 	}
 
 }
