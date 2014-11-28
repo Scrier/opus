@@ -117,6 +117,10 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 		return theContext.getTask().getNukeInfo();
 	}
 	
+	public void addEntry(BaseNukeC data) {
+		theContext.addEntry(data);
+	}
+	
 	public boolean updateEntry(BaseNukeC data) {
 		return theContext.updateEntry(data);
 	}

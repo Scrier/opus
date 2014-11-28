@@ -92,7 +92,7 @@ public class NukeProcedureTest {
 		assertEquals(info.getRequestedCommands(), testObject.getNoOfRequestedCommands());
 		assertEquals(info.getNumberOfUsers(), testObject.getNoOfUsers());
 		assertEquals(info.getRequestedUsers(), testObject.getRequestedNoOfUsers());
-		assertEquals(testObject.WORKING, testObject.getState());
+		assertEquals(testObject.INITIALIZING, testObject.getState());
 		assertEquals(1, testObject.getTxID());
 	}
 	
@@ -125,7 +125,7 @@ public class NukeProcedureTest {
 		NukeProcedure testObject = new NukeProcedure(info);
 		testObject.init();
 		testObject.handleOnUpdated(new NukeCommand());
-		assertEquals(testObject.WORKING, testObject.getState());
+		assertEquals(testObject.INITIALIZING, testObject.getState());
 	}
 
 }

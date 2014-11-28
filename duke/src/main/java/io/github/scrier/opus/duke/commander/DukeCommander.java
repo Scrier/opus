@@ -114,7 +114,7 @@ public class DukeCommander extends BaseListener {
 
 	@Override
   public void preEntry() {
-	  for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
+		for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
 	  	try {
 	      procedure.init();
 	      procedures.add(procedure);
@@ -123,6 +123,7 @@ public class DukeCommander extends BaseListener {
       }
 	  }
 	  proceduresToAdd.clear();
+	  toRemove.clear();
   }
 
 	/**
@@ -210,6 +211,14 @@ public class DukeCommander extends BaseListener {
 	 */
 	@Override
   public void postEntry() {
+		for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
+	  	try {
+	      procedure.init();
+	      procedures.add(procedure);
+      } catch (Exception e) {
+	      log.error("init of procedure: " + procedure + " threw Exception", e);
+      }
+	  }
 	  for( BaseDukeProcedure procedure : getProceduresToRemove() ) {
 	  	try {
 	      procedure.shutDown();
@@ -218,7 +227,6 @@ public class DukeCommander extends BaseListener {
       	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
       }
 	  }
-	  toRemove.clear();
   }
 	
 	/**
@@ -250,6 +258,27 @@ public class DukeCommander extends BaseListener {
 	}
 	
 	/**
+	 * Method to get a list of procedures of a specific class.
+	 * @param procs the class to look for.
+	 * @return List<BaseProcedure>
+	 * {@code
+	 * List<BaseProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
+	 * for( BaseProcedure procedure : commandProcedures ) {
+	 *   ...
+	 * }
+	 * }
+	 */
+	public List<BaseDukeProcedure> getProceduresToAdd(Class<?> procs) {
+		List<BaseDukeProcedure> retVal = new ArrayList<BaseDukeProcedure>();
+		for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
+			if( procs.getName() == procedure.getClass().getName() ) {
+				retVal.add(procedure);
+			}
+		}
+		return retVal;
+	}
+	
+	/**
 	 * @return the proceduresToAdd
 	 */
 	protected List<BaseDukeProcedure> getProceduresToAdd() {
@@ -270,7 +299,8 @@ public class DukeCommander extends BaseListener {
 		log.trace("startDistributor()");
 		if( isDistributorRunning() ) {
 			log.debug("Distributor already running");
-		} else if ( getProcedures(NukeProcedure.class).isEmpty() ) {
+		} else if ( getProcedures(NukeProcedure.class).isEmpty() &&
+				        getProceduresToAdd(NukeProcedure.class).isEmpty() ) {
 			log.info("No nuke procedures running, waiting for first nuke to connect.");
 		} else {
 			log.info("Starting cluster distribution.");

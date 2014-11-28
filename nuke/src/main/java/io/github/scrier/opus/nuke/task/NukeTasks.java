@@ -1,5 +1,6 @@
 package io.github.scrier.opus.nuke.task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,9 +13,11 @@ import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
+import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.nuke.task.procedures.ExecuteTaskProcedure;
 import io.github.scrier.opus.nuke.task.procedures.QueryTaskProcedure;
 import io.github.scrier.opus.nuke.task.procedures.RepeatedExecuteTaskProcedure;
+import io.github.scrier.opus.nuke.task.procedures.NukeProcedure;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
@@ -35,6 +38,9 @@ public class NukeTasks extends BaseListener {
 	public NukeTasks(HazelcastInstance instance) {
 	  super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 	  theContext = Context.INSTANCE;
+	  procedures = new ArrayList<BaseTaskProcedure>();
+	  proceduresToAdd = new ArrayList<BaseTaskProcedure>();
+	  toRemove = new ArrayList<BaseTaskProcedure>();
 	  setNukeInfo(new NukeInfo());
   }
 	
@@ -42,10 +48,7 @@ public class NukeTasks extends BaseListener {
 		log.trace("init()");
 		try {
 		  setIdentity(theContext.getIdentity());
-			getNukeInfo().setNukeID(getIdentity());
-			getNukeInfo().setKey(getIdentity());
-			// Add the info about this nuke to the map.
-			addEntry(getNukeInfo());
+		  registerProcedure(new NukeProcedure(getIdentity()));
 		} catch(InvalidOperationException e) {
 	    log.error("Received InvalidOperationException when calling NukeTasks init.", e);
 		}
@@ -76,6 +79,7 @@ public class NukeTasks extends BaseListener {
       }
 	  }
 	  proceduresToAdd.clear();
+	  toRemove.clear();
   }
 
 	/**
@@ -186,6 +190,14 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void postEntry() {
+	  for( BaseTaskProcedure procedure : getProceduresToAdd() ) {
+	  	try {
+	      procedure.init();
+	      procedures.add(procedure);
+      } catch (Exception e) {
+	      log.error("init of procedure: " + procedure + " threw Exception", e);
+      }
+	  }
 	  for( BaseTaskProcedure procedure : getProceduresToRemove() ) {
 	  	try {
 	      procedure.shutDown();
@@ -194,7 +206,6 @@ public class NukeTasks extends BaseListener {
       	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
       }
 	  }
-	  toRemove.clear();
 	  // Update entry in global map if change is made, put this last if shutdown method is calling them.
 	  if( true == getNukeInfo().isValuesModified() ) {
 	  	updateEntry(getNukeInfo());

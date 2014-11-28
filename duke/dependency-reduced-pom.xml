@@ -26,7 +26,7 @@
               <transformers>
                 <transformer>
                   <manifestEntries>
-                    <Main-Class>io.github.scrier.opus.Main</Main-Class>
+                    <Main-Class>io.github.scrier.opus.duke.Main</Main-Class>
                   </manifestEntries>
                 </transformer>
               </transformers>

@@ -14,12 +14,15 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	private static Logger log = LogManager.getLogger(NukeProcedure.class);
 	
 	private NukeInfo local;
+	private boolean publishToMap;
 	
-	public final int WORKING = CREATED + 1;
+	public final int INITIALIZING = CREATED + 1;
+	public final int WORKING      = CREATED + 2;
 	
 	public NukeProcedure(NukeInfo info) {
 		log.trace("NukeProcedure(" + info + ")");
 		local = new NukeInfo(info);
+		setPublishToMap(false);
 	}
 	
 	/**
@@ -29,7 +32,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	public void init() throws Exception {
 		log.trace("init()");
 		if( true == theContext.addNuke(local.getNukeID(), this) ) {
-			setState(WORKING);
+			setState(INITIALIZING);
 		} else {
 			log.error("Unable to add " + this + " to the common map.");
 			setState(ABORTED);
@@ -54,18 +57,24 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	@Override
 	public int handleOnUpdated(BaseNukeC data) {
 		log.trace("handleOnUpdated(" + data + ")");
-		switch( data.getId() ) {
-			case NukeFactory.NUKE_INFO:
-			{
-				NukeInfo info = new NukeInfo(data);
-				handleUpdated(info);
-				break;
+		if( local.getKey() == data.getKey()) {
+			setPublishToMap(false);
+			switch( data.getId() ) {
+				case NukeFactory.NUKE_INFO:
+				{
+					NukeInfo info = new NukeInfo(data);
+					handleUpdated(info);
+					break;
+				}
+				case NukeFactory.NUKE_COMMAND: 
+				default:
+				{
+					// do nothing.
+					break;
+				}
 			}
-			case NukeFactory.NUKE_COMMAND: 
-			default:
-			{
-				// do nothing.
-				break;
+			if( isPublishToMap() ) {
+				updateEntry(local);
 			}
 		}
 		return getState();
@@ -150,7 +159,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 			}
 			if( 0 < ( NukeInfo.STATE_MODIFIED & modified ) ) {
 				log.debug("State changed from " + local.getState() + " to " + info.getState() + ".");
-				local.setState(info.getState());
+				handleState(info.getState());
 			}
 			info.resetValuesModified();
 		} else {
@@ -174,6 +183,58 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 		}
 	}
 	
+	protected void handleState(NukeState state) {
+		log.trace("handleState(" + state + ")");
+		switch( state ) {
+			case ABORTED: {
+				log.info("Node " + getNukeID() + " aborted.");
+				setState(ABORTED);
+				break;
+			}
+			case COMPLETED: {
+				log.info("Node " + getNukeID() + " completed.");
+				setState(COMPLETED);
+				break;
+			}
+			case AVAILABLE: {
+				log.info("Node " + getNukeID() + " is available, taking it.");
+				local.setState(NukeState.TAKEN);
+				setPublishToMap(true);
+				break;
+			}
+			case INTITIALIZED: {
+				log.info("Node " + getNukeID() + " initialized.");
+				break;
+			}
+			case RUNNING: {
+				log.info("Node " + getNukeID() + " running.");
+				setState(WORKING);
+				break;
+			}
+			case TAKEN:
+			case UNRESPONSIVE: {
+				throw new RuntimeException("Someone other that duke set the nuke in state " + state + ".");
+			}
+			default: {
+				throw new RuntimeException("Unhandled state " + state + " from NukeInfo.");
+			}
+		}
+	}
+	
+	/**
+	 * @return the publishToMap
+	 */
+  public boolean isPublishToMap() {
+	  return publishToMap;
+  }
+
+	/**
+	 * @param publishToMap the publishToMap to set
+	 */
+  public void setPublishToMap(boolean publishToMap) {
+	  this.publishToMap = publishToMap;
+  }
+
 	/**
 	 * {@inheritDoc}
 	 */

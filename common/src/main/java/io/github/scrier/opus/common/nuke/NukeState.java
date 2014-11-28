@@ -17,10 +17,11 @@ package io.github.scrier.opus.common.nuke;
 
 public enum NukeState {
 	UNDEFINED,		// Initialized state
-	CREATED,		// Set by nuke
+	AVAILABLE,		// Set by nuke
+	TAKEN,				// Set by duke
 	INTITIALIZED,	// Set by nuke
-	RUNNING,		// Set by nuke
+	RUNNING,			// Set by nuke
 	UNRESPONSIVE,	// Set by duke
 	COMPLETED,		// Set by nuke
-	ABORTED			// Set by nuke
+	ABORTED				// Set by nuke
 }

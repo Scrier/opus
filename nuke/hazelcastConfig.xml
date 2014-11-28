@@ -100,7 +100,7 @@
   <serialization>
     <portable-version>0</portable-version>
     <data-serializable-factories>
-      <data-serializable-factory factory-id="801023">io.github.scrier.opus.common.node.NukeFactory</data-serializable-factory>
+      <data-serializable-factory factory-id="801023">io.github.scrier.opus.common.nuke.NukeFactory</data-serializable-factory>
     </data-serializable-factories>
   </serialization>
 
