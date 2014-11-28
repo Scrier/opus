@@ -52,6 +52,7 @@ public class NukeTasks extends BaseListener {
 		} catch(InvalidOperationException e) {
 	    log.error("Received InvalidOperationException when calling NukeTasks init.", e);
 		}
+		intializeProcedures();
 	}
 	
 	public void shutDown() {
@@ -70,6 +71,11 @@ public class NukeTasks extends BaseListener {
   public void preEntry() {
 		// put this first so that any init method comes with the updates to nuke info.
 	  getNukeInfo().resetValuesModified();
+	  intializeProcedures();
+	  toRemove.clear();
+  }
+
+	private void intializeProcedures() {
 	  for( BaseTaskProcedure procedure : getProceduresToAdd() ) {
 	  	try {
 	      procedure.init();
@@ -79,7 +85,6 @@ public class NukeTasks extends BaseListener {
       }
 	  }
 	  proceduresToAdd.clear();
-	  toRemove.clear();
   }
 
 	/**
@@ -190,14 +195,7 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void postEntry() {
-	  for( BaseTaskProcedure procedure : getProceduresToAdd() ) {
-	  	try {
-	      procedure.init();
-	      procedures.add(procedure);
-      } catch (Exception e) {
-	      log.error("init of procedure: " + procedure + " threw Exception", e);
-      }
-	  }
+	  intializeProcedures();
 	  for( BaseTaskProcedure procedure : getProceduresToRemove() ) {
 	  	try {
 	      procedure.shutDown();

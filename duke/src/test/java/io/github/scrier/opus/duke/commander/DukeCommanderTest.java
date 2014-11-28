@@ -81,8 +81,8 @@ public class DukeCommanderTest {
 		l.add(new NukeCommand());
 		Mockito.when(map.values()).thenReturn(l);
 		testObject.init();
-		assertTrue(testObject.getProcedures().isEmpty());
-		assertFalse(testObject.getProceduresToAdd().isEmpty());
+		assertFalse(testObject.getProcedures().isEmpty());
+		assertTrue(testObject.getProceduresToAdd().isEmpty());
 		assertTrue(testObject.getProceduresToRemove().isEmpty());
 	}
 	
@@ -176,7 +176,7 @@ public class DukeCommanderTest {
 		testObject.preEntry();
 		testObject.entryAdded(identity, new NukeInfo());
 		testObject.postEntry();
-		assertFalse(testObject.getProceduresToAdd().isEmpty());
+		assertTrue(testObject.getProceduresToAdd().isEmpty());
   }
   
   @Test

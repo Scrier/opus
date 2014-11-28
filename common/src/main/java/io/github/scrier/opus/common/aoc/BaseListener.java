@@ -47,6 +47,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	 * @return long with the unique ID that this data has.
 	 */
 	public void addEntry(BaseNukeC data) {
+		log.trace("addEntry(" + data + ")");
 		if( 0 > data.getKey() ) {
 			data.setKey(getInstance().getIdGenerator(Shared.Hazelcast.COMMON_MAP_UNIQUE_ID).newId());
 		}
@@ -54,6 +55,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 	
 	public boolean updateEntry(BaseNukeC data) {
+		log.trace("updateEntry(" + data + ")");
 		boolean retValue = true;
 		if( sharedMap.containsKey(data.getKey()) ) {
 			sharedMap.put(data.getKey(), data);
@@ -63,11 +65,13 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 		return retValue;
 	}
 	
-	public boolean removeEntry(BaseNukeC component) {
-		return null != sharedMap.remove(component.getKey());
+	public boolean removeEntry(BaseNukeC data) {
+		log.trace("removeEntry(" + data + ")");
+		return null != sharedMap.remove(data.getKey());
 	}
 	
 	public Collection<BaseNukeC> getEntries() {
+		log.trace("getEntries()");
 		return sharedMap.values();
 	}
 	

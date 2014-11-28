@@ -27,11 +27,6 @@ public class NukeProcedure extends BaseTaskProcedure {
 
 	public NukeProcedure(long identity) {
 		setIdentity(identity);
-		getNukeInfo().setNukeID(getIdentity());
-		getNukeInfo().setKey(getIdentity());
-		getNukeInfo().setState(NukeState.AVAILABLE);
-		log.info("Publishing nuke info to map that we are available: " + getNukeInfo() + "."); 
-		addEntry(getNukeInfo());
 	}
 
 	/**
@@ -40,6 +35,11 @@ public class NukeProcedure extends BaseTaskProcedure {
 	@Override
 	public void init() throws Exception {
 		log.trace("init()");
+		getNukeInfo().setNukeID(getIdentity());
+		getNukeInfo().setKey(getIdentity());
+		getNukeInfo().setState(NukeState.AVAILABLE);
+		log.info("Publishing nuke info to map that we are available: " + getNukeInfo() + "."); 
+		addEntry(getNukeInfo());
 		setState(WAITING_TO_BE_TAKEN);
 	}
 

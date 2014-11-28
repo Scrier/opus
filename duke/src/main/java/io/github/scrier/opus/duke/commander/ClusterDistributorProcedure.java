@@ -63,8 +63,10 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	@Override
 	public void init() throws Exception {
 		log.trace("init()");
-		if( 1 != getCommander().getProcedures(ClusterDistributorProcedure.class).size() ) {
-			log.error("We have more than one cluster distributor running, aborting.");
+		int noOfProcedures = getCommander().getProcedures(ClusterDistributorProcedure.class).size();
+		noOfProcedures += getCommander().getProceduresToAdd(ClusterDistributorProcedure.class).size();
+		if( 1 != noOfProcedures ) {
+			log.error("We have more than one cluster distributor running, expected 1 but was " + noOfProcedures + ", aborting.");
 			setState(ABORTED);
 		} else {
 			setMinNodes(Integer.parseInt(getSetting(Shared.Settings.EXECUTE_MINIMUM_NODES)));
