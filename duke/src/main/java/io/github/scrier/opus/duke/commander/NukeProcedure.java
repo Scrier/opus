@@ -32,10 +32,14 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	public void init() throws Exception {
 		log.trace("init()");
 		if( true == theContext.addNuke(local.getNukeID(), this) ) {
+			handleState(local.getState());
 			setState(INITIALIZING);
 		} else {
 			log.error("Unable to add " + this + " to the common map.");
 			setState(ABORTED);
+		}
+		if( isPublishToMap() ) {
+			updateEntry(local);
 		}
 	}
 

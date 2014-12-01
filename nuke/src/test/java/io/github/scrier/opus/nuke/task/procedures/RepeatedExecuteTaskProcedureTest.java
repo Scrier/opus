@@ -144,7 +144,7 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(1); // force taskswitch
+		Thread.sleep(10); // force taskswitch
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
 		Thread.sleep(3000);

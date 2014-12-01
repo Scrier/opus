@@ -20,6 +20,7 @@ config=$duke_path/hazel*.xml
 
 duke_name=$pwd/duke.jar
 config_name=$pwd/dukeHazelcastConfig.xml
+log4jconfig=$pwd/dukelog4j2config.xml
 
 [[ -z $duke ]] && error "No jar file gound in $duke_target, have you compiled?"
 [[ -z $config ]] && error "No hazelcast config file found in $duke_path"
@@ -36,10 +37,10 @@ ln -s $duke $duke_name
 ln -s $config $config_name
 
 if [ $# == 1 ]; then
-  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.client.config=$config_name -jar $duke_name $1"
-  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.client.config=$config_name -jar $duke_name $1
+  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.client.config=$config_name -jar $duke_name $1"
+  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.client.config=$config_name -jar $duke_name $1
 else
-  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.client.config=$config_name -jar $duke_name"
-  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.client.config=$config_name -jar $duke_name
+  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.client.config=$config_name -jar $duke_name"
+  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.client.config=$config_name -jar $duke_name
 fi
 

@@ -20,6 +20,7 @@ config=$nuke_path/hazel*.xml
 
 nuke_name=$pwd/nuke.jar
 config_name=$pwd/nukeHazelcastConfig.xml
+log4jconfig=$pwd/nukelog4j2config.xml
 
 [[ -z $nuke ]] && error "No jar file gound in $nuke_target, have you compiled?"
 [[ -z $config ]] && error "No hazelcast config file found in $nuke_path"
@@ -36,10 +37,10 @@ ln -s $nuke $nuke_name
 ln -s $config $config_name
 
 if [ $# == 1 ]; then
-  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.config=$1 -jar $nuke_name"
-  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.config=$1 -jar $nuke_name
+  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.config=$1 -jar $nuke_name"
+  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.config=$1 -jar $nuke_name
 else
-  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.config=$config_name -jar $nuke_name"
-  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$pwd/log4j2config.xml -Dhazelcast.config=$config_name -jar $nuke_name
+  echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.config=$config_name -jar $nuke_name"
+  java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.config=$config_name -jar $nuke_name
 fi
 

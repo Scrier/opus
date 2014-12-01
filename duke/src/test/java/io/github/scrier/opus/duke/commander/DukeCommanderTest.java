@@ -1,6 +1,7 @@
 package io.github.scrier.opus.duke.commander;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +15,7 @@ import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
+import io.github.scrier.opus.common.nuke.NukeState;
 
 import org.apache.logging.log4j.Level;
 import org.junit.After;
@@ -37,6 +39,7 @@ public class DukeCommanderTest {
 	Context theContext = Context.INSTANCE;
 	@SuppressWarnings("rawtypes")
   IMap map;
+	IMap settings;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -52,6 +55,17 @@ public class DukeCommanderTest {
 		instance = helper.mockHazelcast();
 		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
 		map = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
+		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, 11L);
+		settings = helper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_MINIMUM_NODES)).thenReturn("1");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_MAX_USERS)).thenReturn("2");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_INTERVAL)).thenReturn("3");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_USER_INCREASE)).thenReturn("4");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_PEAK_DELAY)).thenReturn("5");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_TERMINATE)).thenReturn("6");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_REPEATED)).thenReturn("true");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_COMMAND)).thenReturn("command");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_FOLDER)).thenReturn("folder");
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
 	}
@@ -77,7 +91,9 @@ public class DukeCommanderTest {
 		DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);
 		Collection<BaseNukeC> l = new LinkedList<BaseNukeC>();
-		l.add(new NukeInfo());
+		NukeInfo info = new NukeInfo();
+		info.setState(NukeState.RUNNING);
+		l.add(info);
 		l.add(new NukeCommand());
 		Mockito.when(map.values()).thenReturn(l);
 		testObject.init();

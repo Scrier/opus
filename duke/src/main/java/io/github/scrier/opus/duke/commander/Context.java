@@ -185,7 +185,7 @@ public enum Context {
    * @return List<INukeInfo>
    */
   public List<INukeInfo> getNukes() {
-  	return (List<INukeInfo>) getNukesMap().values();
+  	return new ArrayList<INukeInfo>(getNukesMap().values());
   }
   
   /**
