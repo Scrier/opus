@@ -78,6 +78,9 @@ public class DukeAOC extends BaseActiveObject {
 		log.trace("shutDown()");
 		commander.shutDown();
 		Context.INSTANCE.shutDown();
+		getInstance().getLifecycleService().shutdown();
+		log.info("System exit.");
+		System.exit(0);
 	}
 
 	

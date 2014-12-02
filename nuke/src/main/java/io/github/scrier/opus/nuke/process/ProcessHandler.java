@@ -39,7 +39,7 @@ public class ProcessHandler {
 	 * @return ProcessBuilder
 	 */
 	public ProcessBuilder redirectErrorStream(boolean redirect) {
-		log.trace("redirectErrorStream( " + redirect + ")");
+		log.trace("redirectErrorStream(" + redirect + ")");
 		return processBuilder.redirectErrorStream(redirect);
 	}
 	

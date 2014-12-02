@@ -247,10 +247,11 @@ public enum Context {
   	final ITimeOutCallback itemToCallback = callback;
   	getExecuteItems().add(timeOutID);
   	timeoutService.schedule(new Runnable() {
-  		public void run() {
+  		public synchronized void run() {
   			if( getExecuteItems().contains(timeOutID) ) {
   				getExecuteItems().remove(timeOutID);
   				itemToCallback.timeOutTriggered(timeOutID);
+  				getCommander().handlePostEntry();
   			}
   		}
   	}, time, timeUnit);

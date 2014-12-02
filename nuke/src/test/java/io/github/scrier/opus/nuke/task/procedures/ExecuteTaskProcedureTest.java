@@ -216,7 +216,7 @@ public class ExecuteTaskProcedureTest {
 	@Test
 	public void testhandleOnRemoved() {
 		ExecuteTaskProcedure testObject = new ExecuteTaskProcedure(command);
-		testObject.handleOnRemoved(command);
+		testObject.handleOnRemoved(testObject.getCommand().getKey());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(command.getComponent(), testObject.getCommand().getComponent());
 		assertEquals(command.getCommand(), testObject.getCommand().getCommand());
@@ -232,7 +232,7 @@ public class ExecuteTaskProcedureTest {
 	public void testhandleOnRemovedFinished() {
 		ExecuteTaskProcedure testObject = new ExecuteTaskProcedure(command);
 		testObject.setState(testObject.COMPLETED);
-		testObject.handleOnRemoved(command);
+		testObject.handleOnRemoved(testObject.getCommand().getKey());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(command.getComponent(), testObject.getCommand().getComponent());
 		assertEquals(command.getCommand(), testObject.getCommand().getCommand());

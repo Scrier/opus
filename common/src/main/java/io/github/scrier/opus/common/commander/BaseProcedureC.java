@@ -27,11 +27,11 @@ public abstract class BaseProcedureC {
 	
 	public abstract void shutDown() throws Exception;
 
-	public abstract int handleOnUpdated(BaseNukeC data);
+	public abstract int handleOnUpdated(BaseNukeC value);
 	
-	public abstract int handleOnEvicted(BaseNukeC data);
+	public abstract int handleOnEvicted(BaseNukeC value);
 	
-	public abstract int handleOnRemoved(BaseNukeC data);
+	public abstract int handleOnRemoved(Long key);
 	
 	/**
 	 * @return the state

@@ -70,6 +70,7 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void preEntry() {
+		log.trace("preEntry()");
 		// put this first so that any init method comes with the updates to nuke info.
 	  getNukeInfo().resetValuesModified();
 	  intializeProcedures();
@@ -79,7 +80,7 @@ public class NukeTasks extends BaseListener {
 	private synchronized void intializeProcedures() {
 		log.trace("intializeProcedures()");
 		if( true != getProceduresToAdd().isEmpty() ) {
-			log.info("Adding " + getProceduresToAdd().size() + " procedures.");
+			log.debug("Adding " + getProceduresToAdd().size() + " procedures.");
 			for( BaseTaskProcedure procedure : getProceduresToAdd() ) {
 				try {
 					procedure.init();
@@ -140,10 +141,10 @@ public class NukeTasks extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void entryRemoved(Long component, BaseNukeC data) {
-		log.trace("entryRemoved(" + component + ", " + data + ")");
+  public void entryRemoved(Long key) {
+		log.trace("entryRemoved(" + key + ")");
 		for( BaseTaskProcedure procedure : getProcedures() ) {
-			int result = procedure.handleOnRemoved(data);
+			int result = procedure.handleOnRemoved(key);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
 				removeProcedure(procedure);
@@ -177,6 +178,7 @@ public class NukeTasks extends BaseListener {
 	 */
 	@Override
   public void postEntry() {
+		log.trace("postEntry()");
 	  intializeProcedures();
 	  for( BaseTaskProcedure procedure : getProceduresToRemove() ) {
 	  	try {
@@ -224,9 +226,13 @@ public class NukeTasks extends BaseListener {
 	  		if( Shared.Commands.Execute.STOP_EXECUTION.equals(command.getCommand()) ) {
 	  			log.info("Received command to stop all executions.");
 	  			distributeExecuteUpdateCommands(CommandState.STOP);
+	  			command.setState(CommandState.DONE);
+	  			updateEntry(command);
 	  		} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
 	  			log.info("Received command to terminate all executions.");
 	  			distributeExecuteUpdateCommands(CommandState.TERMINATE);
+	  			command.setState(CommandState.DONE);
+	  			updateEntry(command);
 	  		} else {
 	  			log.info("Received common command: " + command + ".");
 	  			if( command.isRepeated() ) {

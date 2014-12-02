@@ -254,7 +254,7 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	@Test
 	public void testhandleOnRemoved() {
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
-		testObject.handleOnRemoved(command);
+		testObject.handleOnRemoved(testObject.getCommand().getKey());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(command.getComponent(), testObject.getCommand().getComponent());
 		assertEquals(command.getCommand(), testObject.getCommand().getCommand());
@@ -270,7 +270,7 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	public void testhandleOnRemovedFinished() {
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.setState(testObject.COMPLETED);
-		testObject.handleOnRemoved(command);
+		testObject.handleOnRemoved(testObject.getCommand().getKey());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(command.getComponent(), testObject.getCommand().getComponent());
 		assertEquals(command.getCommand(), testObject.getCommand().getCommand());

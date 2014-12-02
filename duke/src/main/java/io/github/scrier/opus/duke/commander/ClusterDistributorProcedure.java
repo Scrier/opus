@@ -32,6 +32,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private int waitingForNukeUpdateSeconds;
 	private int rampDownUpdateSeconds;
 	private boolean repeated;
+	private boolean shutDownOnce;
 	private String command;
 	private String folder;
 
@@ -53,6 +54,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		setWaitingForNukeUpdateSeconds(5);
 		setRampDownUpdateSeconds(5);
 		setRepeated(false);
+		setShutDownOnce(true);
 		setCommand("");
 		setFolder("");
 		setTimerID(-1L);
@@ -110,6 +112,11 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	@Override
 	public void shutDown() throws Exception {
 		log.trace("shutDown()");
+		if( true == isShutDownOnce() ) {
+			setShutDownOnce(false);
+			log.info("Sequence is done, shutting down client");
+			theContext.getBaseAoC().shutDown();
+		}
 	}
 
 	/**
@@ -152,13 +159,13 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnRemoved(BaseNukeC data) {
-		log.trace("handleOnRemoved(" + data + ")");
+	public int handleOnRemoved(Long key) {
+		log.trace("handleOnRemoved(" + key + ")");
 		try {
-		states[getState()].removed(data);
+		states[getState()].removed(key);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
-				new Completed().removed(data);
+				new Completed().removed(key);
 			} else {
 				log.error("Received out of bound exception in state: " + getState() + ".", e);
 			}
@@ -310,6 +317,20 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private void setRepeated(boolean repeated) {
 		this.repeated = repeated;
 	}
+
+	/**
+	 * @return the shutDownOnce
+	 */
+  public boolean isShutDownOnce() {
+	  return shutDownOnce;
+  }
+
+	/**
+	 * @param shutDownOnce the shutDownOnce to set
+	 */
+  public void setShutDownOnce(boolean shutDownOnce) {
+	  this.shutDownOnce = shutDownOnce;
+  }
 
 	/**
 	 * @return the command
@@ -497,8 +518,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 * Base handling on removed mmethods.
 		 * @param data BaseNukeC
 		 */
-		public void removed(BaseNukeC data) {
-			logLocal.trace("removed(" + data + ")");
+		public void removed(Long key) {
+			logLocal.trace("removed(" + key + ")");
 			logLocal.error("Default update state setting aborted from state: " + getState() + ".");
 			setState(ABORTED); 
 		}
@@ -562,8 +583,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 * @param data BaseNukeC
 		 */
 		@Override
-		public void removed(BaseNukeC data) {
-			logLocal.trace("removed(" + data + ")");
+		public void removed(Long key) {
+			logLocal.trace("removed(" + key + ")");
 		}
 
 		/**
@@ -595,7 +616,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			} else {
 				log.info("Starting rampup phase with " + getUserIncrease() + " every " + getIntervalSeconds() + " seconds.");
 				startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
-				log.info("Chaning state from WAITING_FOR_NUKE to RAMPING_UP.");
+				log.info("Changing state from WAITING_FOR_NUKE to RAMPING_UP.");
 				setState(RAMPING_UP);
 			}
 		}
@@ -644,8 +665,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 * @param data BaseNukeC
 		 */
 		@Override
-		public void removed(BaseNukeC data) {
-			logLocal.trace("removed(" + data + ")");
+		public void removed(Long key) {
+			logLocal.trace("removed(" + key + ")");
 		}
 
 		/**
@@ -682,7 +703,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 					for( Entry<Long, Integer> command : distribution.entrySet() ) {
 						logLocal.debug("Sending " + command.getValue() + " commands to nuke with id: " + command.getKey() + ".");
 						for( int i = 0; i < command.getValue(); i++ ) {
-							registerProcedure(new CommandProcedure(command.getKey(), getCommand(), CommandState.EXECUTE, isRepeated()));
+							registerProcedure(new CommandProcedure(getIdentity(), getCommand(), CommandState.EXECUTE, isRepeated()));
 						}
 					}
 					logLocal.info("Ramping up from " + getLocalUserRampedUp() + " to " + (getLocalUserRampedUp() + usersToAdd) + ", of a total of " + getMaxUsers() + ".");
@@ -742,8 +763,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 * @param data BaseNukeC
 		 */
 		@Override
-		public void removed(BaseNukeC data) {
-			logLocal.trace("removed(" + data + ")");
+		public void removed(Long key) {
+			logLocal.trace("removed(" + key + ")");
 		}
 
 		/**
@@ -823,8 +844,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 * @param data BaseNukeC
 		 */
 		@Override
-		public void removed(BaseNukeC data) {
-			logLocal.trace("removed(" + data + ")");
+		public void removed(Long key) {
+			logLocal.trace("removed(" + key + ")");
 		}
 
 		/**
@@ -851,7 +872,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		@Override
     public void finished(long nukeID, int state, String query, String result) {
 			logLocal.trace("finished(" + nukeID + ", " + state + ", " + query + ", " + result + ")");
-			if( COMPLETED == getState() ) {
+			if( COMPLETED == state ) {
 				logLocal.info("Stop Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
 				if( getActiveNukeCommands().contains(nukeID) ) {
 					getActiveNukeCommands().remove(nukeID);

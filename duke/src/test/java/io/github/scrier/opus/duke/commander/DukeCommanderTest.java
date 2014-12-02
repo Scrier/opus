@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapEvent;
+import com.sun.corba.se.spi.ior.Identifiable;
 
 public class DukeCommanderTest {
 	
@@ -267,11 +268,11 @@ public class DukeCommanderTest {
 		BaseProcedureMock procedure = new BaseProcedureMock();
 		testObject.getProcedures().add(procedure);
 		testObject.preEntry();
-		testObject.entryRemoved(identity, new NukeInfo());
+		testObject.entryRemoved(identity);
 		testObject.postEntry();
 		assertFalse(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnRemoved());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnRemoved().getId());
+		assertEquals(identity, procedure.getOnRemoved());
   }
   
   @Test
@@ -282,11 +283,11 @@ public class DukeCommanderTest {
 		procedure.setOnRemovedReturn(procedure.COMPLETED);
 		testObject.getProcedures().add(procedure);
 		testObject.preEntry();
-		testObject.entryRemoved(identity, new NukeInfo());
+		testObject.entryRemoved(identity);
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnRemoved());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnRemoved().getId());
+		assertEquals(identity, procedure.getOnRemoved());
   }
   
   @Test
@@ -297,11 +298,11 @@ public class DukeCommanderTest {
 		procedure.setOnRemovedReturn(procedure.ABORTED);
 		testObject.getProcedures().add(procedure);
 		testObject.preEntry();
-		testObject.entryRemoved(identity, new NukeInfo());
+		testObject.entryRemoved(identity);
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnRemoved());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnRemoved().getId());
+		assertEquals(identity, procedure.getOnRemoved());
   }
   
   @Test

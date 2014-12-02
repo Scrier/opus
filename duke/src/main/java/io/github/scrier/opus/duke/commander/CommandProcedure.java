@@ -90,11 +90,11 @@ public class CommandProcedure extends BaseDukeProcedure {
 	}
 
 	@Override
-	public int handleOnRemoved(BaseNukeC data) {
-		log.trace("handleOnRemoved(" + data + ")");
-		if( getTxID() == data.getTxID() ) {
+	public int handleOnRemoved(Long key) {
+		log.trace("handleOnRemoved(" + key + ")");
+		if( getNukeCommand().getKey() == key ) {
 			if( REMOVING != getState() ) {
-				log.error("Someone else removed our command data " + data + ", aborting.");
+				log.error("Someone else removed our command data " + key + ", aborting.");
 				//@TODO: Handle removed in wrong state better. Renew or terminate application perhaps?
 				setState(ABORTED);
 			} else {
@@ -114,27 +114,32 @@ public class CommandProcedure extends BaseDukeProcedure {
 				switch( command.getState() ) {
 					case EXECUTE:
 					case QUERY: {
-						log.info("Command is working.");
+						log.debug("Command is execute/query.");
 						break;
 					} 
 					case WORKING: {
-						log.info("Command is working.");
+						log.debug("Command is working.");
 						break;
 					}
 					case DONE: {
-						log.info("Command is done, lets remove it.");
+						log.debug("Command is done, lets remove it.");
 						removeEntry(getNukeCommand());
 						setState(REMOVING);
 						break;
 					}
 					case ABORTED: {
-						log.info("Aborted command: " + getNukeCommand() + ".");
+						log.debug("Aborted command: " + getNukeCommand() + ".");
 						setState(ABORTED);
 						break;
 					}
 					case UNDEFINED: {
 						log.error("Unimplemented command " + command.getState() + ", aborting.");
 						setState(ABORTED);
+						break;
+					}
+					case STOP: {
+						log.debug("Command was stopped, expected.");
+						setState(COMPLETED);
 						break;
 					}
 					default: {

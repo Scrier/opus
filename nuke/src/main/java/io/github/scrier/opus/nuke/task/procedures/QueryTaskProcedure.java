@@ -43,7 +43,7 @@ public class QueryTaskProcedure extends BaseTaskProcedure {
   }
 
 	@Override
-  public int handleOnRemoved(BaseNukeC data) {
+  public int handleOnRemoved(Long key) {
 	  // TODO Auto-generated method stub
 	  return 0;
   }

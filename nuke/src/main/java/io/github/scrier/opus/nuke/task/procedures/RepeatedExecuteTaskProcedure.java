@@ -34,6 +34,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	@Override
   public void init() throws Exception {
 		if( !getCommand().isRepeated() ) {
+			log.fatal("[" + getTxID() + "] Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
 			throw new RuntimeException("Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
 		} else {
 		  getExecutor().submit(this);
@@ -51,6 +52,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		if( true != isProcedureFinished() ) {
 			throw new RuntimeException("shutDown called in a state where we arent finished.");
 		} else {
+			log.info("[" + getTxID() + "] shutDown of procedure after " + getCompletedCommands() + " commands.");
 		  getNukeInfo().setActiveCommands(getNukeInfo().getActiveCommands() - 1);
 		  getNukeInfo().setCompletedCommands(getNukeInfo().getCompletedCommands() + 1);
 		}
@@ -84,7 +86,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
   public int handleOnEvicted(BaseNukeC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		if( data.getKey() == getCommand().getKey() ) {
-			log.error("NukeCommand: " + getNukeInfo() + " was evicted.");
+			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was evicted.");
 			setState(ABORTED);
 		}
 	  return getState();
@@ -94,10 +96,10 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	 * {@inheritDoc}
 	 */
 	@Override
-  public int handleOnRemoved(BaseNukeC data) {
-		log.trace("handleOnRemoved(" + data + ")");
-		if( data.getKey() == getCommand().getKey() && true != isProcedureFinished() ) {
-			log.error("NukeCommand: " + getNukeInfo() + " was removed before we were finished.");
+  public int handleOnRemoved(Long key) {
+		log.trace("handleOnRemoved(" + key + ")");
+		if( key == getCommand().getKey() && true != isProcedureFinished() ) {
+			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was removed before we were finished.");
 			setState(ABORTED);
 		}
 	  return getState();
@@ -112,14 +114,14 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		setState(RUNNING);
 		getCommand().setState(CommandState.WORKING);
 		if( true != updateEntry(getCommand()) ) {
-			log.error("Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
+			log.error("[" + getTxID() + "] Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
 			setState(ABORTED);
   		return "Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call";
   	} 
 	  String executeString = getCommand().getCommand();
 	  do {
 		  boolean result = executeProcess(executeString, null, null);
-		  log.debug("Process returns: " + result + ".");
+		  log.debug("[" + getTxID() + "] Process returns: " + result + ".");
 		  if( !isRepeated() && result ) {
 		  	getCommand().setState(CommandState.DONE);
 		  	setState(COMPLETED);
@@ -130,7 +132,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		  incCompletedCommands();
 	  } while ( RUNNING == getState() && isRepeated() );
   	if( true != updateEntry(getCommand()) ) { // this command should trigger call to OnUpdated that should terminate this procedure.
-  		log.error("Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
+  		log.error("[" + getTxID() + "] Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
   		return "Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call";
   	} 
 	  return null;
@@ -143,10 +145,10 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	private void handleUpdate(NukeCommand nukeCommand) {
 		log.trace("handleUpdate(" + nukeCommand + ")");
 		if( CommandState.STOP == nukeCommand.getState() ) {
-			log.info("Received command to stop execution from " + nukeCommand.getComponent() + ".");
+			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getComponent() + ".");
 			setRepeated(false);
 		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
-			log.info("Received command to terminate execution from " + nukeCommand.getComponent() + ".");
+			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getComponent() + ".");
 			setRepeated(false);
 			terminateProcess();
 		}

@@ -10,7 +10,7 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	private int onUpdateReturn;
 	private BaseNukeC onEvicted;
 	private int onEvictedReturn;
-	private BaseNukeC onRemoved;
+	private long onRemoved;
 	private int onRemovedReturn;
 	
 	BaseProcedureMock() {
@@ -20,7 +20,7 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 		setOnUpdateReturn(CREATED);
 		setOnEvicted(null);
 		setOnEvictedReturn(CREATED);
-		setOnRemoved(null);
+		setOnRemoved(-1L);
 		setOnRemovedReturn(CREATED);
 	}
 
@@ -47,8 +47,8 @@ public class BaseProcedureMock extends BaseDukeProcedure {
   }
 
 	@Override
-  public int handleOnRemoved(BaseNukeC data) {
-		setOnRemoved(data);
+  public int handleOnRemoved(Long key) {
+		setOnRemoved(key);
 		return getOnRemovedReturn();
   }
 
@@ -139,14 +139,14 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	/**
 	 * @return the onRemoved
 	 */
-	public BaseNukeC getOnRemoved() {
+	public long getOnRemoved() {
 		return onRemoved;
 	}
 
 	/**
 	 * @param onRemoved the onRemoved to set
 	 */
-	public void setOnRemoved(BaseNukeC onRemoved) {
+	public void setOnRemoved(long onRemoved) {
 		this.onRemoved = onRemoved;
 	}
 

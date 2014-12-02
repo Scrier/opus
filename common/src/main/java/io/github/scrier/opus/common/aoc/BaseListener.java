@@ -31,13 +31,13 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	
 	public abstract void preEntry();
 	
-	public abstract void entryAdded(Long component, BaseNukeC data);
+	public abstract void entryAdded(Long key, BaseNukeC value);
 	
-	public abstract void entryEvicted(Long component, BaseNukeC data);
+	public abstract void entryEvicted(Long key, BaseNukeC value);
 	
-	public abstract void entryRemoved(Long component, BaseNukeC data);
+	public abstract void entryRemoved(Long key);
 	
-	public abstract void entryUpdated(Long component, BaseNukeC data);
+	public abstract void entryUpdated(Long key, BaseNukeC value);
 	
 	public abstract void postEntry();
 	
@@ -95,7 +95,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	public synchronized void entryRemoved(EntryEvent<Long, BaseNukeC> removed) {
 		log.trace("entryRemoved(" + removed + ")");
 		preEntry();
-		entryRemoved(removed.getKey(), removed.getValue());
+		entryRemoved(removed.getKey());
 		postEntry();
 	}
 

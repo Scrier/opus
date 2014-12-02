@@ -35,7 +35,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 			handleState(local.getState());
 			setState(INITIALIZING);
 		} else {
-			log.error("Unable to add " + this + " to the common map.");
+			log.error("[" + getTxID() + "] Unable to add " + this + " to the common map.");
 			setState(ABORTED);
 		}
 		if( isPublishToMap() ) {
@@ -111,21 +111,11 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public int handleOnRemoved(BaseNukeC data) {
-		log.trace("handleOnRemoved(" + data + ")");
-		switch( data.getId() ) {
-			case NukeFactory.NUKE_INFO:
-			{
-				NukeInfo info = new NukeInfo(data);
-				handleRemoved(info);
-				break;
-			}
-			case NukeFactory.NUKE_COMMAND: 
-			default:
-			{
-				// do nothing.
-				break;
-			}
+  public int handleOnRemoved(Long key) {
+		log.trace("handleOnRemoved(" + key + ")");
+		if( getIdentity() == key ) {
+			log.error("[" + getTxID() + "] Entry: " + key + " was removed, aborting handler for it.");
+			setState(ABORTED);
 		}
 	  return getState();
   }
@@ -134,35 +124,35 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 		log.trace("handleUpdated(" + info + ")");
 		long modified = local.compare(info);
 		if( 0 < ( NukeInfo.NUKE_ID_MODIFIED & modified ) ) {
-			log.error("Received modified id of the NukeInfo object. cannot continue.");
+			log.error("[" + getTxID() + "] Received modified id of the NukeInfo object. cannot continue.");
 			setState(ABORTED);
 		} else if( local.getNukeID() == info.getNukeID() ){
 			if( 0 < ( NukeInfo.ACTIVE_COMMANDS_MODIFIED & modified ) ) {
-				log.debug("Active commands changed from " + local.getActiveCommands() + " to " + info.getActiveCommands() + ".");
+				log.debug("[" + getTxID() + "] Active commands changed from " + local.getActiveCommands() + " to " + info.getActiveCommands() + ".");
 				local.setActiveCommands(info.getActiveCommands());
 			}
 			if( 0 < ( NukeInfo.COMPLETED_COMMANDS_MODIFIED & modified ) ) {
-				log.debug("Completed commands changed from " + local.getCompletedCommands() + " to " + info.getCompletedCommands() + ".");
+				log.debug("[" + getTxID() + "] Completed commands changed from " + local.getCompletedCommands() + " to " + info.getCompletedCommands() + ".");
 				local.setCompletedCommands(info.getCompletedCommands());
 			}
 			if( 0 < ( NukeInfo.NUMBER_OF_USERS_MODIFIED & modified ) ) {
-				log.debug("Number of users changed from " + local.getNumberOfUsers() + " to " + info.getNumberOfUsers() + ".");
+				log.debug("[" + getTxID() + "] Number of users changed from " + local.getNumberOfUsers() + " to " + info.getNumberOfUsers() + ".");
 				local.setNumberOfUsers(info.getNumberOfUsers());
 			}
 			if( 0 < ( NukeInfo.REPEATED_MODIFIED & modified ) ) {
-				log.debug("Repeated changed from " + local.isRepeated() + " to " + info.isRepeated() + ".");
+				log.debug("[" + getTxID() + "] Repeated changed from " + local.isRepeated() + " to " + info.isRepeated() + ".");
 				local.setRepeated(info.isRepeated());
 			}
 			if( 0 < ( NukeInfo.REQUESTED_COMMANDS_MODIFIED & modified ) ) {
-				log.debug("Requested commands changed from " + local.getRequestedCommands() + " to " + info.getRequestedCommands() + ".");
+				log.debug("[" + getTxID() + "] Requested commands changed from " + local.getRequestedCommands() + " to " + info.getRequestedCommands() + ".");
 				local.setRequestedCommands(info.getRequestedCommands());
 			}
 			if( 0 < ( NukeInfo.REQUESTED_USERS_MODIFIED & modified ) ) {
-				log.debug("Requested users changed from " + local.getRequestedUsers() + " to " + info.getRequestedUsers() + ".");
+				log.debug("[" + getTxID() + "] Requested users changed from " + local.getRequestedUsers() + " to " + info.getRequestedUsers() + ".");
 				local.setRequestedUsers(info.getRequestedUsers());
 			}
 			if( 0 < ( NukeInfo.STATE_MODIFIED & modified ) ) {
-				log.debug("State changed from " + local.getState() + " to " + info.getState() + ".");
+				log.debug("[" + getTxID() + "] State changed from " + local.getState() + " to " + info.getState() + ".");
 				handleState(info.getState());
 			}
 			info.resetValuesModified();
@@ -174,15 +164,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	private void handleEvicted(NukeInfo info) {
 		log.trace("handleEvicted(" + info + ")");
 		if( getIdentity() == info.getNukeID() ) {
-			log.error("Entry " + info + " was evicted, aborting handler for it.");
-			setState(ABORTED);
-		}
-	}
-	
-	private void handleRemoved(NukeInfo info) {
-		log.trace("handleRemoved(" + info + ")");
-		if( getIdentity() == info.getNukeID() ) {
-			log.error("Entry: " + info + " was removed, aborting handler for it.");
+			log.error("[" + getTxID() + "] Entry " + info + " was evicted, aborting handler for it.");
 			setState(ABORTED);
 		}
 	}
@@ -191,30 +173,30 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 		log.trace("handleState(" + state + ")");
 		switch( state ) {
 			case ABORTED: {
-				log.info("Node " + getNukeID() + " aborted.");
+				log.info("[" + getTxID() + "] Node " + getNukeID() + " aborted.");
 				setState(ABORTED);
 				local.setState(NukeState.ABORTED);
 				break;
 			}
 			case COMPLETED: {
-				log.info("Node " + getNukeID() + " completed.");
+				log.info("[" + getTxID() + "] Node " + getNukeID() + " completed.");
 				setState(COMPLETED);
 				local.setState(NukeState.COMPLETED);
 				break;
 			}
 			case AVAILABLE: {
-				log.info("Node " + getNukeID() + " is available, taking it.");
+				log.info("[" + getTxID() + "] Node " + getNukeID() + " is available, taking it.");
 				local.setState(NukeState.TAKEN);
 				setPublishToMap(true);
 				break;
 			}
 			case INTITIALIZED: {
-				log.info("Node " + getNukeID() + " initialized.");
+				log.info("[" + getTxID() + "] Node " + getNukeID() + " initialized.");
 				local.setState(NukeState.INTITIALIZED);
 				break;
 			}
 			case RUNNING: {
-				log.info("Node " + getNukeID() + " running.");
+				log.info("[" + getTxID() + "] Node " + getNukeID() + " running.");
 				setState(WORKING);
 				local.setState(NukeState.RUNNING);
 				break;

@@ -204,33 +204,13 @@ public class CommandProcedureTest {
 	}
 	
 	@Test
-	public void testHandleOnRemovedWrongTxID() throws Exception {
-		CommandProcedure testObject = new CommandProcedure(component, "this is yet another command", CommandState.EXECUTE, true);
-		testObject.init();
-		NukeCommand command = new NukeCommand();
-		command.setTxID(testObject.getTxID() + 1);
-		testObject.handleOnRemoved(command);
-		assertEquals(testObject.WORKING, testObject.getState());
-	}
-	
-	@Test
-	public void testHandleOnRemovedWrongState() throws Exception {
-		CommandProcedure testObject = new CommandProcedure(component, "this is yet another command", CommandState.EXECUTE, true);
-		testObject.init();
-		NukeCommand command = new NukeCommand();
-		command.setTxID(testObject.getTxID());
-		testObject.handleOnRemoved(command);
-		assertEquals(testObject.ABORTED, testObject.getState());
-	}
-	
-	@Test
 	public void testHandleOnRemovedOK() throws Exception {
 		CommandProcedure testObject = new CommandProcedure(component, "this is yet another command", CommandState.EXECUTE, true);
 		testObject.init();
 		testObject.setState(testObject.REMOVING);
 		NukeCommand command = new NukeCommand();
 		command.setTxID(testObject.getTxID());
-		testObject.handleOnRemoved(command);
+		testObject.handleOnRemoved(testObject.getNukeCommand().getKey());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 	}
 	

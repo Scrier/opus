@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="WARN">
+<Configuration>
   <Appenders>
-    <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+    <File name="FILE" fileName="duke/target/trace.log" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p (%C{2}) - %m%n"/>
+    </File>
+    <!-- Please not that this appender is very expensive -->
+    <File name="FILELINE" fileName="duke/target/trace.log" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p (%C{2}:%L) - %m%n"/>
+    </File>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5p %C{2} - %m%n"/>
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="io.github.scrier.opus.duke.commander.DukeCommander" level="trace" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="io.github.scrier.opus.duke.commander.NukeProcedure" level="trace" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="io.github.scrier.opus.duke.commander.ClusterDistributorProcedure" level="trace" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Logger name="io.github.scrier.opus.common.aoc.BaseListener" level="trace" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Root level="debug">
-      <AppenderRef ref="Console"/>
+    <Root level="DEBUG">
+      <AppenderRef ref="FILE" level="DEBUG"/>
+      <AppenderRef ref="STDOUT" level="INFO"/>
     </Root>
   </Loggers>
 </Configuration>

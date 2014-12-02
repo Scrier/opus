@@ -9,11 +9,13 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseListener;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.commander.BaseProcedureC;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
+import com.sun.corba.se.spi.orbutil.fsm.Guard.Complement;
 
 public class DukeCommander extends BaseListener {
 
@@ -115,6 +117,7 @@ public class DukeCommander extends BaseListener {
 
 	@Override
   public void preEntry() {
+		log.trace("preEntry()");
 		intializeProcedures();
 	  toRemove.clear();
   }
@@ -122,7 +125,7 @@ public class DukeCommander extends BaseListener {
 	public synchronized void intializeProcedures() {
 		log.trace("intializeProcedures()");
 		if( true != getProceduresToAdd().isEmpty() ) {
-			log.info("Adding " + getProceduresToAdd().size() + " procedures.");
+			log.debug("Adding " + getProceduresToAdd().size() + " procedures.");
 			for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
 				try {
 					procedure.init();
@@ -184,10 +187,10 @@ public class DukeCommander extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void entryRemoved(Long component, BaseNukeC data) {
-		log.trace("entryRemoved(" + component + ", " + data + ")");
+	public void entryRemoved(Long key) {
+		log.trace("entryRemoved(" + key + ")");
 		for( BaseDukeProcedure procedure : getProcedures() ) {
-			int result = procedure.handleOnRemoved(data);
+			int result = procedure.handleOnRemoved(key);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
 				removeProcedure(procedure);
@@ -221,7 +224,13 @@ public class DukeCommander extends BaseListener {
 	 */
 	@Override
   public void postEntry() {
+		log.trace("postEntry()");
 		intializeProcedures();
+	  shutDownProcedures();
+  }
+
+	private void shutDownProcedures() {
+		log.trace("shutDownProcedures()");
 	  for( BaseDukeProcedure procedure : getProceduresToRemove() ) {
 	  	try {
 	      procedure.shutDown();
@@ -231,6 +240,22 @@ public class DukeCommander extends BaseListener {
       }
 	  }
   }
+	
+	/**
+	 * Method to handle post events for timers and similar events triggered outside the base methods.
+	 */
+	public void handlePostEntry() {
+		for( BaseDukeProcedure procedure : getProcedures() ) {
+			if( procedure.COMPLETED == procedure.getState() ) {
+				log.debug("Procedure " + procedure + " completed.");
+				removeProcedure(procedure);
+			} else if ( procedure.ABORTED == procedure.getState() ) {
+				log.debug("Procedure " + procedure + " aborted.");
+				removeProcedure(procedure);
+			}
+		}
+		shutDownProcedures();
+	}
 	
 	/**
 	 * Method to get a list of procedures of a specific class.
