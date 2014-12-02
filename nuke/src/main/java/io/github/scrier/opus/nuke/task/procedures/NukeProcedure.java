@@ -90,6 +90,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 				}
 				case NukeFactory.NUKE_COMMAND:
 				default: {
+					log.fatal("Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnEvicted.");
 					throw new RuntimeException("Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnEvicted.");
 				}
 			}		
@@ -107,10 +108,12 @@ public class NukeProcedure extends BaseTaskProcedure {
 			switch( data.getId() ) {
 				case NukeFactory.NUKE_INFO: {
 					// do something here, when other is done.
+					log.fatal("not implemented NukeProcedure.handleOnRemoved.");
 					throw new RuntimeException("not implemented NukeProcedure.handleOnRemoved.");
 				}
 				case NukeFactory.NUKE_COMMAND:
 				default: {
+					log.fatal("Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnRemoved.");
 					throw new RuntimeException("Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnRemoved.");
 				}
 			}
@@ -144,14 +147,17 @@ public class NukeProcedure extends BaseTaskProcedure {
 		log.info("State changed from " + getNukeInfo().getState() + " to " + state + ".");
 		switch (state) {
 			case TAKEN: {
+				getNukeInfo().setState(state);
 				handleInitialize();
 				break;
 			}
 			case UNRESPONSIVE: {
+				getNukeInfo().setState(state);
 				handleUnresponsive();
 				break;
 			}
 			default: {
+				log.fatal("Duke is not allowed to change state of NukeInfo to " + state + ".");
 				throw new RuntimeException("Duke is not allowed to change state of NukeInfo to " + state + ".");
 			}
 		}
@@ -159,9 +165,11 @@ public class NukeProcedure extends BaseTaskProcedure {
 	
 	protected void handleInitialize() {
 		log.trace("handleInitialize()");
+		log.info("Changing state from " + getNukeInfo().getState() + " to " + NukeState.INTITIALIZED + ".");
 		getNukeInfo().setState(NukeState.INTITIALIZED); // Wont inform any duke about this step atm.
 		setState(INITIALIZING);
 		// do initialization.
+		log.info("Changing state from " + getNukeInfo().getState() + " to " + NukeState.RUNNING + ".");
 		getNukeInfo().setState(NukeState.RUNNING);
 		setState(RUNNING);
 	}

@@ -76,7 +76,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 	
 	@Override
-	public void entryAdded(EntryEvent<Long, BaseNukeC> added) {
+	public synchronized void entryAdded(EntryEvent<Long, BaseNukeC> added) {
 		log.trace("entryAdded(" + added + ")");
 		preEntry();
 		entryAdded(added.getKey(), added.getValue());
@@ -84,7 +84,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 
 	@Override
-	public void entryEvicted(EntryEvent<Long, BaseNukeC> evicted) {
+	public synchronized void entryEvicted(EntryEvent<Long, BaseNukeC> evicted) {
 		log.trace("entryEvicted(" + evicted + ")");
 		preEntry();
 		entryEvicted(evicted.getKey(), evicted.getValue());
@@ -92,7 +92,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 
 	@Override
-	public void entryRemoved(EntryEvent<Long, BaseNukeC> removed) {
+	public synchronized void entryRemoved(EntryEvent<Long, BaseNukeC> removed) {
 		log.trace("entryRemoved(" + removed + ")");
 		preEntry();
 		entryRemoved(removed.getKey(), removed.getValue());
@@ -100,7 +100,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 
 	@Override
-	public void entryUpdated(EntryEvent<Long, BaseNukeC> updated) {
+	public synchronized void entryUpdated(EntryEvent<Long, BaseNukeC> updated) {
 		log.trace("entryUpdated(" + updated + ")");
 		preEntry();
 		entryUpdated(updated.getKey(), updated.getValue());

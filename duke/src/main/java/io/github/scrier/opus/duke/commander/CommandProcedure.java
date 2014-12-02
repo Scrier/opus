@@ -117,15 +117,22 @@ public class CommandProcedure extends BaseDukeProcedure {
 						log.info("Command is working.");
 						break;
 					} 
+					case WORKING: {
+						log.info("Command is working.");
+						break;
+					}
 					case DONE: {
 						log.info("Command is done, lets remove it.");
 						removeEntry(getNukeCommand());
 						setState(REMOVING);
 						break;
 					}
-					case ABORTED:
-					case UNDEFINED:
-					case WORKING: {
+					case ABORTED: {
+						log.info("Aborted command: " + getNukeCommand() + ".");
+						setState(ABORTED);
+						break;
+					}
+					case UNDEFINED: {
 						log.error("Unimplemented command " + command.getState() + ", aborting.");
 						setState(ABORTED);
 						break;

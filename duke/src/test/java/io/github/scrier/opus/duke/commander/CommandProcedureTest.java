@@ -156,7 +156,7 @@ public class CommandProcedureTest {
 		command.setTxID(testObject.getTxID());
 		command.setState(CommandState.WORKING);
 		testObject.handleOnUpdated(command);
-		assertEquals(testObject.ABORTED, testObject.getState());
+		assertEquals(testObject.WORKING, testObject.getState());
 	}
 	
 	@Test

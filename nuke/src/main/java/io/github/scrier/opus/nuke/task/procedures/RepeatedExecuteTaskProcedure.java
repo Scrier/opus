@@ -62,9 +62,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	@Override
   public int handleOnUpdated(BaseNukeC data) {
 		log.trace("handleOnUpdated(" + data + ")");
-		if( data.getKey() != getCommand().getKey() ) {
-			log.debug("Update not for us.");
-		} else {
+		if( data.getKey() == getCommand().getKey() ) {
 			switch ( data.getId() ) {
 				case NukeFactory.NUKE_COMMAND: {
 					NukeCommand nukeCommand = new NukeCommand(data);
@@ -121,7 +119,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	  String executeString = getCommand().getCommand();
 	  do {
 		  boolean result = executeProcess(executeString, null, null);
-		  log.info("Process returns: " + result + ".");
+		  log.debug("Process returns: " + result + ".");
 		  if( !isRepeated() && result ) {
 		  	getCommand().setState(CommandState.DONE);
 		  	setState(COMPLETED);

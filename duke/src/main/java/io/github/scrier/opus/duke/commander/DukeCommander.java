@@ -38,6 +38,7 @@ public class DukeCommander extends BaseListener {
 		for( BaseNukeC nuke : getEntries() ) {
 			log.debug("Instance is: " + nuke + ".");
 			if( NukeFactory.NUKE_INFO == nuke.getId() ) {
+				log.info("Adding new NukeProcedure for NukeInfo: " + nuke + ".");
 				registerProcedure(new NukeProcedure(new NukeInfo(nuke)));
 			}
 		}
@@ -118,16 +119,20 @@ public class DukeCommander extends BaseListener {
 	  toRemove.clear();
   }
 
-	private void intializeProcedures() {
-	  for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
-	  	try {
-	      procedure.init();
-	      procedures.add(procedure);
-      } catch (Exception e) {
-	      log.error("init of procedure: " + procedure + " threw Exception", e);
-      }
-	  }
-	  getProceduresToAdd().clear();
+	public synchronized void intializeProcedures() {
+		log.trace("intializeProcedures()");
+		if( true != getProceduresToAdd().isEmpty() ) {
+			log.info("Adding " + getProceduresToAdd().size() + " procedures.");
+			for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
+				try {
+					procedure.init();
+					procedures.add(procedure);
+				} catch (Exception e) {
+					log.error("init of procedure: " + procedure + " threw Exception", e);
+				}
+			}
+			getProceduresToAdd().clear();
+		}
   }
 
 	/**
@@ -139,6 +144,7 @@ public class DukeCommander extends BaseListener {
 		switch( data.getId() ) {
 			case NukeFactory.NUKE_INFO:
 			{
+				log.info("Adding new NukeProcedure for NukeInfo: " + data + ".");
 				registerProcedure(new NukeProcedure(new NukeInfo(data)));
 				break;
 			}

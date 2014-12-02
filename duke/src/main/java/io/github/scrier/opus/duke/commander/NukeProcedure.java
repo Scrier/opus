@@ -193,11 +193,13 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 			case ABORTED: {
 				log.info("Node " + getNukeID() + " aborted.");
 				setState(ABORTED);
+				local.setState(NukeState.ABORTED);
 				break;
 			}
 			case COMPLETED: {
 				log.info("Node " + getNukeID() + " completed.");
 				setState(COMPLETED);
+				local.setState(NukeState.COMPLETED);
 				break;
 			}
 			case AVAILABLE: {
@@ -208,11 +210,13 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 			}
 			case INTITIALIZED: {
 				log.info("Node " + getNukeID() + " initialized.");
+				local.setState(NukeState.INTITIALIZED);
 				break;
 			}
 			case RUNNING: {
 				log.info("Node " + getNukeID() + " running.");
 				setState(WORKING);
+				local.setState(NukeState.RUNNING);
 				break;
 			}
 			case TAKEN:

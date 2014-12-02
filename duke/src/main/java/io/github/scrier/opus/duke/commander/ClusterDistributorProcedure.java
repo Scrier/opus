@@ -16,7 +16,7 @@ import io.github.scrier.opus.common.nuke.NukeState;
 
 public class ClusterDistributorProcedure extends BaseDukeProcedure implements ITimeOutCallback {
 
-	private final Logger log = LogManager.getLogger(ClusterDistributorProcedure.class);
+	private static Logger log = LogManager.getLogger(ClusterDistributorProcedure.class);
 
 	public final int WAITING_FOR_NUKE = CREATED + 1;
 	public final int RAMPING_UP       = CREATED + 2;
@@ -164,6 +164,25 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			}
 		}
 		return getState();
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void timeOutTriggered(long id) {
+		log.trace("timeOutTriggered(" + id + ")");
+		try {
+			log.debug("states[" + getState() + "].timeout(" + id + ");");
+			states[getState()].timeout(id);
+		} catch ( ArrayIndexOutOfBoundsException e ) {
+			if( COMPLETED == getState() ) {
+				new Completed().timeout(id);
+			} else {
+				log.error("Received out of bound exception in state: " + getState() + ".", e);
+			}
+		}
+		theContext.getCommander().intializeProcedures();
 	}
 
 	/**
@@ -368,31 +387,17 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
    */
   private boolean isNukesReady() {
   	log.trace("isNukesReady()");
+  	log.debug((getMinNodes() <= theContext.getNukes(NukeState.RUNNING).size()) + " = " + getMinNodes() + " <= " + theContext.getNukes(NukeState.RUNNING).size() + ".");
   	return (getMinNodes() <= theContext.getNukes(NukeState.RUNNING).size());
   }
-
-	@Override
-	public void timeOutTriggered(long id) {
-		log.trace("timeOutTriggered(" + id + ")");
-		try {
-			log.debug("states[" + getState() + "].timeout(" + id + ");");
-			states[getState()].timeout(id);
-		} catch ( ArrayIndexOutOfBoundsException e ) {
-			if( COMPLETED == getState() ) {
-				new Completed().timeout(id);
-			} else {
-				log.error("Received out of bound exception in state: " + getState() + ".", e);
-			}
-		}
-	}
 	
 	public Map<Long, Integer> getDistributionSuggestion(int noOfUsers) {
 		log.trace("getDistributionSuggestion(" + noOfUsers + ")");
 		Map<Long, Integer> retValue = new HashMap<Long, Integer>();
 		List<INukeInfo> availableNukes = theContext.getNukes(NukeState.RUNNING);
 		int toExecute = noOfUsers;
-		if( availableNukes.isEmpty() ) {
-			log.error("No available nodes in state " + NukeState.RUNNING + ", cannot continue.");
+		if( true == availableNukes.isEmpty() ) {
+			log.error("No available nodes in state " + NukeState.RUNNING + ", cannot continue, was. " + availableNukes.size() +  ".");
 			return null;
 		} else {
 			while( toExecute > 0 ) {
@@ -417,8 +422,9 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				} else {
 					retValue.put(minInfo.getNukeID(), 1);
 				}
+				toExecute--;
 			}
-			toExecute--;
+			
 		}
 		return retValue;
 	}
@@ -465,8 +471,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 */
 	abstract class State {
 		
-		private final Logger logLocal = LogManager.getLogger(State.class);
-
+		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.State");
+		
 		/**
 		 * Base handling on update methods.
 		 * @param data BaseNukeC
@@ -530,8 +536,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private class Completed extends State {}
 	
 	private class WaitingForNuke extends State {
-		
-		private final Logger logLocal = LogManager.getLogger(State.class);
+
+		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.WaitingForNuke");
 		
 		/**
 		 * RampingUp handling on update methods.
@@ -583,12 +589,14 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 */
 		private void handleTimerTick() {
 			logLocal.trace("handleTimerTick()");
-			if( true == isNukesReady() ) {
+			if( true != isNukesReady() ) {
 				log.info("Still waiting for nukes, starting new wait timer for " + getWaitingForNukeUpdateSeconds() + " seconds.");
 				startTimeout(getWaitingForNukeUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 			} else {
 				log.info("Starting rampup phase with " + getUserIncrease() + " every " + getIntervalSeconds() + " seconds.");
 				startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
+				log.info("Chaning state from WAITING_FOR_NUKE to RAMPING_UP.");
+				setState(RAMPING_UP);
 			}
 		}
 		
@@ -604,7 +612,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 */
 	private class RampingUp extends State {
 		
-		private final Logger logLocal = LogManager.getLogger(State.class);
+		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.RampingUp");
 		
 		/**
 		 * Constructor
@@ -650,10 +658,10 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			if( id == getTimerID() ) {
 				handleTimerTick();
 			} else if ( id == getTerminateID() ) {
-				logLocal.error("Received terminate timeout during state RAMP_UP.");
+				logLocal.error("Received terminate timeout during state RAMPING_UP.");
 				setState(ABORTED);
 			} else {
-				logLocal.error("Received unknown timer id: " + id + " in state RAMP_UP.");
+				logLocal.error("Received unknown timer id: " + id + " in state RAMPING_UP.");
 				setState(ABORTED);
 			}
 		}
@@ -667,19 +675,25 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				int usersToAdd = ( getMaxUsers() - getLocalUserRampedUp() ) > getUserIncrease() ? 
 						getUserIncrease() : getMaxUsers() - getLocalUserRampedUp();
 				Map<Long, Integer> distribution = getDistributionSuggestion(usersToAdd);
-				for( Entry<Long, Integer> command : distribution.entrySet() ) {
-					logLocal.debug("Sending " + command.getValue() + " commands to nuke with id: " + command.getKey() + ".");
-					for( int i = 0; i < command.getValue(); i++ ) {
-						registerProcedure(new CommandProcedure(command.getKey(), getCommand(), CommandState.EXECUTE, isRepeated()));
+				if( null == distribution ) {
+					log.error("No available nodes in state " + NukeState.RUNNING + ", cannot continue.");
+					throw new RuntimeException("No available nodes in state " + NukeState.RUNNING + ", cannot continue.");
+				} else {
+					for( Entry<Long, Integer> command : distribution.entrySet() ) {
+						logLocal.debug("Sending " + command.getValue() + " commands to nuke with id: " + command.getKey() + ".");
+						for( int i = 0; i < command.getValue(); i++ ) {
+							registerProcedure(new CommandProcedure(command.getKey(), getCommand(), CommandState.EXECUTE, isRepeated()));
+						}
 					}
+					logLocal.info("Ramping up from " + getLocalUserRampedUp() + " to " + (getLocalUserRampedUp() + usersToAdd) + ", of a total of " + getMaxUsers() + ".");
+					setLocalUserRampedUp(getLocalUserRampedUp() + usersToAdd);
+					startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 				}
-				logLocal.info("Ramping up from " + getLocalUserRampedUp() + " to " + (getLocalUserRampedUp() + usersToAdd) + ", of a total of " + getMaxUsers() + ".");
-				setLocalUserRampedUp(getLocalUserRampedUp() + usersToAdd);
-				startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 			} else { ///@TODO could add checks here against the distributed status instead of local, lets wait and see how it works though.
 				startTimeout(getPeakDelaySeconds(), getTimerID(), ClusterDistributorProcedure.this);
 				// Maybe start shorter timer and let the PEAK DELAY state handle when dist users is synced to max before starting peak delay.
 				logLocal.info("We have reached peak and we stay idle for " + Shared.Methods.formatTime(getPeakDelaySeconds()) + " before ramping down.");
+				log.info("Changing state from RAMPING_UP to PEAK_DELAY.");
 				setState(PEAK_DELAY);
 			}
 		}
@@ -696,7 +710,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 */
 	private class PeakDelay extends State {
 		
-		private final Logger logLocal = LogManager.getLogger(PeakDelay.class);
+		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.PeakDelay");
 		
 		/**
 		 * Constructor
@@ -771,7 +785,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 */
 	private class RampingDown extends State implements ICommandCallback {
 		
-		private final Logger logLocal = LogManager.getLogger(RampingDown.class);
+		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.RampingDown");
 		
 		private int oldUsers;
 		private boolean doOnce;

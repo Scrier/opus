@@ -198,6 +198,7 @@ public enum Context {
    * }
    */
   public List<INukeInfo> getNukes(NukeState... states) {
+  	log.trace("getNukes(" + states + ")");
   	List<INukeInfo> retValue = new ArrayList<INukeInfo>();
   	for( INukeInfo info : getNukes() ) {
   		for( NukeState state : states ) {

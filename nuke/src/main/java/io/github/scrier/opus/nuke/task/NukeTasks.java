@@ -10,10 +10,10 @@ import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseListener;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
-import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.nuke.task.procedures.ExecuteTaskProcedure;
 import io.github.scrier.opus.nuke.task.procedures.QueryTaskProcedure;
 import io.github.scrier.opus.nuke.task.procedures.RepeatedExecuteTaskProcedure;
@@ -37,6 +37,7 @@ public class NukeTasks extends BaseListener {
 	
 	public NukeTasks(HazelcastInstance instance) {
 	  super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
+	  log.trace("NukeTasks(" + instance + ")");
 	  theContext = Context.INSTANCE;
 	  procedures = new ArrayList<BaseTaskProcedure>();
 	  proceduresToAdd = new ArrayList<BaseTaskProcedure>();
@@ -75,16 +76,20 @@ public class NukeTasks extends BaseListener {
 	  toRemove.clear();
   }
 
-	private void intializeProcedures() {
-	  for( BaseTaskProcedure procedure : getProceduresToAdd() ) {
-	  	try {
-	      procedure.init();
-	      procedures.add(procedure);
-      } catch (Exception e) {
-	      log.error("init of procedure: " + procedure + " threw Exception", e);
-      }
-	  }
-	  proceduresToAdd.clear();
+	private synchronized void intializeProcedures() {
+		log.trace("intializeProcedures()");
+		if( true != getProceduresToAdd().isEmpty() ) {
+			log.info("Adding " + getProceduresToAdd().size() + " procedures.");
+			for( BaseTaskProcedure procedure : getProceduresToAdd() ) {
+				try {
+					procedure.init();
+					procedures.add(procedure);
+				} catch (Exception e) {
+					log.error("init of procedure: " + procedure + " threw Exception", e);
+				}
+			}
+			proceduresToAdd.clear();
+		}
   }
 
 	/**
@@ -102,30 +107,7 @@ public class NukeTasks extends BaseListener {
 			case NukeFactory.NUKE_COMMAND: 
 			{
 				NukeCommand command = new NukeCommand(data);
-				switch( command.getState() ) {
-					case EXECUTE: {
-						if( command.isRepeated() ) {
-							registerProcedure(new RepeatedExecuteTaskProcedure(command));
-						} else {
-							registerProcedure(new ExecuteTaskProcedure(command));
-						}
-						break;
-					}
-					case QUERY: {
-						registerProcedure(new QueryTaskProcedure(command));
-						break;
-					}
-					case ABORTED: 
-					case DONE: 
-					case UNDEFINED: 
-					case WORKING: {
-						log.error("Unhandled data: " + command.getState() + ", from NukeCommand: " + command + ".");
-						break;
-					}
-					default: {
-						throw new RuntimeException("Unimplemented state " + command.getState() + " from class NukeCommand in class NukeTasks.");
-					}
-				}
+				handleCommand(command);
 				break;
 			}
 			default:
@@ -134,7 +116,7 @@ public class NukeTasks extends BaseListener {
 				break;
 			}
 		}
-  }
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -206,6 +188,7 @@ public class NukeTasks extends BaseListener {
 	  }
 	  // Update entry in global map if change is made, put this last if shutdown method is calling them.
 	  if( true == getNukeInfo().isValuesModified() ) {
+	  	log.info("Updating NukeInfo with: " + getNukeInfo() + ".");
 	  	updateEntry(getNukeInfo());
 	  }
   }
@@ -229,6 +212,84 @@ public class NukeTasks extends BaseListener {
 		log.error("Map was evicted, removing all.");
 		removeAllProcedures();
   }
+	
+	/**
+	 * Method to handle commands.
+	 * @param command
+	 */
+	private void handleCommand(NukeCommand command) {
+		log.trace("handleCommand(" + command + ")");
+	  switch( command.getState() ) {
+	  	case EXECUTE: {
+	  		if( Shared.Commands.Execute.STOP_EXECUTION.equals(command.getCommand()) ) {
+	  			log.info("Received command to stop all executions.");
+	  			distributeExecuteUpdateCommands(CommandState.STOP);
+	  		} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
+	  			log.info("Received command to terminate all executions.");
+	  			distributeExecuteUpdateCommands(CommandState.TERMINATE);
+	  		} else {
+	  			log.info("Received common command: " + command + ".");
+	  			if( command.isRepeated() ) {
+	  				registerProcedure(new RepeatedExecuteTaskProcedure(command));
+	  			} else {
+	  				registerProcedure(new ExecuteTaskProcedure(command));
+	  			}
+	  		}
+	  		break;
+	  	}
+	  	case QUERY: {
+	  		registerProcedure(new QueryTaskProcedure(command));
+	  		break;
+	  	}
+	  	case ABORTED: 
+	  	case DONE: 
+	  	case UNDEFINED: 
+	  	case WORKING: {
+	  		log.error("Unhandled data: " + command.getState() + ", from NukeCommand: " + command + ".");
+	  		break;
+	  	}
+	  	default: {
+	  		throw new RuntimeException("Unimplemented state " + command.getState() + " from class NukeCommand in class NukeTasks.");
+	  	}
+	  }
+	}
+	
+	public void distributeExecuteUpdateCommands(CommandState state) {
+		log.trace("distributeExecuteUpdateCommands(" + state + ")");
+		for( BaseTaskProcedure proc : getProcedures(ExecuteTaskProcedure.class) ) {
+			ExecuteTaskProcedure procEx = (ExecuteTaskProcedure)proc;
+			NukeCommand command = procEx.getCommand();
+			command.setState(state);
+			procEx.updateEntry(command);
+		}
+		for( BaseTaskProcedure proc : getProcedures(RepeatedExecuteTaskProcedure.class) ) {
+			RepeatedExecuteTaskProcedure procEx = (RepeatedExecuteTaskProcedure)proc;
+			NukeCommand command = procEx.getCommand();
+			command.setState(state);
+			procEx.updateEntry(command);
+		}
+	}
+	
+	/**
+	 * Method to get a list of procedures of a specific class.
+	 * @param procs the class to look for.
+	 * @return List<BaseProcedure>
+	 * {@code
+	 * List<BaseProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
+	 * for( BaseProcedure procedure : commandProcedures ) {
+	 *   ...
+	 * }
+	 * }
+	 */
+	public List<BaseTaskProcedure> getProcedures(Class<?> procs) {
+		List<BaseTaskProcedure> retVal = new ArrayList<BaseTaskProcedure>();
+		for( BaseTaskProcedure procedure : getProcedures() ) {
+			if( procs.getName() == procedure.getClass().getName() ) {
+				retVal.add(procedure);
+			}
+		}
+		return retVal;
+	}
 	
 	/**
 	 * @return the identity
