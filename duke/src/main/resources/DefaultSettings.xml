@@ -1,0 +1,15 @@
+<settings>
+  <setting name="git-repository">git@github.com:Scrier/opus.git</setting>
+  <setting name="git-folder">opus</setting>
+  <setting name="git-branch">master</setting>
+  <setting name="git-hash"></setting>
+  <setting name="execute-min-nodes">1</setting>
+  <setting name="execute-max-users">5</setting>
+  <setting name="execute-repeat">false</setting>
+  <setting name="execute-interval">10</setting>
+  <setting name="execute-user-inc">2</setting>
+  <setting name="execute-peak-delay">10</setting>
+  <setting name="execute-terminate">60</setting>
+  <setting name="execute-command">bundle exec cucumber</setting>
+  <setting name="execute-folder">/var/tmp/choco</setting>
+</settings>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <File name="FILE" fileName="nuke/target/trace.log" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p (%C{2}) - %m%n"/>
+    </File>
+    <!-- Please not that this appender is very expensive -->
+    <File name="FILELINE" fileName="nuke/target/trace.log" append="false">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p (%C{2}:%L) - %m%n"/>
+    </File>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5p %C{2} - %m%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="DEBUG">
+      <AppenderRef ref="FILE" level="DEBUG"/>
+      <AppenderRef ref="STDOUT" level="INFO"/>
+    </Root>
+  </Loggers>
+</Configuration>
+
