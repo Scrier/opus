@@ -4,13 +4,12 @@ Version:          0.1.0
 Release:	        1%{?dist}
 #Release:	         %{release}
 Summary:	        distributed load generator written in Java.
-
 License:          Apache License, Version 2.0	
 URL:		          http://scrier.github.io
-Source0:	        %{name}-%{version}.tar.gz
+Source0: 	        %{name}-%{version}.tar.gz
 BuildArch:        noarch
 
-BuildRequires:	  maven-local
+BuildRequires:    maven-local
 
 %description
 This is an test to build opus rpm.
@@ -21,14 +20,12 @@ Summary:          Javadoc for %{name}
 
 
 %description      javadoc
-This package gontains the API documentation for %{name}
+This package contains the API documentation for %{name}
 
 
 %prep
 %setup -q
 
-%pom_remove_dep :commons-io
-%pom_remove_dep :junit
 
 %build
 %mvn_build
