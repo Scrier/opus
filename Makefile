@@ -1,8 +1,6 @@
 
 ## Makefile handle something something.
 
-
-
 .PHONY: default
 default: help
 
@@ -10,11 +8,50 @@ default: help
 help:
 	@echo "=================== Available commands ===================="
 	@echo "all          - compile -> test -> doc -> typecheck."
+	@echo "build        - build the project." 
 	@echo "clean        - clean the project."
+	@echo "coverage     - run the coverage tool for the project."
+	@echo "doc          - create javadoc for the project."
+	@echo "doc-jar      - create jar with the javadoc for the project."
+	@echo "install      - install project in local repo."
+	@echo "test         - run junit tests for the project."
 	@echo "=========================================================="
 	@echo "help         - Show this output."
+
+.PHONY: all
+all: clean
+	mvn package
+
+.PHONY: build
+build:
+	mvn package
 
 .PHONY: clean
 clean:
 	mvn clean
+
+.PHONY: coverage
+coverage: clean
+	mvn cobertura:cobertura
+
+.PHONY: doc
+doc:
+	mvn javadoc:javadoc 
+
+.PHONY: doc-jar
+doc-jar:
+	mvn javadoc:jar
+
+.PHONY: install
+install: clean
+	mvn install
+
+.PHONY: test
+test:
+	mvn test
+
+.PHONY: tar
+tar:
+	$(shell ./create_tar.sh)
+
 

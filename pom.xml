@@ -42,39 +42,6 @@
       <version>2.1</version>
     </dependency>  
   </dependencies>
-  <profiles>
-    <profile>
-      <id>javadoc</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9.1</version>
-            <configuration>
-              <show>private</show>
-              <doclet>org.umlgraph.doclet.UmlGraphDoc</doclet>
-              <docletArtifact>
-                <groupId>org.umlgraph</groupId>
-                <artifactId>umlgraph</artifactId>
-                <version>5.6.6</version>
-              </docletArtifact>
-              <additionalparam>-views</additionalparam>
-              <useStandardDocletOptions>true</useStandardDocletOptions>
-            </configuration>
-            <executions>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
   <build>
     <plugins>
       <plugin>
@@ -101,6 +68,15 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.1</version>
+        <configuration>
+          <show>private</show>
+          <nohelp>true</nohelp>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <reporting>
@@ -114,6 +90,15 @@
             <format>html</format>
             <format>xml</format>
           </formats>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.10.1</version>
+        <configuration>
+          <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
+          <show>public</show>
         </configuration>
       </plugin>
     </plugins>
