@@ -9,7 +9,7 @@ URL:		          http://scrier.github.io
 Source0: 	        %{name}-%{version}.tar.gz
 BuildArch:        noarch
 
-BuildRequires:    maven-local
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 This is an test to build opus rpm.
@@ -28,20 +28,35 @@ This package contains the API documentation for %{name}
 
 
 %build
-%mvn_build
 
 
 %install
-%mvn_install
+rm -rf %{buildroot}
+mkdir -p  %{buildroot}
+
+cp -a * %{buildroot}
+rm %{buildroot}/setup.sh
+mv %{buildroot}%{_initrddir}/duke.sh %{buildroot}%{_initrddir}/duke
+mv %{buildroot}%{_initrddir}/nuke.sh %{buildroot}%{_initrddir}/nuke
+ln -sf %{_javadir}/%{name}/common-%{version}.jar %{_javadir}/%{name}/common.jar
+ln -sf %{_javadir}/%{name}/duke-%{version}.jar %{_javadir}/%{name}/duke.jar
+ln -sf %{_javadir}/%{name}/nuke-%{version}.jar %{_javadir}/%{name}/nuke.jar
 
 
 %clean
-%mvn_clean
+rm -rf %{buildroot}
 
 
-%files -f .mfiles
-%dir %{_javadir}/%{name}
-%files javadoc -f .mfiles-javadoc
+%files
+%defattr(-,steven,steven,-)
+
+%{_initrddir}/duke
+%{_initrddir}/nuke
+%{_javadir}/%{name}/log4j2duke.xml
+%{_javadir}/%{name}/log4j2nuke.xml
+%{_javadir}/%{name}/common.jar
+%{_javadir}/%{name}/nuke.jar
+%{_javadir}/%{name}/duke.jar
 
 
 %changelog

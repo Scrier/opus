@@ -19,7 +19,11 @@ pom.xml.versionsBackup
 pom.xml.next
 release.properties
 
+*.swp
+
 # Project specific
 dukeHazelcastConfig.xml
 nukeHazelcastConfig.xml
+
+
 

@@ -52,6 +52,12 @@ test:
 	mvn test
 
 .PHONY: tar
-tar:
+tar: clean build
 	./create_tar.sh
+
+.PHONY: rpm
+rpm: tar
+	mkdir -p ~/rpmbuild/{RPMS,SRPMS,BUILD,SOURCES,SPECS}
+	mv *.tar.gz ~/rpmbuild/SOURCES/
+	rpmbuild -bb opus.spec
 
