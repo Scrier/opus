@@ -44,7 +44,6 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	/**
 	 * Method to add a new entry to the map.
 	 * @param data BaseNukeC to add to the map.
-	 * @return long with the unique ID that this data has.
 	 */
 	public void addEntry(BaseNukeC data) {
 		log.trace("addEntry(" + data + ")");

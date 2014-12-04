@@ -33,7 +33,7 @@ public abstract class BaseJsonC {
 	
 	/**
 	 * Method to implement parsing to class from source.
-	 * @throws Exception
+	 * @throws Exception exception thrown.
 	 */
 	public abstract void parseToJson() throws Exception;
 	
@@ -55,7 +55,7 @@ public abstract class BaseJsonC {
 	
 	/**
 	 * Method to implement parsing from source to class.
-	 * @throws Exception
+	 * @throws Exception exception thrown.
 	 */
 	public abstract void parseFromJson() throws Exception;
 
@@ -76,7 +76,7 @@ public abstract class BaseJsonC {
   /**
    * Method to check if a value is modified.
    * @param value
-   * @return
+   * @return boolean 
    */
 	public boolean isValueModified(long value) {
 		return (value & getValuesModified()) > 0; 
@@ -84,7 +84,7 @@ public abstract class BaseJsonC {
   
 	/**
 	 * Method to set values modified.
-	 * @param value
+	 * @param value long
 	 */
 	protected void addValueModified(long value) {
 		setValuesModified(getValuesModified() | value); 

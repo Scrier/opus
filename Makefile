@@ -29,6 +29,7 @@ build:
 .PHONY: clean
 clean:
 	mvn clean
+	find . -maxdepth 1 -lname '*' -exec rm {} \;
 
 .PHONY: coverage
 coverage: clean
@@ -52,6 +53,5 @@ test:
 
 .PHONY: tar
 tar:
-	$(shell ./create_tar.sh)
-
+	./create_tar.sh
 

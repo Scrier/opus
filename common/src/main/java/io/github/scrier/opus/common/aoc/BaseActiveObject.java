@@ -46,7 +46,7 @@ public abstract class BaseActiveObject {
 
 	/**
 	 * @return the identity
-	 * @throws InvalidOperationException 
+	 * @throws InvalidOperationException if not is correctly initialized.
 	 */
 	public long getIdentity() throws InvalidOperationException {
 		if( !isCorrectInitPerformed() ) {
@@ -79,7 +79,7 @@ public abstract class BaseActiveObject {
 
 	/**
 	 * @return the settings
-	 * @throws InvalidOperationException 
+	 * @throws InvalidOperationException if not correctly initialized
 	 */
 	public IMap<String, String> getSettings() throws InvalidOperationException {
 		if( !isCorrectInitPerformed() ) {
