@@ -1,6 +1,6 @@
 Name:	            opus	
-Version:          0.1.0
-#Version:          %{version}
+#Version:          0.1.0
+Version:          %{version}
 Release:	        1%{?dist}
 #Release:	         %{release}
 Summary:	        distributed load generator written in Java.
@@ -13,6 +13,10 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 This is an test to build opus rpm.
+opus version: %{version}
+common version: %{common_version}
+duke version: %{duke_version}
+nuke version: %{nuke_version}
 
 
 %package          javadoc
@@ -38,13 +42,16 @@ cp -a * %{buildroot}
 rm %{buildroot}/setup.sh
 mv %{buildroot}%{_initrddir}/duke.sh %{buildroot}%{_initrddir}/duke
 mv %{buildroot}%{_initrddir}/nuke.sh %{buildroot}%{_initrddir}/nuke
-ln -sf %{_javadir}/%{name}/common-%{version}.jar %{_javadir}/%{name}/common.jar
-ln -sf %{_javadir}/%{name}/duke-%{version}.jar %{_javadir}/%{name}/duke.jar
-ln -sf %{_javadir}/%{name}/nuke-%{version}.jar %{_javadir}/%{name}/nuke.jar
 
 
 %clean
 rm -rf %{buildroot}
+
+
+%post
+ln -sf %{_javadir}/%{name}/common-%{common_version}.jar %{_javadir}/%{name}/common.jar
+ln -sf %{_javadir}/%{name}/duke-%{duke_version}.jar %{_javadir}/%{name}/duke.jar
+ln -sf %{_javadir}/%{name}/nuke-%{nuke_version}.jar %{_javadir}/%{name}/nuke.jar
 
 
 %files
@@ -54,9 +61,9 @@ rm -rf %{buildroot}
 %{_initrddir}/nuke
 %{_javadir}/%{name}/log4j2duke.xml
 %{_javadir}/%{name}/log4j2nuke.xml
-%{_javadir}/%{name}/common.jar
-%{_javadir}/%{name}/nuke.jar
-%{_javadir}/%{name}/duke.jar
+%{_javadir}/%{name}/common-%{common_version}.jar
+%{_javadir}/%{name}/nuke-%{nuke_version}.jar
+%{_javadir}/%{name}/duke-%{duke_version}.jar
 
 
 %changelog

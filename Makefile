@@ -52,12 +52,34 @@ test:
 	mvn test
 
 .PHONY: tar
-tar: clean build
+tar:
+	mvn -Dmaven.test.skip=true clean package
 	./create_tar.sh
+
+###############################################################################
+# Packaging
+
+MVN_VERSION 		:= $(shell mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+COMMON_VERSION 	:= $(shell cd common && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+DUKE_VERSION 		:= $(shell cd duke && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+NUKE_VERSION 		:= $(shell cd nuke && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+RPM_DEFINES 	 	:= \
+						--define "version $(MVN_VERSION)" \
+						--define "common_version $(COMMON_VERSION)" \
+						--define "duke_version $(DUKE_VERSION)" \
+						--define "nuke_version $(NUKE_VERSION)"
 
 .PHONY: rpm
 rpm: tar
 	mkdir -p ~/rpmbuild/{RPMS,SRPMS,BUILD,SOURCES,SPECS}
 	mv *.tar.gz ~/rpmbuild/SOURCES/
-	rpmbuild -bb opus.spec
+	rpmbuild -bb $(RPM_DEFINES) opus.spec
+
+.PHONY: info
+info: 
+	@echo "MVN_VERSION $(MVN_VERSION)"
+	@echo "RPM_DEFINES $(RPM_DEFINES)"
+	@echo "COMMON_VERSION $(COMMON_VERSION)"
+	@echo "DUKE_VERSION $(DUKE_VERSION)"
+	@echo "NUKE_VERSION $(NUKE_VERSION)"
 
