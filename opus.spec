@@ -48,17 +48,43 @@ mv %{buildroot}%{_initrddir}/nuke.sh %{buildroot}%{_initrddir}/nuke
 rm -rf %{buildroot}
 
 
+%pre
+/usr/bin/getent group opus || /usr/sbin/groupadd -r opus
+/usr/bin/getent passwd opus || /usr/sbin/useradd -r -g opus 
+
+
+%preun
+if [ $1 -eq 0 ]; then
+  /sbin/service duke stop > /dev/null 2>&1
+  /sbin/service nuke stop > /dev/null 2>&1
+  /sbin/chkconfig --del duke
+  /sbin/chkconfig --del nuke
+fi
+
+
 %post
+/sbin/chkconfig --add nuke
+/sbin/chkconfig --add duke
 ln -sf %{_javadir}/%{name}/common-%{common_version}.jar %{_javadir}/%{name}/common.jar
 ln -sf %{_javadir}/%{name}/duke-%{duke_version}.jar %{_javadir}/%{name}/duke.jar
 ln -sf %{_javadir}/%{name}/nuke-%{nuke_version}.jar %{_javadir}/%{name}/nuke.jar
+mkdir -p %{_var}/log/%{name}/nuke
+mkdir -p %{_var}/log/%{name}/duke
+
+
+%postun
+rm -f %{_javadir}/%{name}/common.jar
+rm -f %{_javadir}/%{name}/duke.jar
+rm -f %{_javadir}/%{name}/nuke.jar
 
 
 %files
-%defattr(-,steven,steven,-)
+%defattr(-,opus,opus,-)
 
 %{_initrddir}/duke
 %{_initrddir}/nuke
+%{_sysconfdir}/%{name}/hazelcastNukeConfig.xml
+%{_sysconfdir}/%{name}/hazelcastDukeConfig.xml
 %{_javadir}/%{name}/log4j2duke.xml
 %{_javadir}/%{name}/log4j2nuke.xml
 %{_javadir}/%{name}/common-%{common_version}.jar

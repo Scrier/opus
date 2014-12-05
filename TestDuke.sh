@@ -19,8 +19,8 @@ duke=$duke_target/duke*.jar
 config=$duke_path/hazel*.xml
 
 duke_name=$pwd/duke.jar
-config_name=$pwd/dukeHazelcastConfig.xml
-log4jconfig=$pwd/dukelog4j2config.xml
+config_name=$pwd/files/local/dukeHazelcastConfig.xml
+log4jconfig=$pwd/files/local/dukelog4j2config.xml
 
 [[ -z $duke ]] && error "No jar file gound in $duke_target, have you compiled?"
 [[ -z $config ]] && error "No hazelcast config file found in $duke_path"
