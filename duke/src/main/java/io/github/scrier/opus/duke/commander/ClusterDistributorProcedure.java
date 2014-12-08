@@ -404,7 +404,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
   
   /**
    * Method to check that the correct number of nukes are in correct state.
-   * @return
+   * @return boolean
    */
   private boolean isNukesReady() {
   	log.trace("isNukesReady()");
@@ -516,7 +516,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 
 		/**
 		 * Base handling on removed mmethods.
-		 * @param data BaseNukeC
+		 * @param key Long
 		 */
 		public void removed(Long key) {
 			logLocal.trace("removed(" + key + ")");
@@ -538,21 +538,21 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * State handling for Aborted transactions.
 	 * @author andreas.joelsson
-	 * @code * -> ABORTED
+	 * {@code * -> ABORTED}
 	 */
 	private class Aborted extends State {}
 
 	/**
 	 * State handling for Created transactions.
 	 * @author andreas.joelsson
-	 * @code * -> ABORTED
+	 * {@code * -> ABORTED}
 	 */
 	private class Created extends State {}
 	
 	/**
 	 * State handling for Completed transactions
 	 * @author andreas.joelsson
-	 * @code * -> ABORTED
+	 * {@code * -> ABORTED}
 	 */
 	private class Completed extends State {}
 	
@@ -580,7 +580,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 
 		/**
 		 * RampingUp handling on removed methods.
-		 * @param data BaseNukeC
+		 * @param key Long
 		 */
 		@Override
 		public void removed(Long key) {
@@ -662,7 +662,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 
 		/**
 		 * RampingUp handling on removed methods.
-		 * @param data BaseNukeC
+		 * @param key Long
 		 */
 		@Override
 		public void removed(Long key) {
@@ -760,7 +760,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 
 		/**
 		 * PeakDelay handling on removed methods.
-		 * @param data BaseNukeC
+		 * @param key Long:
 		 */
 		@Override
 		public void removed(Long key) {
@@ -841,7 +841,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 
 		/**
 		 * RampingDown handling on removed methods.
-		 * @param data BaseNukeC
+		 * @param key Long
 		 */
 		@Override
 		public void removed(Long key) {

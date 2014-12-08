@@ -217,7 +217,7 @@ public class NukeTasks extends BaseListener {
 	
 	/**
 	 * Method to handle commands.
-	 * @param command
+	 * @param command NukeCommand to handle.
 	 */
 	private void handleCommand(NukeCommand command) {
 		log.trace("handleCommand(" + command + ")");
@@ -279,10 +279,10 @@ public class NukeTasks extends BaseListener {
 	/**
 	 * Method to get a list of procedures of a specific class.
 	 * @param procs the class to look for.
-	 * @return List<BaseProcedure>
+	 * @return List List with BaseTaskProcedure
 	 * {@code
-	 * List<BaseProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
-	 * for( BaseProcedure procedure : commandProcedures ) {
+	 * List<BaseTaskProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
+	 * for( BaseTaskProcedure procedure : commandProcedures ) {
 	 *   ...
 	 * }
 	 * }

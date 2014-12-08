@@ -75,7 +75,7 @@ public abstract class BaseJsonC {
   
   /**
    * Method to check if a value is modified.
-   * @param value
+   * @param value the value to check
    * @return boolean 
    */
 	public boolean isValueModified(long value) {

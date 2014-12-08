@@ -77,7 +77,6 @@ public enum Context {
 	/**
 	 * Method to add a new entry to the map.
 	 * @param data BaseNukeC to add to the map.
-	 * @return long with the unique ID that this data has.
 	 */
 	public void addEntry(BaseNukeC data) {
 		getCommander().addEntry(data);
@@ -162,9 +161,9 @@ public enum Context {
   
   /**
    * Method to add nuke to the map of existing monitored items.
-   * @param identity
-   * @param info
-   * @return
+   * @param identity Long
+   * @param info INukeInfo
+   * @return boolean
    */
   public boolean addNuke(Long identity, INukeInfo info) {
   	log.trace("addNuke(" + identity + ", " + info + ")");
@@ -182,7 +181,7 @@ public enum Context {
   
   /**
    * Return a list with all nuke nodes and their available info.
-   * @return List<INukeInfo>
+   * @return List list returned
    */
   public List<INukeInfo> getNukes() {
   	return new ArrayList<INukeInfo>(getNukesMap().values());
@@ -191,7 +190,7 @@ public enum Context {
   /**
    * Method to get a Collection with nukes in the state(s) specified.
    * @param states one to many NukeState to look for.
-   * @return Collection<INukeInfo> tat is in the states specified.
+   * @return List that is in the states specified.
    * {@code
    * List<INukeInfo> singleState = getNukes(NukeState.RUNNING);
    * List<INukeInfo> multiState = getNukes(NukeState.INTITIALIZED, NukeState.RUNNING);
@@ -236,7 +235,7 @@ public enum Context {
 	 * @param time int with the time in the specified format.
 	 * @param id long with unique id to get returned.
 	 * @param callback ITimeOutCallback interface to call.
-	 * @param timeunit format to schedule timeout in.
+	 * @param timeUnit TuneUnit format to schedule timeout in.
 	 */
   public void startTimeout(int time, long id, ITimeOutCallback callback, TimeUnit timeUnit) {
   	log.trace("startTimeout(" + time + ", " + id + ", " + callback + ", " + timeUnit + ")");
