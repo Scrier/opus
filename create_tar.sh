@@ -13,6 +13,9 @@ _javadir=/usr/share/java
 _javadocdir=/usr/share/javadoc
 _initdir=/etc/rc.d/init.d
 _configdir=/etc/opus
+_logdir=/var/log/opus
+_lognukedir=$_logdir/nuke
+_logdukedir=$_logdir/duke
 #_mavenpomdir=/usr/share/maven-poms
 
 echo "Version: $version"
@@ -22,7 +25,7 @@ echo "_javadocdir: $_javadocdir"
 
 # Create folders
 mkdir $folder
-mkdir -p $folder/{$_javadir/$system,$_javadocdir/$system,$_initdir,$_configdir}
+mkdir -p $folder/{$_javadir/$system,$_javadocdir/$system,$_initdir,$_configdir,$_logdir,$_lognukedir,$_logdukedir}
 
 # Copy jar files to correct directory.
 find . -regex ".*\/target\/.*\.jar" -not -regex ".*\/original.*" -not -regex ".*javadoc\.jar" -exec cp {} $folder/$_javadir/$system \;

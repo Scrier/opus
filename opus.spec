@@ -11,12 +11,16 @@ BuildArch:        noarch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
+Requires(pre):    /usr/sbin/useradd, /usr/sbin/groupadd, /usr/bin/getent
+Requires(post):   /sbin/chkconfig
+Requires(preun):  /sbin/chkconfig, /sbin/service
+
 %description
 This is an test to build opus rpm.
-opus version: %{version}
-common version: %{common_version}
-duke version: %{duke_version}
-nuke version: %{nuke_version}
+  opus version: %{version}
+    | - common version: %{common_version}
+          | - duke version: %{duke_version}
+          | - nuke version: %{nuke_version}
 
 
 %package          javadoc
@@ -50,7 +54,7 @@ rm -rf %{buildroot}
 
 %pre
 /usr/bin/getent group opus || /usr/sbin/groupadd -r opus
-/usr/bin/getent passwd opus || /usr/sbin/useradd -r -g opus 
+/usr/bin/getent passwd opus || /usr/sbin/useradd -r -d /home/opus -g opus -s /bin/bash opus
 
 
 %preun
@@ -83,13 +87,11 @@ rm -f %{_javadir}/%{name}/nuke.jar
 
 %{_initrddir}/duke
 %{_initrddir}/nuke
-%{_sysconfdir}/%{name}/hazelcastNukeConfig.xml
-%{_sysconfdir}/%{name}/hazelcastDukeConfig.xml
-%{_javadir}/%{name}/log4j2duke.xml
-%{_javadir}/%{name}/log4j2nuke.xml
-%{_javadir}/%{name}/common-%{common_version}.jar
-%{_javadir}/%{name}/nuke-%{nuke_version}.jar
-%{_javadir}/%{name}/duke-%{duke_version}.jar
+%{_sysconfdir}/%{name}
+%{_javadir}/%{name}
+%{_var}/log/%{name}
+%{_var}/log/%{name}/nuke
+%{_var}/log/%{name}/duke
 
 
 %changelog

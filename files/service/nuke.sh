@@ -1,4 +1,12 @@
 #!/bin/bash
+### BEGIN INIT INFO
+# Provides:           nuke 
+# Required-Start:     $network
+# Required-Stop:      $network
+# Default-Start:      2 3 4 5
+# Default-Stop:       0 1 6
+# Short-Description:  Start nuke
+### END INIT INFO
 #
 # description: Java deamon script
 #
@@ -11,17 +19,19 @@ JAVA_HOME=/usr/java/latest
 
 serviceNameLo="nuke"                                  # service name with the first letter in lowercase
 serviceName="Nuke"                                    # service name
-serviceUser="steven"                                # OS user name for the service
+serviceUser="opus"                                # OS user name for the service
 serviceGroup="verif.testtool.access"                        # OS group name for the service
 applDir="/usr/share/java/opus"                  # home directory of the service application
-serviceUserHome="/home/steven"                      # home directory of the service user
+serviceUserHome="/home/opus"                      # home directory of the service user
 serviceLogFile="/var/log/opus/$serviceNameLo.log"               # log file for StdOut/StdErr
 maxShutdownTime=15                                         # maximum number of seconds to wait for the daemon to terminate normally
-log4j2file=${log4j2file:-/usr/share/java/opus/log4j2nuke.xml} # where log4j2 xml configuration file resides.
-pidFile="/var/run/$serviceNameLo.pid"                      # name of PID file (PID = process ID number)
+log4j2file=${log4j2file:-$applDir/log4j2nuke.xml} # where log4j2 xml configuration file resides.
+pidFile="$applDir/$serviceNameLo.pid"                      # name of PID file (PID = process ID number)
+hazelcastConfig=${hazelcastConfig:-$serviceUserHome/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
+[[ ! -f $hazelcastConfig ]] && hazelcastConfig=/etc/opus/hazelcastNukeConfig.xml # if not exist, do default
 javaCommand="java"                                         # name of the Java launcher without the path
 javaExe="$JAVA_HOME/bin/$javaCommand"                      # file name of the Java application launcher executable
-javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.config=$serviceUserHome/hazelcastNukeConfig.xml"
+javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.config=$hazelcastConfig"
 javaArgs="-jar $applDir/nuke.jar"     # arguments for Java launcher
 javaCommandLine="$javaExe $javaAppArgs $javaArgs"          # command line to start the Java service application
 javaCommandLineKeyword="nuke.jar"     # a keyword that occurs on the commandline, used to detect an already running service process and to distinguish it from others
