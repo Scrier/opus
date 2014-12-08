@@ -44,6 +44,9 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private State[] states = { new Aborted(), new Created(), new WaitingForNuke(),
 														 new RampingUp(), new PeakDelay(), new RampingDown() };
 
+	/**
+	 * Constructor
+	 */
 	public ClusterDistributorProcedure() {
 		setMinNodes(0);
 		setMaxUsers(0);
@@ -412,6 +415,11 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
   	return (getMinNodes() <= theContext.getNukes(NukeState.RUNNING).size());
   }
 	
+  /** 
+   * Method to get a suggestion of the number of items to use for distribution.
+   * @param noOfUsers int with the number that we want to use.
+   * @return Map with key Long and Integer value, where key is nukeid and value is amount.
+   */
 	public Map<Long, Integer> getDistributionSuggestion(int noOfUsers) {
 		log.trace("getDistributionSuggestion(" + noOfUsers + ")");
 		Map<Long, Integer> retValue = new HashMap<Long, Integer>();
@@ -561,7 +569,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.WaitingForNuke");
 		
 		/**
-		 * RampingUp handling on update methods.
+		 * WaitingForNuke handling on update methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -570,7 +578,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		}  
 
 		/**
-		 * RampingUp handling on evicted methods.
+		 * WaitingForNuke handling on evicted methods.
 		 * @param data BaseNukeC
 		 */
 		@Override
@@ -579,7 +587,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		}
 
 		/**
-		 * RampingUp handling on removed methods.
+		 * WaitingForNuke handling on removed methods.
 		 * @param key Long
 		 */
 		@Override
@@ -588,7 +596,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		}
 
 		/**
-		 * RampingUp handling on timeout methods.
+		 * WaitingForNuke handling on timeout methods.
 		 * @param id long
 		 */
 		@Override
