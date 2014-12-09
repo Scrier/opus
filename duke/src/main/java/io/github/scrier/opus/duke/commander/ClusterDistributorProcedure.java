@@ -198,210 +198,210 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @return the minNodes
 	 */
-	private int getMinNodes() {
+	protected int getMinNodes() {
 		return minNodes;
 	}
 
 	/**
 	 * @param minNodes the minNodes to set
 	 */
-	private void setMinNodes(int minNodes) {
+	protected void setMinNodes(int minNodes) {
 		this.minNodes = minNodes;
 	}
 
 	/**
 	 * @return the maxUsers
 	 */
-	private int getMaxUsers() {
+	protected int getMaxUsers() {
 		return maxUsers;
 	}
 
 	/**
 	 * @param maxUsers the maxUsers to set
 	 */
-	private void setMaxUsers(int maxUsers) {
+	protected void setMaxUsers(int maxUsers) {
 		this.maxUsers = maxUsers;
 	}
 
 	/**
 	 * @return the intervalSeconds
 	 */
-	private int getIntervalSeconds() {
+	protected int getIntervalSeconds() {
 		return intervalSeconds;
 	}
 
 	/**
 	 * @param intervalSeconds the intervalSeconds to set
 	 */
-	private void setIntervalSeconds(int intervalSeconds) {
+	protected void setIntervalSeconds(int intervalSeconds) {
 		this.intervalSeconds = intervalSeconds;
 	}
 
 	/**
 	 * @return the userIncrease
 	 */
-	private int getUserIncrease() {
+	protected int getUserIncrease() {
 		return userIncrease;
 	}
 
 	/**
 	 * @param userIncrease the userIncrease to set
 	 */
-	private void setUserIncrease(int userIncrease) {
+	protected void setUserIncrease(int userIncrease) {
 		this.userIncrease = userIncrease;
 	}
 
 	/**
 	 * @return the peakDelaySeconds
 	 */
-	private int getPeakDelaySeconds() {
+	protected int getPeakDelaySeconds() {
 		return peakDelaySeconds;
 	}
 
 	/**
 	 * @param peakDelaySeconds the peakDelaySeconds to set
 	 */
-	private void setPeakDelaySeconds(int peakDelaySeconds) {
+	protected void setPeakDelaySeconds(int peakDelaySeconds) {
 		this.peakDelaySeconds = peakDelaySeconds;
 	}
 
 	/**
 	 * @return the terminateSeconds
 	 */
-	private int getTerminateSeconds() {
+	protected int getTerminateSeconds() {
 		return terminateSeconds;
 	}
 
 	/**
 	 * @param terminateSeconds the terminateSeconds to set
 	 */
-	private void setTerminateSeconds(int terminateSeconds) {
+	protected void setTerminateSeconds(int terminateSeconds) {
 		this.terminateSeconds = terminateSeconds;
 	}
 
 	/**
 	 * @return the waitingForNukeUpdateSeconds
 	 */
-  public int getWaitingForNukeUpdateSeconds() {
+  protected int getWaitingForNukeUpdateSeconds() {
 	  return waitingForNukeUpdateSeconds;
   }
 
 	/**
 	 * @param waitingForNukeUpdateSeconds the waitingForNukeUpdateSeconds to set
 	 */
-  public void setWaitingForNukeUpdateSeconds(int waitingForNukeUpdateSeconds) {
+  protected void setWaitingForNukeUpdateSeconds(int waitingForNukeUpdateSeconds) {
 	  this.waitingForNukeUpdateSeconds = waitingForNukeUpdateSeconds;
   }
 
 	/**
 	 * @return the rampDownUpdateSeconds
 	 */
-  public int getRampDownUpdateSeconds() {
+  protected int getRampDownUpdateSeconds() {
 	  return rampDownUpdateSeconds;
   }
 
 	/**
 	 * @param rampDownUpdateSeconds the rampDownUpdateSeconds to set
 	 */
-  public void setRampDownUpdateSeconds(int rampDownUpdateSeconds) {
+  protected void setRampDownUpdateSeconds(int rampDownUpdateSeconds) {
 	  this.rampDownUpdateSeconds = rampDownUpdateSeconds;
   }
 
 	/**
 	 * @return the repeated
 	 */
-	private boolean isRepeated() {
+	protected boolean isRepeated() {
 		return repeated;
 	}
 
 	/**
 	 * @param repeated the repeated to set
 	 */
-	private void setRepeated(boolean repeated) {
+	protected void setRepeated(boolean repeated) {
 		this.repeated = repeated;
 	}
 
 	/**
 	 * @return the shutDownOnce
 	 */
-  public boolean isShutDownOnce() {
+	protected boolean isShutDownOnce() {
 	  return shutDownOnce;
   }
 
 	/**
 	 * @param shutDownOnce the shutDownOnce to set
 	 */
-  public void setShutDownOnce(boolean shutDownOnce) {
+	protected void setShutDownOnce(boolean shutDownOnce) {
 	  this.shutDownOnce = shutDownOnce;
   }
 
 	/**
 	 * @return the command
 	 */
-	private String getCommand() {
+	protected String getCommand() {
 		return command;
 	}
 
 	/**
 	 * @param command the command to set
 	 */
-	private void setCommand(String command) {
+	protected void setCommand(String command) {
 		this.command = command;
 	}
 
 	/**
 	 * @return the folder
 	 */
-	private String getFolder() {
+	protected String getFolder() {
 		return folder;
 	}
 
 	/**
 	 * @param folder the folder to set
 	 */
-	private void setFolder(String folder) {
+	protected void setFolder(String folder) {
 		this.folder = folder;
 	}
 
 	/**
 	 * @return the userRampedUp
 	 */
-  public int getLocalUserRampedUp() {
+  protected int getLocalUserRampedUp() {
 	  return localUserRampedUp;
   }
 
 	/**
 	 * @param userRampedUp the userRampedUp to set
 	 */
-  public void setLocalUserRampedUp(int userRampedUp) {
+  protected void setLocalUserRampedUp(int userRampedUp) {
 	  this.localUserRampedUp = userRampedUp;
   }
 
 	/**
 	 * @return the timerID
 	 */
-	private long getTimerID() {
+	protected long getTimerID() {
 		return timerID;
 	}
 
 	/**
 	 * @param timerID the timerID to set
 	 */
-	private void setTimerID(long timerID) {
+	protected void setTimerID(long timerID) {
 		this.timerID = timerID;
 	}
 
 	/**
 	 * @return the terminateID
 	 */
-  public long getTerminateID() {
+	protected long getTerminateID() {
 	  return terminateID;
   }
 
 	/**
 	 * @param terminateID the terminateID to set
 	 */
-  public void setTerminateID(long terminateID) {
+	protected void setTerminateID(long terminateID) {
 	  this.terminateID = terminateID;
   }
   
@@ -409,7 +409,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
    * Method to check that the correct number of nukes are in correct state.
    * @return boolean
    */
-  private boolean isNukesReady() {
+  protected boolean isNukesReady() {
   	log.trace("isNukesReady()");
   	log.debug((getMinNodes() <= theContext.getNukes(NukeState.RUNNING).size()) + " = " + getMinNodes() + " <= " + theContext.getNukes(NukeState.RUNNING).size() + ".");
   	return (getMinNodes() <= theContext.getNukes(NukeState.RUNNING).size());
@@ -458,7 +458,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		return retValue;
 	}
 	
-	private int getTotalUsers(Map<Long, Integer> availableNukes, INukeInfo info) {
+	protected int getTotalUsers(Map<Long, Integer> availableNukes, INukeInfo info) {
 		log.trace("getTotalUsers(" + availableNukes + ", " + info + ")");
 		int retValue = info.getRequestedNoOfUsers();
 		if( availableNukes.containsKey(info.getNukeID()) ) {
@@ -471,7 +471,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * Method to get the number of users from the distributed nukes.
 	 * @return int
 	 */
-	private int getDistributedNumberOfUsers() {
+	protected int getDistributedNumberOfUsers() {
 		log.trace("getDistributedNumberOfUsers()");
 		int retValue = 0;
 		for( INukeInfo info : theContext.getNukes() ) {
@@ -484,7 +484,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * Method to approximate the execution time of the test.
 	 * @return int in seconds.
 	 */
-	private int getExecutionTime() {
+	protected int getExecutionTime() {
 		log.trace("getExecutionTime()");
 		int intervals = (int)((getMaxUsers() / getUserIncrease())) + (getMaxUsers() % getUserIncrease() > 0 ? 1 : 0);
 		log.debug(intervals + " = " + (int)((getMaxUsers() / getUserIncrease())) + " + " + (getMaxUsers() % getUserIncrease() > 0 ? 1 : 0));
