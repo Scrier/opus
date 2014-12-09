@@ -33,10 +33,19 @@ public class CommandProcedure extends BaseDukeProcedure {
 	}
 	
 	public CommandProcedure(long component, String command, CommandState state, boolean repeated, ICommandCallback callback) {
-		log.trace("CommandProcedure(" + component + ", " + command + ", " + state + ", " + repeated + ", " + callback + ")");
+		this(component, command, "", state, repeated, callback);
+	}
+	
+	public CommandProcedure(long component, String command, String folder, CommandState state, boolean repeated) {
+		this(component, command, folder, state, repeated, null);
+	}
+	
+	public CommandProcedure(long component, String command, String folder, CommandState state, boolean repeated, ICommandCallback callback) {
+		log.trace("CommandProcedure(" + component + ", " + command + ", " + folder + ", " + state + ", " + repeated + ", " + callback + ")");
 		this.nukeCommand = new NukeCommand();
 		this.nukeCommand.setComponent(component);
 		this.nukeCommand.setCommand(command);
+		this.nukeCommand.setFolder(folder);
 		this.nukeCommand.setRepeated(repeated);
 		this.nukeCommand.setState(state);
 		this.nukeCommand.setTxID(getTxID());

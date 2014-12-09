@@ -1,5 +1,6 @@
 package io.github.scrier.opus.nuke.task.procedures;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,6 +42,7 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
   public void shutDown() throws Exception {
 		log.trace("shutDown()");
 		if( true != isProcedureFinished() ) {
+			log.fatal("shutDown called in a state where we arent finished.");
 			throw new RuntimeException("shutDown called in a state where we arent finished.");
 		} else {
 		  getNukeInfo().setActiveCommands(getNukeInfo().getActiveCommands() - 1);
@@ -98,7 +100,12 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
   		return "Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call";
   	} 
 	  String executeString = getCommand().getCommand();
-	  boolean result = executeProcess(executeString, null, null);
+	  boolean result = false;
+  	if( getCommand().getFolder().isEmpty() ) {
+  		result = executeProcess(executeString, null, null);
+  	} else {
+  		result = executeProcess(executeString, new File(getCommand().getFolder()), null);
+  	}
 	  log.debug("[" + getTxID() + "] Process returns: " + result + ".");
 	  if( result ) {
 	  	getCommand().setState(CommandState.DONE);

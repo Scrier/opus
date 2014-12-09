@@ -1,9 +1,12 @@
 package io.github.scrier.opus.nuke.task.procedures;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.hazelcast.client.impl.client.GetDistributedObjectsRequest;
 
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.CommandState;
@@ -120,7 +123,12 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
   	} 
 	  String executeString = getCommand().getCommand();
 	  do {
-		  boolean result = executeProcess(executeString, null, null);
+	  	boolean result = false;
+	  	if( getCommand().getFolder().isEmpty() ) {
+	  		result = executeProcess(executeString, null, null);
+	  	} else {
+	  		result = executeProcess(executeString, new File(getCommand().getFolder()), null);
+	  	}
 		  log.debug("[" + getTxID() + "] Process returns: " + result + ".");
 		  if( !isRepeated() && result ) {
 		  	getCommand().setState(CommandState.DONE);

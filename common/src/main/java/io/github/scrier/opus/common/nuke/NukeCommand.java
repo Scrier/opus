@@ -15,6 +15,7 @@ public class NukeCommand extends BaseNukeC {
 	private static Logger log = LogManager.getLogger(NukeCommand.class);
 	
 	private String command;
+	private String folder;
 	private String response;
 	private CommandState state;
 	private long component;
@@ -23,6 +24,7 @@ public class NukeCommand extends BaseNukeC {
 	public NukeCommand() {
 		super(NukeFactory.FACTORY_ID, NukeFactory.NUKE_COMMAND);
 		setCommand("");
+		setFolder("");
 		setResponse("");
 		setState(CommandState.UNDEFINED);
 		setComponent(-1L);
@@ -32,6 +34,7 @@ public class NukeCommand extends BaseNukeC {
 	public NukeCommand(NukeCommand obj2copy) {
 		super(obj2copy);
 		setCommand(obj2copy.getCommand());
+		setFolder(obj2copy.getFolder());
 		setResponse(obj2copy.getResponse());
 		setState(obj2copy.getState());
 		setComponent(obj2copy.getComponent());
@@ -43,6 +46,7 @@ public class NukeCommand extends BaseNukeC {
 		if( input instanceof NukeCommand ) {
 			NukeCommand obj2copy = (NukeCommand)input;
 			setCommand(obj2copy.getCommand());
+			setFolder(obj2copy.getFolder());
 			setResponse(obj2copy.getResponse());
 			setState(obj2copy.getState());
 			setComponent(obj2copy.getComponent());
@@ -60,6 +64,7 @@ public class NukeCommand extends BaseNukeC {
 		super.readData(in);
 		log.trace("readData(" + in + ")");
 		setCommand(in.readUTF());
+		setFolder(in.readUTF());
 		setResponse(in.readUTF());
 		setState(CommandState.valueOf(in.readUTF()));
 		setComponent(in.readLong());
@@ -74,6 +79,7 @@ public class NukeCommand extends BaseNukeC {
 		super.writeData(out);
 		log.trace("writeData(" + out + ")");
 		out.writeUTF(getCommand());
+		out.writeUTF(getFolder());
 		out.writeUTF(getResponse());
 		out.writeUTF(getState().toString());
 		out.writeLong(getComponent());
@@ -93,6 +99,20 @@ public class NukeCommand extends BaseNukeC {
 	public void setCommand(String command) {
 		this.command = command;
 	}
+
+	/**
+	 * @return the folder
+	 */
+  public String getFolder() {
+	  return folder;
+  }
+
+	/**
+	 * @param folder the folder to set
+	 */
+  public void setFolder(String folder) {
+	  this.folder = folder;
+  }
 
 	/**
 	 * @return the response
@@ -157,6 +177,7 @@ public class NukeCommand extends BaseNukeC {
 	public String toString() {
 		String retValue = super.toString();
 		retValue += " - NukeCommand{command:" + getCommand();
+		retValue += ", folder:" + getFolder();
 		retValue += ", response:" + getResponse();
 		retValue += ", state:" + getState();
 		retValue += ", component:" + getComponent();

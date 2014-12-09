@@ -711,7 +711,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 					for( Entry<Long, Integer> command : distribution.entrySet() ) {
 						logLocal.debug("Sending " + command.getValue() + " commands to nuke with id: " + command.getKey() + ".");
 						for( int i = 0; i < command.getValue(); i++ ) {
-							registerProcedure(new CommandProcedure(command.getKey(), getCommand(), CommandState.EXECUTE, isRepeated()));
+							registerProcedure(new CommandProcedure(command.getKey(), getCommand(), getFolder(), CommandState.EXECUTE, isRepeated()));
 						}
 					}
 					logLocal.info("Ramping up from " + getLocalUserRampedUp() + " to " + (getLocalUserRampedUp() + usersToAdd) + ", of a total of " + getMaxUsers() + ".");
@@ -889,9 +889,11 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 						startTimeout(getRampDownUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 					}
 				} else {
+					log.fatal("Received status from unknown nuke with id: " + nukeID + ".");
 					throw new RuntimeException("Received status from unknown nuke with id: " + nukeID + ".");
 				}
 			} else {
+				log.fatal("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
 				throw new RuntimeException("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
 			}
 		}
