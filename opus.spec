@@ -89,6 +89,7 @@ rm -f %{_javadir}/%{name}/nuke.jar
 %{_initrddir}/nuke
 %{_sysconfdir}/%{name}
 %{_javadir}/%{name}
+%{_javadocdir}/%{name}
 %{_var}/log/%{name}
 %{_var}/log/%{name}/nuke
 %{_var}/log/%{name}/duke
