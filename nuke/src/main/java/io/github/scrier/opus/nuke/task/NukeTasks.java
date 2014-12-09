@@ -99,26 +99,22 @@ public class NukeTasks extends BaseListener {
 	@Override
   public void entryAdded(Long component, BaseNukeC data) {
 		log.trace("entryAdded(" + component + ", " + data + ")");
-		if( getIdentity() != component ) {
-			log.debug("Received entry to " + component + " with " + data + ", do nothing.");
-		} else {
-			switch( data.getId() ) {
-				case NukeFactory.NUKE_INFO:
-				{
-					// do nothing
-					break;
-				}
-				case NukeFactory.NUKE_COMMAND: 
-				{
-					NukeCommand command = new NukeCommand(data);
-					handleCommand(command);
-					break;
-				}
-				default:
-				{
-					log.error("Unknown id of data handler with id: " + data.getId() + ".");
-					break;
-				}
+		switch( data.getId() ) {
+			case NukeFactory.NUKE_INFO:
+			{
+				// do nothing
+				break;
+			}
+			case NukeFactory.NUKE_COMMAND: 
+			{
+				NukeCommand command = new NukeCommand(data);
+				handleCommand(command);
+				break;
+			}
+			default:
+			{
+				log.error("Unknown id of data handler with id: " + data.getId() + ".");
+				break;
 			}
 		}
 	}
@@ -227,28 +223,36 @@ public class NukeTasks extends BaseListener {
 		log.trace("handleCommand(" + command + ")");
 	  switch( command.getState() ) {
 	  	case EXECUTE: {
-	  		if( Shared.Commands.Execute.STOP_EXECUTION.equals(command.getCommand()) ) {
-	  			log.info("Received command to stop all executions.");
-	  			distributeExecuteUpdateCommands(CommandState.STOP);
-	  			command.setState(CommandState.DONE);
-	  			updateEntry(command);
-	  		} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
-	  			log.info("Received command to terminate all executions.");
-	  			distributeExecuteUpdateCommands(CommandState.TERMINATE);
-	  			command.setState(CommandState.DONE);
-	  			updateEntry(command);
+	  		if( getIdentity() != command.getComponent() ) {
+	  			log.debug("NukeCommand " + command.getState() + " not for us, expected " + getIdentity() + " but was " + command.getComponent() +  ".");
 	  		} else {
-	  			log.info("Received common command: " + command + ".");
-	  			if( command.isRepeated() ) {
-	  				registerProcedure(new RepeatedExecuteTaskProcedure(command));
+	  			if( Shared.Commands.Execute.STOP_EXECUTION.equals(command.getCommand()) ) {
+	  				log.info("Received command to stop all executions.");
+	  				distributeExecuteUpdateCommands(CommandState.STOP);
+	  				command.setState(CommandState.DONE);
+	  				updateEntry(command);
+	  			} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
+	  				log.info("Received command to terminate all executions.");
+	  				distributeExecuteUpdateCommands(CommandState.TERMINATE);
+	  				command.setState(CommandState.DONE);
+	  				updateEntry(command);
 	  			} else {
-	  				registerProcedure(new ExecuteTaskProcedure(command));
+	  				log.info("Received common command: " + command + ".");
+	  				if( command.isRepeated() ) {
+	  					registerProcedure(new RepeatedExecuteTaskProcedure(command));
+	  				} else {
+	  					registerProcedure(new ExecuteTaskProcedure(command));
+	  				}
 	  			}
 	  		}
 	  		break;
 	  	}
 	  	case QUERY: {
-	  		registerProcedure(new QueryTaskProcedure(command));
+	  		if( getIdentity() != command.getComponent() ) {
+	  			log.debug("NukeCommand " + command.getState() + " not for us, expected " + getIdentity() + " but was " + command.getComponent() +  ".");
+	  		} else {
+	  			registerProcedure(new QueryTaskProcedure(command));
+	  		}
 	  		break;
 	  	}
 	  	case ABORTED: 

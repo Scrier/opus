@@ -711,7 +711,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 					for( Entry<Long, Integer> command : distribution.entrySet() ) {
 						logLocal.debug("Sending " + command.getValue() + " commands to nuke with id: " + command.getKey() + ".");
 						for( int i = 0; i < command.getValue(); i++ ) {
-							registerProcedure(new CommandProcedure(getIdentity(), getCommand(), CommandState.EXECUTE, isRepeated()));
+							registerProcedure(new CommandProcedure(command.getKey(), getCommand(), CommandState.EXECUTE, isRepeated()));
 						}
 					}
 					logLocal.info("Ramping up from " + getLocalUserRampedUp() + " to " + (getLocalUserRampedUp() + usersToAdd) + ", of a total of " + getMaxUsers() + ".");
