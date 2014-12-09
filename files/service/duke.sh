@@ -13,35 +13,53 @@
 # Run Duke, a opus client.
 #
 
+if [ -f /etc/opus/opus.conf ]; then
+  . /etc/opus/opus.conf
+fi
 
 # Set this to your Java installation
 JAVA_HOME=/usr/java/latest
 
-serviceNameLo="duke"                                  # service name with the first letter in lowercase
-serviceName="Duke"                                    # service name
-serviceUser="opus"                                # OS user name for the service
-serviceGroup="verif.testtool.access"                        # OS group name for the service
-applDir="/usr/share/java/opus"                  # home directory of the service application
-serviceUserHome="/home/opus"                      # home directory of the service user
+serviceNameLo="duke"                                            # service name with the first letter in lowercase
+serviceName="Duke"                                              # service name
+serviceUser=${OPUS_SERVICE_USER:-opus}                          # OS user name for the service
+serviceGroup="verif.testtool.access"                            # OS group name for the service
+applDir="/usr/share/java/opus"                                  # home directory of the service application
+serviceUserHome=${OPUS_SERVICE_USER_HOME:-/home/$serviceUser}   # home directory of the service user
 serviceLogFile="/var/log/opus/$serviceNameLo.log"               # log file for StdOut/StdErr
-maxShutdownTime=15                                         # maximum number of seconds to wait for the daemon to terminate normally
-log4j2file=${log4j2file:-$applDir/log4j2duke.xml} # where log4j2 xml configuration file resides.
-pidFile="$applDir/$serviceNameLo.pid"                      # name of PID file (PID = process ID number)
-dukeConfig=${dukeConfig:-$serviceUserHome/dukeConfig.xml}                          # confi input to running testfile
-hazelcastConfig=${hazelcastConfig:-$serviceUserHome/hazelcastDukeConfig.xml} # if not set, set iut to home dir.
-[[ ! -f $hazelcastConfig ]] && hazelcastConfig=/etc/opus/hazelcastDukeConfig.xml # if not exist, do default
-javaCommand="java"                                         # name of the Java launcher without the path
-javaExe="$JAVA_HOME/bin/$javaCommand"                      # file name of the Java application launcher executable
+maxShutdownTime=15                                              # maximum number of seconds to wait for the daemon to terminate normally
+log4j2file=${DUKE_LOG4J2_CONFIG:-$applDir/log4j2duke.xml}       # where log4j2 xml configuration file resides.
+pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
+dukeConfigHome=${DUKE_CONFIG_DIR:-$serviceUserHome}             # config input to running testfile
+hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-/etc/opus/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
+javaCommand="java"                                              # name of the Java launcher without the path
+javaExe="$JAVA_HOME/bin/$javaCommand"                           # file name of the Java application launcher executable
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
-if [[ -f $dukeConfig ]]; then
-  echo "Running with file $dukeConfig."
-  javaArgs="-jar $applDir/duke.jar $dukeConfig"                 # arguments for Java launcher
-else
-  echo "No valid config file to duke specified in param dukeConfig, running default."
-  javaArgs="-jar $applDir/duke.jar"                 # arguments for Java launcher
-fi
-javaCommandLine="$javaExe $javaAppArgs $javaArgs"          # command line to start the Java service application
 javaCommandLineKeyword="duke.jar"     # a keyword that occurs on the commandline, used to detect an already running service process and to distinguish it from others
+
+# Asks the user for input file if not set.
+function query_config() {
+  # Set the prompt for the select command
+  PS3="Type a number or 'q' to quit: "
+  # Create a list of files to display
+  fileList=$(find $dukeConfigHome -maxdepth 1 -type f -name "*.xml" -exec basename {} \;)
+  # Show a menu and ask for input. If the user entered a valid choice,
+  # then invoke the editor on that file
+  select fileName in $fileList; do
+    if [ -n "$fileName" ]; then
+      dukeConfig=$dukeConfigHome/${fileName}
+    fi
+    break
+  done
+  if [[ -f $dukeConfig ]]; then
+    echo "Running with file $dukeConfig."
+    javaArgs="-jar $applDir/duke.jar $dukeConfig"                 # arguments for Java launcher
+  else
+    echo "No valid config file to duke specified in param dukeConfig, running default."
+    javaArgs="-jar $applDir/duke.jar"                 # arguments for Java launcher
+  fi
+  javaCommandLine="$javaExe $javaAppArgs $javaArgs"          # command line to start the Java service application
+}
 
 # Makes the file $1 writable by the group $serviceGroup.
 function makeFileWritable {
@@ -116,6 +134,7 @@ function stopServiceProcess {
 function startService {
    getServicePID
    if [ $? -eq 0 ]; then echo -n "$serviceName is already running"; RETVAL=0; return 0; fi
+   [[ ! -f $dukeConfig ]] && query_config
    echo -n "Starting $serviceName   "
    startServiceProcess
    if [ $? -ne 0 ]; then RETVAL=1; echo "failed"; return 1; fi
