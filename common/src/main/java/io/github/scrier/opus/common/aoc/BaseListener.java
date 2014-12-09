@@ -90,27 +90,17 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	@Override
 	public synchronized void entryEvicted(EntryEvent<Long, BaseNukeC> evicted) {
 		log.trace("entryEvicted(" + evicted + ")");
-		if( evicted.getKey() != evicted.getValue().getKey() ) {
-			log.fatal("Received a mismatch mapkey and BasenukeC key in entryEvicted!!");
-			throw new RuntimeException("Received a mismatch mapkey[" + evicted.getKey() + "] and BasenukeC[" + evicted.getValue() + "] key in entryEvicted!!");
-		} else {
-			preEntry();
-			entryEvicted(evicted.getKey(), evicted.getValue());
-			postEntry();
-		}
+		preEntry();
+		entryEvicted(evicted.getKey(), evicted.getValue());
+		postEntry();
 	}
 
 	@Override
 	public synchronized void entryRemoved(EntryEvent<Long, BaseNukeC> removed) {
 		log.trace("entryRemoved(" + removed + ")");
-		if( removed.getKey() != removed.getValue().getKey() ) {
-			log.fatal("Received a mismatch mapkey and BasenukeC key in entryRemoved!!");
-			throw new RuntimeException("Received a mismatch mapkey[" + removed.getKey() + "] and BasenukeC[" + removed.getValue() + "] key in entryRemoved!!");
-		} else {
-			preEntry();
-			entryRemoved(removed.getKey());
-			postEntry();
-		}
+		preEntry();
+		entryRemoved(removed.getKey());
+		postEntry();
 	}
 
 	@Override
