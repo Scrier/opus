@@ -99,22 +99,26 @@ public class NukeTasks extends BaseListener {
 	@Override
   public void entryAdded(Long component, BaseNukeC data) {
 		log.trace("entryAdded(" + component + ", " + data + ")");
-		switch( data.getId() ) {
-			case NukeFactory.NUKE_INFO:
-			{
-				// do nothing
-				break;
-			}
-			case NukeFactory.NUKE_COMMAND: 
-			{
-				NukeCommand command = new NukeCommand(data);
-				handleCommand(command);
-				break;
-			}
-			default:
-			{
-				log.error("Unknown id of data handler with id: " + data.getId() + ".");
-				break;
+		if( getIdentity() != component ) {
+			log.debug("Received entry to " + component + " with " + data + ", do nothing.");
+		} else {
+			switch( data.getId() ) {
+				case NukeFactory.NUKE_INFO:
+				{
+					// do nothing
+					break;
+				}
+				case NukeFactory.NUKE_COMMAND: 
+				{
+					NukeCommand command = new NukeCommand(data);
+					handleCommand(command);
+					break;
+				}
+				default:
+				{
+					log.error("Unknown id of data handler with id: " + data.getId() + ".");
+					break;
+				}
 			}
 		}
 	}
@@ -266,12 +270,14 @@ public class NukeTasks extends BaseListener {
 			ExecuteTaskProcedure procEx = (ExecuteTaskProcedure)proc;
 			NukeCommand command = procEx.getCommand();
 			command.setState(state);
+			log.debug("Sending local command to " + procEx.getTxID() + " to change state to " + state);
 			procEx.updateEntry(command);
 		}
 		for( BaseTaskProcedure proc : getProcedures(RepeatedExecuteTaskProcedure.class) ) {
 			RepeatedExecuteTaskProcedure procEx = (RepeatedExecuteTaskProcedure)proc;
 			NukeCommand command = procEx.getCommand();
 			command.setState(state);
+			log.debug("Sending local command to " + procEx.getTxID() + " to change state to " + state);
 			procEx.updateEntry(command);
 		}
 	}
