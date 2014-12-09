@@ -77,33 +77,53 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	@Override
 	public synchronized void entryAdded(EntryEvent<Long, BaseNukeC> added) {
 		log.trace("entryAdded(" + added + ")");
-		preEntry();
-		entryAdded(added.getKey(), added.getValue());
-		postEntry();
+		if( added.getKey() != added.getValue().getKey() ) {
+			log.fatal("Received a mismatch mapkey and BasenukeC key in entryAdded!!");
+			throw new RuntimeException("Received a mismatch mapkey[" + added.getKey() + "] and BasenukeC[" + added.getValue() + "] key in entryAdded!!");
+		} else {
+			preEntry();
+			entryAdded(added.getKey(), added.getValue());
+			postEntry();
+		}
 	}
 
 	@Override
 	public synchronized void entryEvicted(EntryEvent<Long, BaseNukeC> evicted) {
 		log.trace("entryEvicted(" + evicted + ")");
-		preEntry();
-		entryEvicted(evicted.getKey(), evicted.getValue());
-		postEntry();
+		if( evicted.getKey() != evicted.getValue().getKey() ) {
+			log.fatal("Received a mismatch mapkey and BasenukeC key in entryEvicted!!");
+			throw new RuntimeException("Received a mismatch mapkey[" + evicted.getKey() + "] and BasenukeC[" + evicted.getValue() + "] key in entryEvicted!!");
+		} else {
+			preEntry();
+			entryEvicted(evicted.getKey(), evicted.getValue());
+			postEntry();
+		}
 	}
 
 	@Override
 	public synchronized void entryRemoved(EntryEvent<Long, BaseNukeC> removed) {
 		log.trace("entryRemoved(" + removed + ")");
-		preEntry();
-		entryRemoved(removed.getKey());
-		postEntry();
+		if( removed.getKey() != removed.getValue().getKey() ) {
+			log.fatal("Received a mismatch mapkey and BasenukeC key in entryRemoved!!");
+			throw new RuntimeException("Received a mismatch mapkey[" + removed.getKey() + "] and BasenukeC[" + removed.getValue() + "] key in entryRemoved!!");
+		} else {
+			preEntry();
+			entryRemoved(removed.getKey());
+			postEntry();
+		}
 	}
 
 	@Override
 	public synchronized void entryUpdated(EntryEvent<Long, BaseNukeC> updated) {
 		log.trace("entryUpdated(" + updated + ")");
-		preEntry();
-		entryUpdated(updated.getKey(), updated.getValue());
-		postEntry();
+		if( updated.getKey() != updated.getValue().getKey() ) {
+			log.fatal("Received a mismatch mapkey and BasenukeC key in entryUpdated!!");
+			throw new RuntimeException("Received a mismatch mapkey[" + updated.getKey() + "] and BasenukeC[" + updated.getValue() + "] key in entryUpdated!!");
+		} else {
+			preEntry();
+			entryUpdated(updated.getKey(), updated.getValue());
+			postEntry();
+		}
 	}
 
 	/**
