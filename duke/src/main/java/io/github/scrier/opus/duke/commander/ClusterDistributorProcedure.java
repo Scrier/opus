@@ -14,32 +14,36 @@ import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeState;
 
+/**
+ * Class that handles the distribution of work between nodes.
+ * @author Andreas Joelsson
+ */
 public class ClusterDistributorProcedure extends BaseDukeProcedure implements ITimeOutCallback {
 
 	private static Logger log = LogManager.getLogger(ClusterDistributorProcedure.class);
 
-	public final int WAITING_FOR_NUKE = CREATED + 1;
-	public final int RAMPING_UP       = CREATED + 2;
-	public final int PEAK_DELAY       = CREATED + 3;
-	public final int RAMPING_DOWN     = CREATED + 4;
+	public final int WAITING_FOR_NUKE = CREATED + 1;	///< State handling the waiting for available nuke.
+	public final int RAMPING_UP       = CREATED + 2;	///< State handling the ramping up phase.
+	public final int PEAK_DELAY       = CREATED + 3;	///< State handling the peak delay phase
+	public final int RAMPING_DOWN     = CREATED + 4;	///< State handling the ramping down phase.
 
-	private int minNodes;
-	private int maxUsers;
-	private int intervalSeconds;
-	private int userIncrease;
-	private int peakDelaySeconds;
-	private int terminateSeconds;
-	private int waitingForNukeUpdateSeconds;
-	private int rampDownUpdateSeconds;
-	private boolean repeated;
-	private boolean shutDownOnce;
-	private String command;
-	private String folder;
+	private int minNodes;	///< minimum number of nodes before we start ramping up.
+	private int maxUsers;	///< How many user or commands should be issued before peak.
+	private int intervalSeconds;	///< Which interval we should increase active commands.
+	private int userIncrease;		///< Number of users increase each interval
+	private int peakDelaySeconds;	///< How long in seconds the peak should hold
+	private int terminateSeconds;	///< How many seconds from start the application can run before terminating.
+	private int waitingForNukeUpdateSeconds;	///< Interval to check for available nodes.
+	private int rampDownUpdateSeconds;	///< Update interval for calculating rampdown
+	private boolean repeated;		///< Issues if commands should be repeated or not.
+	private boolean shutDownOnce;	///< guard for only doing one shutdown.
+	private String command;			///< Command to issue to the nodes.
+	private String folder;			///< What folder each node should execute the command from
 
-	private int localUserRampedUp;
+	private int localUserRampedUp;	///< Local information about issues commands.
 	
-	private long timerID;
-	private long terminateID;
+	private long timerID;			///< id for the timer tick callback
+	private long terminateID;		///< id for the terminate tick callback.
 
 	private State[] states = { new Aborted(), new Created(), new WaitingForNuke(),
 														 new RampingUp(), new PeakDelay(), new RampingDown() };
