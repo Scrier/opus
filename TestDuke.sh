@@ -15,12 +15,13 @@ error() {
 pwd=`pwd`
 duke_path=$pwd/duke
 duke_target=$duke_path/target
-duke=$duke_target/duke*.jar
+duke=$(find $duke_path -regex ".*\/target\/.*\.jar" -not -regex ".*\/original.*" -not -regex ".*javadoc\.jar")
 config=$duke_path/hazel*.xml
 
 duke_name=$pwd/duke.jar
-config_name=$pwd/files/local/dukeHazelcastConfig.xml
-log4jconfig=$pwd/files/local/dukelog4j2config.xml
+local_folder=$pwd/files/local
+config_name=$local_folder/dukeHazelcastConfig.xml
+log4jconfig=$local_folder/dukelog4j2config.xml
 
 [[ -z $duke ]] && error "No jar file gound in $duke_target, have you compiled?"
 [[ -z $config ]] && error "No hazelcast config file found in $duke_path"
@@ -37,6 +38,7 @@ ln -s $duke $duke_name
 ln -s $config $config_name
 
 if [ $# == 1 ]; then
+  sed -i "s|\(<setting name=\"execute-folder\">\)[^<>]*\(</setting>\)|\1${local_folder}\2|" ./files/local/TestSettings.xml
   echo "java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.client.config=$config_name -jar $duke_name $1"
   java -Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4jconfig -Dhazelcast.client.config=$config_name -jar $duke_name $1
 else

@@ -24,14 +24,15 @@ serviceNameLo="duke"                                            # service name w
 serviceName="Duke"                                              # service name
 serviceUser=${OPUS_SERVICE_USER:-opus}                          # OS user name for the service
 serviceGroup="verif.testtool.access"                            # OS group name for the service
+serviceConfigDir="/etc/opus"                                    # Service config directory
 applDir="/usr/share/java/opus"                                  # home directory of the service application
 serviceUserHome=${OPUS_SERVICE_USER_HOME:-/home/$serviceUser}   # home directory of the service user
 serviceLogFile="/var/log/opus/$serviceNameLo.log"               # log file for StdOut/StdErr
 maxShutdownTime=15                                              # maximum number of seconds to wait for the daemon to terminate normally
-log4j2file=${DUKE_LOG4J2_CONFIG:-$applDir/log4j2duke.xml}       # where log4j2 xml configuration file resides.
+log4j2file=${DUKE_LOG4J2_CONFIG:-$serviceConfigDir/log4j2duke.xml}       # where log4j2 xml configuration file resides.
 pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
 dukeConfigHome=${DUKE_CONFIG_DIR:-$serviceUserHome}             # config input to running testfile
-hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-/etc/opus/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
+hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
 javaCommand="java"                                              # name of the Java launcher without the path
 javaExe="$JAVA_HOME/bin/$javaCommand"                           # file name of the Java application launcher executable
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
@@ -152,6 +153,16 @@ function stopService {
    RETVAL=0
    return 0; }
 
+function startLogTail {
+   getServicePID
+   if [ $? -ne 0 ]; then echo -n "$serviceName is not running"; RETVAL=0; echo ""; return 0; fi
+   tail -f /var/log/opus/duke.log; }
+
+function startDebugTail {
+   getServicePID
+   if [ $? -ne 0 ]; then echo -n "$serviceName is not running"; RETVAL=0; echo ""; return 0; fi
+   tail -f /var/log/opus/duke/duke.log; }
+
 function checkServiceStatus {
    echo -n "Checking for $serviceName:   "
    if getServicePID; then
@@ -178,8 +189,14 @@ function main {
       status)                                              # displays the service status
          checkServiceStatus
          ;;
+      log)
+         startLogTail                                      # starts a tail for the nuke output
+         ;;
+      debug)
+         startDebugTail                                    # starts a tail for the log4j output
+         ;;
       *)
-         echo "Usage: $0 {start|stop|restart|status}"
+         echo "Usage: $0 {start|stop|restart|status|log|debug}"
          exit 1
          ;;
       esac

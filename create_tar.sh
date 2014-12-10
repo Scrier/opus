@@ -33,7 +33,7 @@ find . -regex ".*\/target\/.*javadoc\.jar" -exec cp {} $folder/$_javadocdir/$sys
 
 # Copy shell and config files
 cp files/service/*.sh $folder/$_initdir
-cp files/log4j2/*.xml $folder/$_javadir/$system
+cp files/log4j2/*.xml $folder/$_configdir
 cp files/config/* $folder/$_configdir
 cp files/setup/*.sh $folder
 

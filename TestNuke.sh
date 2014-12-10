@@ -15,7 +15,7 @@ error() {
 pwd=`pwd`
 nuke_path=$pwd/nuke
 nuke_target=$nuke_path/target
-nuke=$nuke_target/nuke*.jar
+nuke=$(find $nuke_path -regex ".*\/target\/.*\.jar" -not -regex ".*\/original.*" -not -regex ".*javadoc\.jar")
 config=$nuke_path/hazel*.xml
 
 nuke_name=$pwd/nuke.jar
