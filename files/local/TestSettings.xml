@@ -6,6 +6,6 @@
   <setting name="execute-user-inc">2</setting>
   <setting name="execute-peak-delay">10</setting>
   <setting name="execute-terminate">120</setting>
-  <setting name="execute-command">sleep.sh</setting>
-  <setting name="execute-folder">/home/vagrant/Git/opus/files/local/</setting>
+  <setting name="execute-command">./sleep.sh</setting>
+  <setting name="execute-folder">/Users/andreas.joelsson/Git/opus/files/local</setting>
 </settings>
