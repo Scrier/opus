@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
+import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
 
 public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<String> {
@@ -17,11 +18,16 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	
 	private NukeCommand command;
 	
+	boolean stopped;
+	boolean terminated;
+	
 	public final int RUNNING = CREATED + 1;
 	
 	public ExecuteTaskProcedure(NukeCommand command) {
 		log.trace("ExecuteTaskProcedure(" + command + ")");
 		setCommand(new NukeCommand(command));
+		setStopped(false);
+		setTerminated(false);
 	}
 
 	/**
@@ -56,7 +62,18 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	@Override
   public int handleOnUpdated(BaseNukeC data) {
 		log.trace("handleOnUpdated(" + data + ")");
-		// do nothing here for now, might need to check that we dont have it still in the map?
+		if( data.getKey() == getCommand().getKey() ) {
+			switch ( data.getId() ) {
+				case NukeFactory.NUKE_COMMAND: {
+					NukeCommand nukeCommand = new NukeCommand(data);
+					handleUpdate(nukeCommand);
+					break;
+				}
+				default: {
+					throw new RuntimeException("Unhandled id: " + data.getId() + " received in RepeatedExecuteTaskProcedure.handleOnUpdated(" + data + ").");
+				}
+			}
+		}
 	  return getState();
   }
 
@@ -120,6 +137,23 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
   	} 
 	  return null;
   }
+	
+	/**
+	 * Method to handle updates to the NukeCommand associated with this task procedure.
+	 * @param nukeCommand NukeCommand to handle.
+	 */
+	private void handleUpdate(NukeCommand nukeCommand) {
+		log.trace("handleUpdate(" + nukeCommand + ")");
+		if( CommandState.STOP == nukeCommand.getState() ) {
+			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getComponent() + ".");
+			setStopped(true);
+		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
+			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getComponent() + ".");
+			terminateProcess();
+			setStopped(false);    // not necessary as terminated has precedence.
+			setTerminated(true);
+		}
+	}
 
 	/**
 	 * @return the command
@@ -133,6 +167,36 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	 */
   public void setCommand(NukeCommand command) {
 	  this.command = command;
+  }
+  
+  /**
+   * @param stopped the stopped to set
+   */
+  public void setStopped(boolean stopped) {
+  	this.stopped = stopped;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isStopped() {
+	  return this.stopped;
+  }
+	
+  /**
+   * @param terminated the terminated to set
+   */
+  public void setTerminated(boolean terminated) {
+  	this.terminated = terminated;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isTerminated() {
+	  return this.terminated;
   }
 
 }

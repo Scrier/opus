@@ -124,5 +124,19 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 	public boolean updateEntry(BaseNukeC data) {
 		return theContext.updateEntry(data);
 	}
+	
+	/**
+	 * Check if the process was stopped by the CommandState.STOP command.
+	 * @brief overridden by terminated as that command has precedence.
+	 * @return boolean
+	 */
+	public abstract boolean isStopped();
+	
+	/**
+	 * Check if the process was terminated by the CommandState.TERMINATE command.
+	 * @brief overrides stopped as terminated has precedence.
+	 * @return boolean
+	 */
+	public abstract boolean isTerminated();
 
 }

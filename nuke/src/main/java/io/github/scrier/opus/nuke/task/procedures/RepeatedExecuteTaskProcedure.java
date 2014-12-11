@@ -6,8 +6,6 @@ import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.hazelcast.client.impl.client.GetDistributedObjectsRequest;
-
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
@@ -22,6 +20,9 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	private boolean repeated;
 	private int completedCommands;
 	
+	boolean stopped;
+	boolean terminated;
+	
 	public final int RUNNING = CREATED + 1;
 	
 	public RepeatedExecuteTaskProcedure(NukeCommand command) {
@@ -29,6 +30,8 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		setCommand(command);
 		setCompletedCommands(0);
 		setRepeated(command.isRepeated());
+		setStopped(false);
+		setTerminated(false);
 	}
 	
 	/**
@@ -155,10 +158,13 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		if( CommandState.STOP == nukeCommand.getState() ) {
 			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getComponent() + ".");
 			setRepeated(false);
+			setStopped(true);
 		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
 			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getComponent() + ".");
 			setRepeated(false);
 			terminateProcess();
+			setStopped(false);    // not necessary as terminated has precedence.
+			setTerminated(true);
 		}
 	}
 
@@ -209,6 +215,36 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	 */
   private void setCompletedCommands(int completedCommands) {
 	  this.completedCommands = completedCommands;
+  }
+  
+  /**
+   * @param stopped the stopped to set
+   */
+  public void setStopped(boolean stopped) {
+  	this.stopped = stopped;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isStopped() {
+	  return this.stopped;
+  }
+	
+  /**
+   * @param terminated the terminated to set
+   */
+  public void setTerminated(boolean terminated) {
+  	this.terminated = terminated;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isTerminated() {
+	  return this.terminated;
   }
 
 }
