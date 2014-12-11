@@ -1108,7 +1108,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			List<INukeInfo> nukes = theContext.getNukes();
 			logLocal.info("Sending terminate command to " + nukes.size() + " nukes will terminate this applicatio in " + getTerminateTimeout() + " seconds.");
 			for( INukeInfo info : nukes ) {
-				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.TERMINATE_EXECUTION, CommandState.TERMINATE, this));
+				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.TERMINATE_EXECUTION, CommandState.EXECUTE, this));
 				getActiveNukeCommands().add(info.getNukeID());
 			}
 			startTimeout(getTerminateTimeout(), getTimerID(), ClusterDistributorProcedure.this);
