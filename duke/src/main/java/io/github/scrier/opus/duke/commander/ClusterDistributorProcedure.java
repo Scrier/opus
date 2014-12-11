@@ -26,6 +26,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public final int RAMPING_UP       = CREATED + 2;	///< State handling the ramping up phase.
 	public final int PEAK_DELAY       = CREATED + 3;	///< State handling the peak delay phase
 	public final int RAMPING_DOWN     = CREATED + 4;	///< State handling the ramping down phase.
+	public final int TERMINATING      = CREATED + 5;	///< State when handling terminate phase.
 
 	private int minNodes;	///< minimum number of nodes before we start ramping up.
 	private int maxUsers;	///< How many user or commands should be issued before peak.
@@ -46,8 +47,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private long terminateID;		///< id for the terminate tick callback.
 
 	private State[] states = { new Aborted(), new Created(), new WaitingForNuke(),
-														 new RampingUp(), new PeakDelay(), new RampingDown() };
-
+														 new RampingUp(), new PeakDelay(), new RampingDown(), new Terminating() };
 	/**
 	 * Constructor
 	 */
@@ -101,12 +101,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				log.info("Starting timeout for execution to go off in " + Shared.Methods.formatTime(getTerminateSeconds()) + ".");
 				startTimeout(getTerminateSeconds(), getTerminateID(), this);
 				if( true == isNukesReady() ) {
-					log.info("Starting rampup phase with " + getUserIncrease() + " every " + getIntervalSeconds() + " seconds.");
-					startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 					setState(RAMPING_UP);
 				} else {
-					log.info("Starting timeout for waiting for nukes.");
-					startTimeout(getWaitingForNukeUpdateSeconds(), getTimerID(), this);
 					setState(WAITING_FOR_NUKE);
 				}
 			}
@@ -133,6 +129,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public int handleOnUpdated(BaseNukeC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		try {
+			log.debug("states[" + states[getState()].getClassName() + "].updated(" + data + ");");
 			states[getState()].updated(data);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
@@ -151,7 +148,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public int handleOnEvicted(BaseNukeC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		try {
-		states[getState()].evicted(data);
+			log.debug("states[" + states[getState()].getClassName() + "].evicted(" + data + ");");
+			states[getState()].evicted(data);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
 				new Completed().evicted(data);
@@ -169,7 +167,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
 		try {
-		states[getState()].removed(key);
+			log.debug("states[" + states[getState()].getClassName() + "].removed(" + key + ");");
+			states[getState()].removed(key);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
 				new Completed().removed(key);
@@ -187,7 +186,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public void timeOutTriggered(long id) {
 		log.trace("timeOutTriggered(" + id + ")");
 		try {
-			log.debug("states[" + getState() + "].timeout(" + id + ");");
+			log.debug("states[" + states[getState()].getClassName() + "].timeout(" + id + ");");
 			states[getState()].timeout(id);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
@@ -197,6 +196,24 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			}
 		}
 		theContext.getCommander().intializeProcedures();
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void onStateChanged(int state) {
+		log.trace("onStateChanged(" + state + ")");
+		try {
+			log.debug("states[" + states[state].getClassName() + "].init();");
+			states[getState()].init();
+		} catch ( ArrayIndexOutOfBoundsException e ) {
+			if( COMPLETED == getState() ) {
+				new Completed().init();
+			} else {
+				log.error("Received out of bound exception in state: " + getState() + ".", e);
+			}
+		}
 	}
 
 	/**
@@ -507,6 +524,15 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.State");
 		
 		/**
+		 * Method called each state change.
+		 */
+		public void init() {
+			logLocal.trace("init()");
+			logLocal.error("Default init state setting aborted from state: " + getState() + "."); 
+			setState(ABORTED); 
+		}
+		
+		/**
 		 * Base handling on update methods.
 		 * @param data BaseNukeC
 		 */
@@ -545,6 +571,15 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			logLocal.error("Default update state setting aborted from state: " + getState() + ".");
 			setState(ABORTED); 
 		}
+		
+		/**
+		 * Method to get the name of the state for debugging.
+		 * @return String with the correct state.
+		 */
+		public String getClassName() {
+			return this.getClass().getName();
+		}
+		
 	}
 	
 	/**
@@ -564,13 +599,49 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * State handling for Completed transactions
 	 * @author andreas.joelsson
-	 * {@code * -> ABORTED}
 	 */
-	private class Completed extends State {}
+	private class Completed extends State {
+		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.Completed");
+
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+		
+		@Override
+		public void updated(BaseNukeC data)  {
+			logLocal.trace("updated(" + data + ")");
+		}  
+
+		@Override
+		public void evicted(BaseNukeC data) {
+			logLocal.trace("evicted(" + data + ")");
+		}
+
+		@Override
+		public void removed(Long key) {
+			logLocal.trace("removed(" + key + ")");
+		}
+
+		@Override
+		public void timeout(long id) {
+			logLocal.trace("timeout(" + id + ")");
+		}
+	}
 	
 	private class WaitingForNuke extends State {
 
 		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.WaitingForNuke");
+		
+		/**
+		 * WaitingForNuke handling on init methods.
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+			logLocal.info("Starting timeout for waiting for nukes every " + getWaitingForNukeUpdateSeconds() + " second.");
+			startTimeout(getWaitingForNukeUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
+		}
 		
 		/**
 		 * WaitingForNuke handling on update methods.
@@ -610,7 +681,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				handleTimerTick();
 			} else if ( id == getTerminateID() ) {
 				logLocal.error("Received terminate timeout during state WAITING_FOR_NUKE.");
-				setState(ABORTED);
+				setState(ABORTED); // not terminating as nothing needs to be terminated.
 			} else {
 				logLocal.error("Received unknown timer id: " + id + " in state WAITING_FOR_NUKE.");
 				setState(ABORTED);
@@ -623,12 +694,10 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		private void handleTimerTick() {
 			logLocal.trace("handleTimerTick()");
 			if( true != isNukesReady() ) {
-				log.info("Still waiting for nukes, starting new wait timer for " + getWaitingForNukeUpdateSeconds() + " seconds.");
+				logLocal.info("Still waiting for nukes, starting new wait timer for " + getWaitingForNukeUpdateSeconds() + " seconds.");
 				startTimeout(getWaitingForNukeUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 			} else {
-				log.info("Starting rampup phase with " + getUserIncrease() + " every " + getIntervalSeconds() + " seconds.");
-				startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
-				log.info("Changing state from WAITING_FOR_NUKE to RAMPING_UP.");
+				logLocal.info("Changing state from WAITING_FOR_NUKE to RAMPING_UP.");
 				setState(RAMPING_UP);
 			}
 		}
@@ -641,6 +710,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * {@code
 	 * RAMPING_UP -> ABORTED
 	 * RAMPING_UP -> PEAK_DELAY
+	 * RAMPING_UP -> TERMINATING
 	 * }
 	 */
 	private class RampingUp extends State {
@@ -652,6 +722,16 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 */
 		public RampingUp() {
 			
+		}
+		
+		/**
+		 * RampingUp handling on init methods.
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+			logLocal.info("Starting rampup phase with " + getUserIncrease() + " every " + getIntervalSeconds() + " seconds.");
+			startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 		}
 
 		/**
@@ -692,10 +772,10 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				handleTimerTick();
 			} else if ( id == getTerminateID() ) {
 				logLocal.error("Received terminate timeout during state RAMPING_UP.");
-				setState(ABORTED);
+				setState(TERMINATING);
 			} else {
-				logLocal.error("Received unknown timer id: " + id + " in state RAMPING_UP.");
-				setState(ABORTED);
+				logLocal.fatal("Received unknown timer id: " + id + " in state RAMPING_UP.");
+				throw new RuntimeException("Received unknown timer id: " + id + " in state RAMPING_UP.");
 			}
 		}
 		
@@ -709,7 +789,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 						getUserIncrease() : getMaxUsers() - getLocalUserRampedUp();
 				Map<Long, Integer> distribution = getDistributionSuggestion(usersToAdd);
 				if( null == distribution ) {
-					log.error("No available nodes in state " + NukeState.RUNNING + ", cannot continue.");
+					logLocal.fatal("No available nodes in state " + NukeState.RUNNING + ", cannot continue.");
 					throw new RuntimeException("No available nodes in state " + NukeState.RUNNING + ", cannot continue.");
 				} else {
 					for( Entry<Long, Integer> command : distribution.entrySet() ) {
@@ -723,10 +803,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 					startTimeout(getIntervalSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 				}
 			} else { ///@TODO could add checks here against the distributed status instead of local, lets wait and see how it works though.
-				startTimeout(getPeakDelaySeconds(), getTimerID(), ClusterDistributorProcedure.this);
-				// Maybe start shorter timer and let the PEAK DELAY state handle when dist users is synced to max before starting peak delay.
-				logLocal.info("We have reached peak and we stay idle for " + Shared.Methods.formatTime(getPeakDelaySeconds()) + " before ramping down.");
-				log.info("Changing state from RAMPING_UP to PEAK_DELAY.");
+				logLocal.info("Changing state from RAMPING_UP to PEAK_DELAY.");
 				setState(PEAK_DELAY);
 			}
 		}
@@ -750,6 +827,16 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 */
 		public PeakDelay() {
 			
+		}
+		
+		/**
+		 * PeakDelay handling on init methods.
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+			logLocal.info("We have reached peak and we stay idle for " + Shared.Methods.formatTime(getPeakDelaySeconds()) + " before ramping down.");
+			startTimeout(getPeakDelaySeconds(), getTimerID(), ClusterDistributorProcedure.this);
 		}
 
 		/**
@@ -790,10 +877,10 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				handleTimerTick();
 			} else if ( id == getTerminateID() ) {
 				logLocal.error("Received terminate timeout during state PEAK_DELAY.");
-				setState(ABORTED);
+				setState(TERMINATING);
 			} else {
-				logLocal.error("Received unknown timer id: " + id + " in state PEAK_DELAY.");
-				setState(ABORTED);
+				logLocal.fatal("Received unknown timer id: " + id + " in state PEAK_DELAY.");
+				throw new RuntimeException("Received unknown timer id: " + id + " in state PEAK_DELAY.");
 			}
 		}
 		
@@ -802,7 +889,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		 */
 		private void handleTimerTick() {
 			logLocal.trace("handleTimerTick()");
-			startTimeout(1, getTimerID(), ClusterDistributorProcedure.this);
 			setState(RAMPING_DOWN);
 		}
 		
@@ -812,6 +898,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * State handling for Ramping Down transactions.
 	 * @author andreas.joelsson
 	 * {@code
+	 * RAMPING_DOWN -> TERMINATE
 	 * RAMPING_DOWN -> ABORTED
 	 * RAMPIND_DOWN -> COMPLETED
 	 * }
@@ -831,6 +918,15 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			setOldUsers(-1);
 			setDoOnce(true);
 			setActiveNukeCommands(new ArrayList<Long>());
+		}
+		
+		/**
+		 * RampingDown handling on init methods.
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+			handleTimerTick();
 		}
 		
 		/**
@@ -871,10 +967,10 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				handleTimerTick();
 			} else if ( id == getTerminateID() ) {
 				logLocal.error("Received terminate timeout during state RAMPING_DOWN.");
-				setState(ABORTED);
+				setState(TERMINATING);
 			} else {
 				logLocal.error("Received unknown timer id: " + id + " in state RAMPING_DOWN.");
-				setState(ABORTED);
+				throw new RuntimeException("Received unknown timer id: " + id + " in state RAMPING_DOWN.");
 			}
 		}
 		
@@ -896,8 +992,11 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 					log.fatal("Received status from unknown nuke with id: " + nukeID + ".");
 					throw new RuntimeException("Received status from unknown nuke with id: " + nukeID + ".");
 				}
+			} else if ( TERMINATING == getState() ) {
+				// better handling later?
+				log.debug("Received finish from nukeid " + nukeID + " when we already changed state.");
 			} else {
-				log.fatal("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
+ 				log.fatal("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
 				throw new RuntimeException("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
 			}
 		}
@@ -975,6 +1074,153 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	    this.activeNukeCommands = activeNukeCommands;
     }
 		
+	}
+	
+	/**
+	 * State handling for Ramping Down transactions.
+	 * @author andreas.joelsson
+	 * {@code
+	 * TERMINATE -> ABORTED
+	 * TERMINATE -> COMPLETED
+	 * }
+	 */
+	private class Terminating extends State implements ICommandCallback {
+		
+		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.Terminating");
+		
+		private int terminateTimeout;
+		private List<Long> activeNukeCommands;
+		
+		/**
+		 * Constructor
+		 */
+		public Terminating() {
+			setTerminateTimeout(30);
+			setActiveNukeCommands(new ArrayList<Long>());
+		}
+		
+		/**
+		 * Terminating handling on init methods.
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+			List<INukeInfo> nukes = theContext.getNukes();
+			logLocal.info("Sending terminate command to " + nukes.size() + " nukes will terminate this applicatio in " + getTerminateTimeout() + " seconds.");
+			for( INukeInfo info : nukes ) {
+				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.TERMINATE_EXECUTION, CommandState.TERMINATE, this));
+				getActiveNukeCommands().add(info.getNukeID());
+			}
+			startTimeout(getTerminateTimeout(), getTimerID(), ClusterDistributorProcedure.this);
+		}
+		
+		/**
+		 * Terminating handling on update methods.
+		 * @param data BaseNukeC
+		 */
+		@Override
+		public void updated(BaseNukeC data)  {
+			logLocal.trace("updated(" + data + ")");
+		}  
+
+		/**
+		 * Terminating handling on evicted methods.
+		 * @param data BaseNukeC
+		 */
+		@Override
+		public void evicted(BaseNukeC data) {
+			logLocal.trace("evicted(" + data + ")");
+		}
+
+		/**
+		 * Terminating handling on removed methods.
+		 * @param key Long
+		 */
+		@Override
+		public void removed(Long key) {
+			logLocal.trace("removed(" + key + ")");
+		}
+
+		/**
+		 * RampingDown handling on timeout methods.
+		 * @param id long
+		 */
+		@Override
+		public void timeout(long id) {
+			logLocal.trace("timeout(" + id + ")");
+			if( id == getTimerID() ) {
+				handleTimerTick();
+			} else if ( id == getTerminateID() ) {
+				logLocal.fatal("Received terminate timeout during state TERMINATING.");
+				throw new RuntimeException("Received terminate timeout during state TERMINATING.");
+			} else {
+				logLocal.fatal("Received unknown timer id: " + id + " in state RAMPING_DOWN.");
+				throw new RuntimeException("Received terminate timeout during state TERMINATING.");
+			}
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+    public void finished(long nukeID, int state, String query, String result) {
+			logLocal.trace("finished(" + nukeID + ", " + state + ", " + query + ", " + result + ")");
+			if( COMPLETED == state ) {
+				logLocal.info("Stop Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
+				if( getActiveNukeCommands().contains(nukeID) ) {
+					getActiveNukeCommands().remove(nukeID);
+					if( true == getActiveNukeCommands().isEmpty() ) {
+						logLocal.info("All nukes has terminated successful, we are done.");
+						theContext.terminateTimeout(getTimerID());
+						setState(COMPLETED);
+					}
+				} else {
+					logLocal.fatal("Received status from unknown nuke with id: " + nukeID + ".");
+					throw new RuntimeException("Received status from unknown nuke with id: " + nukeID + ".");
+				}
+			} else {
+				logLocal.fatal("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
+				throw new RuntimeException("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
+			}
+		}
+		
+		/**
+		 * Handle timer ticks.
+		 */
+		private void handleTimerTick() {
+			logLocal.trace("handleTimerTick()");
+			logLocal.fatal("Received timeout of termination before nukes has terminated their processes, terminating.");
+			throw new RuntimeException("Received timeout of termination before nukes has terminated their processes, terminating.");
+		}
+
+		/**
+		 * @return the terminateTimeout
+		 */
+    public int getTerminateTimeout() {
+	    return terminateTimeout;
+    }
+
+		/**
+		 * @param terminateTimeout the terminateTimeout to set
+		 */
+    public void setTerminateTimeout(int terminateTimeout) {
+	    this.terminateTimeout = terminateTimeout;
+    }
+	
+		/**
+		 * @return the activeNukeCommands
+		 */
+    public List<Long> getActiveNukeCommands() {
+	    return activeNukeCommands;
+    }
+
+		/**
+		 * @param activeNukeCommands the activeNukeCommands to set
+		 */
+    public void setActiveNukeCommands(List<Long> activeNukeCommands) {
+	    this.activeNukeCommands = activeNukeCommands;
+    }
+
 	}
 
 }
