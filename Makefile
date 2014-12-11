@@ -14,6 +14,8 @@ help:
 	@echo "doc          - create javadoc for the project."
 	@echo "doc-jar      - create jar with the javadoc for the project."
 	@echo "install      - install project in local repo."
+	@echo "rpm          - create a rpm for the project build."
+	@echo "tar          - create a tar ball for the project."
 	@echo "test         - run junit tests for the project."
 	@echo "=========================================================="
 	@echo "help         - Show this output."

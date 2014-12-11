@@ -127,14 +127,14 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 	
 	/**
 	 * Check if the process was stopped by the CommandState.STOP command.
-	 * @brief overridden by terminated as that command has precedence.
+	 * <p>overridden by terminated as that command has precedence.</p>
 	 * @return boolean
 	 */
 	public abstract boolean isStopped();
 	
 	/**
 	 * Check if the process was terminated by the CommandState.TERMINATE command.
-	 * @brief overrides stopped as terminated has precedence.
+	 * <p>overrides stopped as terminated has precedence.</p>
 	 * @return boolean
 	 */
 	public abstract boolean isTerminated();
