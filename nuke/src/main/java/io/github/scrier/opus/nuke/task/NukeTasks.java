@@ -329,11 +329,20 @@ public class NukeTasks extends BaseListener {
 		List<BaseTaskProcedure> procs = getProcedures(ExecuteTaskProcedure.class, RepeatedExecuteTaskProcedure.class);
 		log.debug("We have " + procs.size() + " procedures to update locally.");
 		for( BaseTaskProcedure proc : procs ) {
-			ExecuteTaskProcedure procEx = (ExecuteTaskProcedure)proc;
-			NukeCommand command = procEx.getCommand();
+			NukeCommand command = null;
+			if( ExecuteTaskProcedure.class.getName() == proc.getClass().getName() ) {
+				ExecuteTaskProcedure procEx = (ExecuteTaskProcedure)proc;
+				command = procEx.getCommand();
+			} else if ( RepeatedExecuteTaskProcedure.class.getName() == proc.getClass().getName() ) {
+				RepeatedExecuteTaskProcedure procEx = (RepeatedExecuteTaskProcedure)proc;
+				command = procEx.getCommand();
+			} else {
+				log.fatal("Received proc that did not match RepeatedExecuteTaskProcedure or ExecuteTaskProcedure.");
+				throw new RuntimeException("Received proc that did not match RepeatedExecuteTaskProcedure or ExecuteTaskProcedure.");
+			}
 			command.setState(state);
-			log.debug("Sending local command to " + procEx.getTxID() + " to change state to " + state);
-			procEx.updateEntry(command);
+			log.debug("Sending local command to " + proc.getTxID() + " to change state to " + state);
+			proc.updateEntry(command);
 		}
 		return procs.size();
 	}
