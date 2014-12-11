@@ -13,8 +13,10 @@
 # Run Nuke, a opus Node
 #
 
-if [ -f /etc/opus/opus.conf ]; then
-  . /etc/opus/opus.conf
+opusConfig=/etc/opus/opus.conf
+
+if [ -f $opusConfig ]; then
+  . $opusConfig
 fi
 
 # Set this to your Java installation
@@ -25,6 +27,7 @@ serviceName="Nuke"                                              # service name
 serviceUser=${OPUS_SERVICE_USER:-opus}                          # OS user name for the service
 serviceGroup="verif.testtool.access"                            # OS group name for the service
 serviceConfigDir="/etc/opus"                                    # Service config directory
+debugEditor=${OPUS_EDITOR:-vim}                       					# Opus editor used for editing config files
 applDir="/usr/share/java/opus"                                  # home directory of the service application
 serviceUserHome=${OPUS_SERVICE_USER_HOME:-/home/$serviceUser}   # home directory of the service user
 serviceLogFile="/var/log/opus/$serviceNameLo.log"               # log file for StdOut/StdErr
@@ -139,6 +142,54 @@ function startDebugTail {
    if [ $? -ne 0 ]; then echo -n "$serviceName is not running"; RETVAL=0; echo ""; return 0; fi
    tail -f /var/log/opus/nuke/nuke.log; }
 
+function debugShowHelp {
+   [[ -n $1 ]] && echo "$1"
+   echo "usage: sudo service $0 debug [option]"
+   echo "   or: sudo service $0 debug -dh"
+   echo "   or: sudo service $0 debug --dhelp"
+   echo ""
+   echo "Debug options"
+   echo "   -dh, --dhelp   display this help part about the debug options"
+   echo "   -hc, --chazelcast"
+   echo "                  open the hazelcast config file for editing using \$OPUS_EDITOR defined editor."
+   echo "   -l, --log4j    open the log4j2 config file for editing using \$OPUS_EDITOR defined editor."
+   echo "   -o, --opus     open the opus config file for editing using \$OPUS_EDITOR defined editor."
+   exit; }
+
+function debugOpenHazelcast {
+   $debugEditor $hazelcastConfig 
+   exit; }
+
+function debugOpenLog {
+   $debugEditor $log4j2file
+   exit; }
+
+function debugOpenOpus {
+   $debugEditor $opusConfig
+   exit; }
+
+function startDebug {
+   if [ 1 -eq $# ]; then
+      startDebugTail
+   else
+      local size=$#
+      local items=("$@")
+      for (( i=1; i<$size; i++ )); do
+         item=${items[$i]}
+         case $item in
+            -dh)          debugShowHelp;;
+            --dhelp)      debugShowHelp;;
+            -hc)          debugOpenHazelcast;;
+            --chazelcast) debugOpenHazelcast;;
+            -l)           debugOpenLog;;
+            --log4j)      debugOpenLog;;
+            -o)           debugOpenOpus;;
+            --opus)       debugOpenOpus;;
+            *)            debugShowHelp "Unknown argument $item provided for debug";;
+         esac
+      done
+   fi; }
+
 function checkServiceStatus {
    echo -n "Checking for $serviceName:   "
    if getServicePID; then
@@ -169,7 +220,7 @@ function main {
          startLogTail                                      # starts a tail for the nuke output
          ;;
       debug)
-         startDebugTail                                    # starts a tail for the log4j output
+         startDebug "$@"                                   # starts a tail for the log4j output
          ;;
       *)
          echo "Usage: $0 {start|stop|restart|status|log|debug}"
@@ -179,4 +230,4 @@ function main {
    exit $RETVAL
 }
 
-main $1
+main "$@"
