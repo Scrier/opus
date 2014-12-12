@@ -12,15 +12,15 @@
     Hazelcast distributed execution.
 
 # Contents
- * [Installation](#Installation)
- * [Dependencies](#Dependencies)
-  * [Application](##Application)
-  * [Testing](##Testing)
- * [Configuration](#Configuration)
-  * [Hazelcast](##Hazelcast)
-  * [Log4j2](##Log4j2)
-  * [Opus](##Opus)
-  * [Run configuration](##Run-configuration)
+ * [Installation](#installation)
+ * [Dependencies](#dependencies)
+  * [Application](##application)
+  * [Testing](##testing)
+ * [Configuration](#configuration)
+  * [Hazelcast](##hazelcast)
+  * [Log4j2](##log4j2)
+  * [Opus](##opus)
+  * [Run configuration](##run-configuration)
 
 # Installation
 
