@@ -12,8 +12,15 @@
     Hazelcast distributed execution.
 
 # Contents
-* (#Dependencies)
- * [##Application]
+ * [Installation](#Installation)
+ * [Dependencies](#Dependencies)
+  * [Application](##Application)
+  * [Testing](##Testing)
+ * [Configuration](#Configuration)
+  * [Hazelcast](##Hazelcast)
+  * [Log4j2](##Log4j2)
+  * [Opus](##Opus)
+  * [Run configuration](##Run-configuration)
 
 # Installation
 
@@ -124,7 +131,7 @@ Here is an example configuration.
  * *execute-peak-delay* - Number of seconds to stay at the maximum threads after reaching it before ramping down.
  * *execute-terminate*  - Number of seconds since start before we terminate applicate, used as a guard.
  * *execute-command*    - The command to execute.
- * *execute-filder*     - The folder to execute the command from, this can for example be a ccumber test suite.
+ * *execute-folder*     - The folder to execute the command from, this can for example be a ccumber test suite.
 
 The following will result in the following "graph" during execution.
 
@@ -138,6 +145,7 @@ threads
       1 |    ###############                                       |
       0 ------------------------------------------------------------------
         0   10   20   30   40   50   60   70   80   90  100  110  120  time
+```
 
 Events that will happen:
  * a - We have found 1 node that can start execcution and we start the task.
