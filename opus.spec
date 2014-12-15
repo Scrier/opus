@@ -74,6 +74,8 @@ ln -sf %{_javadir}/%{name}/duke-%{duke_version}.jar %{_javadir}/%{name}/duke.jar
 ln -sf %{_javadir}/%{name}/nuke-%{nuke_version}.jar %{_javadir}/%{name}/nuke.jar
 mkdir -p %{_var}/log/%{name}/nuke
 mkdir -p %{_var}/log/%{name}/duke
+mkdir -p /home/%{name}
+/bin/chown opus:opus -R /home/%{name}
 /bin/chown opus:opus -R %{_var}/log/%{name}
 /bin/chmod 775 -R %{_var}/log/%{name}
 
