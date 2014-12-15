@@ -5,11 +5,11 @@
   <parent>
     <groupId>opus</groupId>
     <artifactId>io.github.scrier.opus</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
   </parent>
   <groupId>io.github.scrier.opus</groupId>
   <artifactId>common</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
   <name>common</name>
   <url>http://maven.apache.org</url>
 </project>
