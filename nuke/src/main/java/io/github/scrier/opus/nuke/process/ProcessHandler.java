@@ -46,7 +46,7 @@ public class ProcessHandler {
 	/**
 	 * Method to start the process.
 	 * @return Process
-	 * @throws IOException
+	 * @throws IOException Thrown from ProcessBuilder call to start().
 	 */
 	public Process start() throws IOException {
 		log.trace("start()");

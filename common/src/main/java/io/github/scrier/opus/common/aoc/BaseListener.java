@@ -44,7 +44,6 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	/**
 	 * Method to add a new entry to the map.
 	 * @param data BaseNukeC to add to the map.
-	 * @return long with the unique ID that this data has.
 	 */
 	public void addEntry(BaseNukeC data) {
 		log.trace("addEntry(" + data + ")");
@@ -78,9 +77,14 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	@Override
 	public synchronized void entryAdded(EntryEvent<Long, BaseNukeC> added) {
 		log.trace("entryAdded(" + added + ")");
-		preEntry();
-		entryAdded(added.getKey(), added.getValue());
-		postEntry();
+		if( added.getKey() != added.getValue().getKey() ) {
+			log.fatal("Received a mismatch mapkey and BasenukeC key in entryAdded!!");
+			throw new RuntimeException("Received a mismatch mapkey[" + added.getKey() + "] and BasenukeC[" + added.getValue() + "] key in entryAdded!!");
+		} else {
+			preEntry();
+			entryAdded(added.getKey(), added.getValue());
+			postEntry();
+		}
 	}
 
 	@Override
@@ -102,9 +106,14 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	@Override
 	public synchronized void entryUpdated(EntryEvent<Long, BaseNukeC> updated) {
 		log.trace("entryUpdated(" + updated + ")");
-		preEntry();
-		entryUpdated(updated.getKey(), updated.getValue());
-		postEntry();
+		if( updated.getKey() != updated.getValue().getKey() ) {
+			log.fatal("Received a mismatch mapkey and BasenukeC key in entryUpdated!!");
+			throw new RuntimeException("Received a mismatch mapkey[" + updated.getKey() + "] and BasenukeC[" + updated.getValue() + "] key in entryUpdated!!");
+		} else {
+			preEntry();
+			entryUpdated(updated.getKey(), updated.getValue());
+			postEntry();
+		}
 	}
 
 	/**

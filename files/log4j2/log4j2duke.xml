@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <RollingFile name="FILE" fileName="/var/log/opus/duke/duke.log"
+      filePattern="/var/log/opus/duke/duke-%d{MM-dd-yyy}-%i.log">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5p (%C{2}) - %m%n"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy size="50 MB" />
+      </Policies>
+    </RollingFile>
+    <Console name="STDOUT" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5p %C{2} - %m%n"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="DEBUG">
+      <AppenderRef ref="FILE" level="DEBUG"/>
+      <AppenderRef ref="STDOUT" level="INFO"/>
+    </Root>
+  </Loggers>
+</Configuration>
+

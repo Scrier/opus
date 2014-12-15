@@ -28,7 +28,6 @@ import org.mockito.Mockito;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.MapEvent;
-import com.sun.corba.se.spi.ior.Identifiable;
 
 public class DukeCommanderTest {
 	

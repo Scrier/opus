@@ -81,7 +81,7 @@ public abstract class BaseDukeProcedure extends BaseProcedureC {
 	 * @param time int with the time in the specified format.
 	 * @param id long with unique id to get returned.
 	 * @param callback ITimeOutCallback interface to call.
-	 * @param timeunit format to schedule timeout in.
+	 * @param timeUnit TimeUnit format to schedule timeout in.
 	 */
   public void startTimeout(int time, long id, ITimeOutCallback callback, TimeUnit timeUnit) {
   	log.trace("startTimeout(" + time + ", " + id + ", " + callback + ", " + timeUnit + ")");

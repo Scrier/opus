@@ -67,14 +67,14 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 	}
 
 	/**
-	 * @return the execute
+	 * @return ProcessHandler
 	 */
 	private ProcessHandler getProcessHandler() {
 		return processHandler;
 	}
 
 	/**
-	 * @param execute the execute to set
+	 * @param processHandler the ProcessHandler to set
 	 */
 	private void setProcessHandler(ProcessHandler processHandler) {
 		this.processHandler = processHandler;
@@ -96,7 +96,7 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 
 	/**
 	 * Method to get the process started by executor.
-	 * @return
+	 * @return ThreadPoolExecutor to get threads from.
 	 */
 	protected ThreadPoolExecutor getExecutor() {
 		return theContext.getExecutor();
@@ -124,5 +124,19 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 	public boolean updateEntry(BaseNukeC data) {
 		return theContext.updateEntry(data);
 	}
+	
+	/**
+	 * Check if the process was stopped by the CommandState.STOP command.
+	 * <p>overridden by terminated as that command has precedence.</p>
+	 * @return boolean
+	 */
+	public abstract boolean isStopped();
+	
+	/**
+	 * Check if the process was terminated by the CommandState.TERMINATE command.
+	 * <p>overrides stopped as terminated has precedence.</p>
+	 * @return boolean
+	 */
+	public abstract boolean isTerminated();
 
 }

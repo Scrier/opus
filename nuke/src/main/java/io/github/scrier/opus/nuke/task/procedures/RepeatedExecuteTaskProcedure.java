@@ -1,5 +1,6 @@
 package io.github.scrier.opus.nuke.task.procedures;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +20,9 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	private boolean repeated;
 	private int completedCommands;
 	
+	boolean stopped;
+	boolean terminated;
+	
 	public final int RUNNING = CREATED + 1;
 	
 	public RepeatedExecuteTaskProcedure(NukeCommand command) {
@@ -26,6 +30,8 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		setCommand(command);
 		setCompletedCommands(0);
 		setRepeated(command.isRepeated());
+		setStopped(false);
+		setTerminated(false);
 	}
 	
 	/**
@@ -120,7 +126,12 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
   	} 
 	  String executeString = getCommand().getCommand();
 	  do {
-		  boolean result = executeProcess(executeString, null, null);
+	  	boolean result = false;
+	  	if( getCommand().getFolder().isEmpty() ) {
+	  		result = executeProcess(executeString, null, null);
+	  	} else {
+	  		result = executeProcess(executeString, new File(getCommand().getFolder()), null);
+	  	}
 		  log.debug("[" + getTxID() + "] Process returns: " + result + ".");
 		  if( !isRepeated() && result ) {
 		  	getCommand().setState(CommandState.DONE);
@@ -147,10 +158,13 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		if( CommandState.STOP == nukeCommand.getState() ) {
 			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getComponent() + ".");
 			setRepeated(false);
+			setStopped(true);
 		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
 			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getComponent() + ".");
 			setRepeated(false);
 			terminateProcess();
+			setStopped(false);    // not necessary as terminated has precedence.
+			setTerminated(true);
 		}
 	}
 
@@ -201,6 +215,36 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	 */
   private void setCompletedCommands(int completedCommands) {
 	  this.completedCommands = completedCommands;
+  }
+  
+  /**
+   * @param stopped the stopped to set
+   */
+  public void setStopped(boolean stopped) {
+  	this.stopped = stopped;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isStopped() {
+	  return this.stopped;
+  }
+	
+  /**
+   * @param terminated the terminated to set
+   */
+  public void setTerminated(boolean terminated) {
+  	this.terminated = terminated;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isTerminated() {
+	  return this.terminated;
   }
 
 }

@@ -15,12 +15,12 @@ error() {
 pwd=`pwd`
 nuke_path=$pwd/nuke
 nuke_target=$nuke_path/target
-nuke=$nuke_target/nuke*.jar
+nuke=$(find $nuke_path -regex ".*\/target\/.*\.jar" -not -regex ".*\/original.*" -not -regex ".*javadoc\.jar")
 config=$nuke_path/hazel*.xml
 
 nuke_name=$pwd/nuke.jar
-config_name=$pwd/nukeHazelcastConfig.xml
-log4jconfig=$pwd/nukelog4j2config.xml
+config_name=$pwd/files/local/nukeHazelcastConfig.xml
+log4jconfig=$pwd/files/local/nukelog4j2config.xml
 
 [[ -z $nuke ]] && error "No jar file gound in $nuke_target, have you compiled?"
 [[ -z $config ]] && error "No hazelcast config file found in $nuke_path"

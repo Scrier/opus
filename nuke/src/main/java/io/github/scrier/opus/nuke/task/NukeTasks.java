@@ -31,6 +31,12 @@ public class NukeTasks extends BaseListener {
 	
 	private NukeInfo nukeInfo;
 	
+	private int proceduresStopping;
+	private int proceduresTerminating;
+	
+	private NukeCommand stopCommand;
+	private NukeCommand terminateCommand;
+	
 	private List<BaseTaskProcedure> procedures;
 	private List<BaseTaskProcedure> proceduresToAdd;
 	private List<BaseTaskProcedure> toRemove;
@@ -43,6 +49,10 @@ public class NukeTasks extends BaseListener {
 	  proceduresToAdd = new ArrayList<BaseTaskProcedure>();
 	  toRemove = new ArrayList<BaseTaskProcedure>();
 	  setNukeInfo(new NukeInfo());
+	  setProceduresStopping(0);
+	  setProceduresTerminating(0);
+	  setStopCommand(null);
+	  setTerminateCommand(null);
   }
 	
 	public void init() {
@@ -143,14 +153,20 @@ public class NukeTasks extends BaseListener {
 	@Override
   public void entryRemoved(Long key) {
 		log.trace("entryRemoved(" + key + ")");
-		for( BaseTaskProcedure procedure : getProcedures() ) {
-			int result = procedure.handleOnRemoved(key);
-			if( procedure.COMPLETED == result ) {
-				log.debug("Procedure " + procedure + " completed.");
-				removeProcedure(procedure);
-			} else if ( procedure.ABORTED == result ) {
-				log.debug("Procedure " + procedure + " aborted.");
-				removeProcedure(procedure);
+		if( null != getStopCommand() && key == getStopCommand().getKey() ) {
+			setStopCommand(null);
+		} else if ( null != getTerminateCommand() && key == getTerminateCommand().getKey() ) {
+			setTerminateCommand(null);
+		} else {
+			for( BaseTaskProcedure procedure : getProcedures() ) {
+				int result = procedure.handleOnRemoved(key);
+				if( procedure.COMPLETED == result ) {
+					log.debug("Procedure " + procedure + " completed.");
+					removeProcedure(procedure);
+				} else if ( procedure.ABORTED == result ) {
+					log.debug("Procedure " + procedure + " aborted.");
+					removeProcedure(procedure);
+				}
 			}
 		}
   }
@@ -182,16 +198,50 @@ public class NukeTasks extends BaseListener {
 	  intializeProcedures();
 	  for( BaseTaskProcedure procedure : getProceduresToRemove() ) {
 	  	try {
-	      procedure.shutDown();
-	      procedures.remove(procedure);
-      } catch (Exception e) {
-      	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
-      }
+	  		handleInterrupted(procedure);
+	  		procedure.shutDown();
+	  		procedures.remove(procedure);
+	  	} catch (Exception e) {
+	  		log.fatal("shutDown of procedure: " + procedure + " threw Exception", e);
+	  	}
 	  }
 	  // Update entry in global map if change is made, put this last if shutdown method is calling them.
 	  if( true == getNukeInfo().isValuesModified() ) {
 	  	log.info("Updating NukeInfo with: " + getNukeInfo() + ".");
 	  	updateEntry(getNukeInfo());
+	  }
+  }
+
+	protected void handleInterrupted(BaseTaskProcedure procedure) {
+		log.trace("handleInterrupted(" + procedure + ")");
+	  if( null != getTerminateCommand() && procedure.isTerminated()) {
+	  	if( 0 == getProceduresTerminating() ) {
+	  		log.fatal("Received a terminating procedure " + procedure + " when we weren't expecting one.");
+	  		throw new RuntimeException("Received a terminating procedure " + procedure + " when we weren't expecting one.");
+	  	} else if ( 0 > decProceduresTerminating() ) {
+	  		log.fatal("Decrease terminating procedure below 0 when removing " + procedure + ".");
+	  		throw new RuntimeException("Decrease terminating procedure below 0 when removing " + procedure + ".");
+	  	} else if ( 0 != getProceduresTerminating() )
+	  		log.debug("Procedure " + procedure + " finished terminating execution, we have " + getProceduresTerminating() + " left.");
+	  	else {
+	  		log.info("Terminate is finished, sending done command.");
+	  		getTerminateCommand().setState(CommandState.DONE);
+	  		updateEntry(getTerminateCommand());
+	  	}
+	  } else if ( null != getStopCommand() ) {
+	  	if( 0 == getProceduresStopping() ) {
+	  		log.fatal("Received a terminating procedure " + procedure + " when we weren't expecting one.");
+	  		throw new RuntimeException("Received a stopping procedure " + procedure + " when we weren't expecting one.");
+	  	} else if ( 0 > decProceduresStopping() ) {
+	  		log.fatal("Decrease stopping procedure below 0 when removing " + procedure + ".");
+	  		throw new RuntimeException("Decrease stopping procedure below 0 when removing " + procedure + ".");
+	  	} else if ( 0 != getProceduresStopping() )
+	  		log.debug("Procedure " + procedure + " finished stopping execution, we have " + getProceduresStopping() + " left.");
+	  	else {
+	  		log.info("Terminate is finished, sending done command.");
+	  		getStopCommand().setState(CommandState.DONE);
+	  		updateEntry(getStopCommand());
+	  	}
 	  }
   }
 	
@@ -217,34 +267,48 @@ public class NukeTasks extends BaseListener {
 	
 	/**
 	 * Method to handle commands.
-	 * @param command
+	 * @param command NukeCommand to handle.
 	 */
 	private void handleCommand(NukeCommand command) {
 		log.trace("handleCommand(" + command + ")");
 	  switch( command.getState() ) {
 	  	case EXECUTE: {
-	  		if( Shared.Commands.Execute.STOP_EXECUTION.equals(command.getCommand()) ) {
-	  			log.info("Received command to stop all executions.");
-	  			distributeExecuteUpdateCommands(CommandState.STOP);
-	  			command.setState(CommandState.DONE);
-	  			updateEntry(command);
-	  		} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
-	  			log.info("Received command to terminate all executions.");
-	  			distributeExecuteUpdateCommands(CommandState.TERMINATE);
-	  			command.setState(CommandState.DONE);
-	  			updateEntry(command);
+	  		if( getIdentity() != command.getComponent() ) {
+	  			log.debug("NukeCommand " + command.getState() + " not for us, expected " + getIdentity() + " but was " + command.getComponent() +  ".");
 	  		} else {
-	  			log.info("Received common command: " + command + ".");
-	  			if( command.isRepeated() ) {
-	  				registerProcedure(new RepeatedExecuteTaskProcedure(command));
+	  			if( Shared.Commands.Execute.STOP_EXECUTION.equals(command.getCommand()) ) {
+	  				log.info("Received command to stop all executions.");
+	  				setProceduresStopping(distributeExecuteUpdateCommands(CommandState.STOP));
+	  				log.info("Issued stop command to " + getProceduresStopping() + " procedures, waiting for done.");
+	  				setStopCommand(command);
+	  			} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
+	  				log.info("Received command to terminate all executions.");
+	  				setProceduresTerminating(distributeExecuteUpdateCommands(CommandState.TERMINATE));
+	  				log.info("Issued terminate command to " + getProceduresTerminating() + " procedures, we hade " + getProceduresStopping() + " that failed stopping, waiting for done.");
+	  				setTerminateCommand(command);
+	  				if( null != getStopCommand() ) {
+	  					log.info("Received terminate command before stopped, aborting stop command.");
+	  					setProceduresStopping(0);
+	  					getStopCommand().setState(CommandState.ABORTED);
+	  					updateEntry(getStopCommand());
+	  				}
 	  			} else {
-	  				registerProcedure(new ExecuteTaskProcedure(command));
+	  				log.info("Received common command: " + command + ".");
+	  				if( command.isRepeated() ) {
+	  					registerProcedure(new RepeatedExecuteTaskProcedure(command));
+	  				} else {
+	  					registerProcedure(new ExecuteTaskProcedure(command));
+	  				}
 	  			}
 	  		}
 	  		break;
 	  	}
 	  	case QUERY: {
-	  		registerProcedure(new QueryTaskProcedure(command));
+	  		if( getIdentity() != command.getComponent() ) {
+	  			log.debug("NukeCommand " + command.getState() + " not for us, expected " + getIdentity() + " but was " + command.getComponent() +  ".");
+	  		} else {
+	  			registerProcedure(new QueryTaskProcedure(command));
+	  		}
 	  		break;
 	  	}
 	  	case ABORTED: 
@@ -260,38 +324,52 @@ public class NukeTasks extends BaseListener {
 	  }
 	}
 	
-	public void distributeExecuteUpdateCommands(CommandState state) {
+	public int distributeExecuteUpdateCommands(CommandState state) {
 		log.trace("distributeExecuteUpdateCommands(" + state + ")");
-		for( BaseTaskProcedure proc : getProcedures(ExecuteTaskProcedure.class) ) {
-			ExecuteTaskProcedure procEx = (ExecuteTaskProcedure)proc;
-			NukeCommand command = procEx.getCommand();
+		List<BaseTaskProcedure> procs = getProcedures(ExecuteTaskProcedure.class, RepeatedExecuteTaskProcedure.class);
+		log.debug("We have " + procs.size() + " procedures to update locally.");
+		for( BaseTaskProcedure proc : procs ) {
+			NukeCommand command = null;
+			if( ExecuteTaskProcedure.class.getName() == proc.getClass().getName() ) {
+				ExecuteTaskProcedure procEx = (ExecuteTaskProcedure)proc;
+				command = procEx.getCommand();
+			} else if ( RepeatedExecuteTaskProcedure.class.getName() == proc.getClass().getName() ) {
+				RepeatedExecuteTaskProcedure procEx = (RepeatedExecuteTaskProcedure)proc;
+				command = procEx.getCommand();
+			} else {
+				log.fatal("Received proc that did not match RepeatedExecuteTaskProcedure or ExecuteTaskProcedure.");
+				throw new RuntimeException("Received proc that did not match RepeatedExecuteTaskProcedure or ExecuteTaskProcedure.");
+			}
 			command.setState(state);
-			procEx.updateEntry(command);
+			log.debug("Sending local command to " + proc.getTxID() + " to change state to " + state);
+			proc.updateEntry(command);
 		}
-		for( BaseTaskProcedure proc : getProcedures(RepeatedExecuteTaskProcedure.class) ) {
-			RepeatedExecuteTaskProcedure procEx = (RepeatedExecuteTaskProcedure)proc;
-			NukeCommand command = procEx.getCommand();
-			command.setState(state);
-			procEx.updateEntry(command);
-		}
+		return procs.size();
 	}
 	
 	/**
 	 * Method to get a list of procedures of a specific class.
-	 * @param procs the class to look for.
-	 * @return List<BaseProcedure>
+	 * @param procs the class(es) to look for.
+	 * @return List List with BaseTaskProcedure
 	 * {@code
-	 * List<BaseProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
-	 * for( BaseProcedure procedure : commandProcedures ) {
+	 * List<BaseTaskProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
+	 * for( BaseTaskProcedure procedure : commandProcedures ) {
+	 *   ...
+	 * }
+	 * ...
+	 * List<BaseTaskProcedure> commandProcedures = getProcedurs(CommandProcedure.class, NukeProcedure.class);
+	 * for( BaseTaskProcedure procedure : commandProcedures ) {
 	 *   ...
 	 * }
 	 * }
 	 */
-	public List<BaseTaskProcedure> getProcedures(Class<?> procs) {
+	public List<BaseTaskProcedure> getProcedures(Class<?>... procs) {
 		List<BaseTaskProcedure> retVal = new ArrayList<BaseTaskProcedure>();
-		for( BaseTaskProcedure procedure : getProcedures() ) {
-			if( procs.getName() == procedure.getClass().getName() ) {
-				retVal.add(procedure);
+		for( Class<?> proc : procs ) {
+			for( BaseTaskProcedure procedure : getProcedures() ) {
+				if( proc.getName() == procedure.getClass().getName() ) {
+					retVal.add(procedure);
+				}
 			}
 		}
 		return retVal;
@@ -384,6 +462,76 @@ public class NukeTasks extends BaseListener {
 	 */
   public void setNukeInfo(NukeInfo nukeInfo) {
 	  this.nukeInfo = nukeInfo;
+  }
+
+	/**
+	 * @return the proceduresStopping
+	 */
+  public int getProceduresStopping() {
+	  return proceduresStopping;
+  }
+  
+	/**
+	 * @return the proceduresStopping after decreased by one
+	 */
+  public int decProceduresStopping() {
+	  return --this.proceduresStopping;
+  }
+
+	/**
+	 * @param proceduresStopping the proceduresStopping to set
+	 */
+  public void setProceduresStopping(int proceduresStopping) {
+	  this.proceduresStopping = proceduresStopping;
+  }
+
+	/**
+	 * @return the proceduresTerminating
+	 */
+  public int getProceduresTerminating() {
+	  return proceduresTerminating;
+  }
+  
+	/**
+	 * @return the proceduresTerminating after decreased by one
+	 */
+  public int decProceduresTerminating() {
+	  return --this.proceduresTerminating;
+  }
+
+	/**
+	 * @param proceduresTerminating the proceduresTerminating to set
+	 */
+  public void setProceduresTerminating(int proceduresTerminating) {
+	  this.proceduresTerminating = proceduresTerminating;
+  }
+
+	/**
+	 * @return the stopCommand
+	 */
+  public NukeCommand getStopCommand() {
+	  return stopCommand;
+  }
+
+	/**
+	 * @param stopCommand the stopCommand to set
+	 */
+  public void setStopCommand(NukeCommand stopCommand) {
+	  this.stopCommand = stopCommand;
+  }
+
+	/**
+	 * @return the terminateCommand
+	 */
+  public NukeCommand getTerminateCommand() {
+	  return terminateCommand;
+  }
+
+	/**
+	 * @param terminateCommand the terminateCommand to set
+	 */
+  public void setTerminateCommand(NukeCommand terminateCommand) {
+	  this.terminateCommand = terminateCommand;
   }
 
 }

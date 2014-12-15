@@ -13,9 +13,14 @@ public class QueryTaskProcedure extends BaseTaskProcedure {
 	
 	private NukeCommand command;
 	
+	boolean stopped;
+	boolean terminated;
+	
 	public QueryTaskProcedure(NukeCommand command) {
 		log.trace("QueryTaskProcedure(" + command + ")");
 		setCommand(command);
+		setStopped(false);
+		setTerminated(false);
 	}
 	
 	@Override
@@ -60,6 +65,36 @@ public class QueryTaskProcedure extends BaseTaskProcedure {
 	 */
   public void setCommand(NukeCommand command) {
 	  this.command = command;
+  }
+  
+  /**
+   * @param stopped the stopped to set
+   */
+  public void setStopped(boolean stopped) {
+  	this.stopped = stopped;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isStopped() {
+	  return this.stopped;
+  }
+	
+  /**
+   * @param terminated the terminated to set
+   */
+  public void setTerminated(boolean terminated) {
+  	this.terminated = terminated;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isTerminated() {
+	  return this.terminated;
   }
 
 }

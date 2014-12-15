@@ -24,9 +24,14 @@ public class NukeProcedure extends BaseTaskProcedure {
 	public final int INITIALIZING        = CREATED + 2;
 	public final int RUNNING             = CREATED + 3;
 	public final int SHUTTING_DOWN       = CREATED + 4;
-
+	
+	boolean stopped;
+	boolean terminated;
+	
 	public NukeProcedure(long identity) {
 		setIdentity(identity);
+		setStopped(false);
+		setTerminated(false);
 	}
 
 	/**
@@ -205,5 +210,35 @@ public class NukeProcedure extends BaseTaskProcedure {
 	private void setIdentity(long identity) {
 		this.identity = identity;
 	}
+	
+  /**
+   * @param stopped the stopped to set
+   */
+  public void setStopped(boolean stopped) {
+  	this.stopped = stopped;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isStopped() {
+	  return this.stopped;
+  }
+	
+  /**
+   * @param terminated the terminated to set
+   */
+  public void setTerminated(boolean terminated) {
+  	this.terminated = terminated;
+  }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public boolean isTerminated() {
+	  return this.terminated;
+  }
 
 }

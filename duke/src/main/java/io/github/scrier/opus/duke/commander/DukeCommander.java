@@ -9,13 +9,11 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseListener;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
-import io.github.scrier.opus.common.commander.BaseProcedureC;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Complement;
 
 public class DukeCommander extends BaseListener {
 
@@ -239,6 +237,7 @@ public class DukeCommander extends BaseListener {
       	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
       }
 	  }
+	  getProceduresToRemove().clear();
   }
 	
 	/**
@@ -260,10 +259,10 @@ public class DukeCommander extends BaseListener {
 	/**
 	 * Method to get a list of procedures of a specific class.
 	 * @param procs the class to look for.
-	 * @return List<BaseProcedure>
+	 * @return List list with BaseDukeProcedures
 	 * {@code
-	 * List<BaseProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
-	 * for( BaseProcedure procedure : commandProcedures ) {
+	 * List<BaseDukeProcedures> commandProcedures = getProcedurs(CommandProcedure.class);
+	 * for( BaseDukeProcedures procedure : commandProcedures ) {
 	 *   ...
 	 * }
 	 * }
@@ -288,10 +287,10 @@ public class DukeCommander extends BaseListener {
 	/**
 	 * Method to get a list of procedures of a specific class.
 	 * @param procs the class to look for.
-	 * @return List<BaseProcedure>
+	 * @return List List with BaseDukeProcedure
 	 * {@code
-	 * List<BaseProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
-	 * for( BaseProcedure procedure : commandProcedures ) {
+	 * List<BaseDukeProcedure> commandProcedures = getProcedurs(CommandProcedure.class);
+	 * for( BaseDukeProcedure procedure : commandProcedures ) {
 	 *   ...
 	 * }
 	 * }
