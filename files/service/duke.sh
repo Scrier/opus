@@ -32,6 +32,7 @@ maxShutdownTime=15                                              # maximum number
 log4j2file=${DUKE_LOG4J2_CONFIG:-$serviceConfigDir/log4j2duke.xml}       # where log4j2 xml configuration file resides.
 pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
 dukeConfigHome=${DUKE_CONFIG_DIR:-$serviceUserHome}             # config input to running testfile
+dukeConfig=${DUKE_CONFIG:-$serviceConfigDir/DukeConfig.xml}     # set to predefined config file, if not option will be run.
 hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
 javaCommand=${JAVA_BIN:-java}                                              # name of the Java launcher without the path
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
@@ -58,7 +59,6 @@ function query_config() {
     echo "No valid config file to duke specified in param dukeConfig, running default."
     javaArgs="-jar $applDir/duke.jar"                 # arguments for Java launcher
   fi
-  javaCommandLine="$javaCommand $javaAppArgs $javaArgs"          # command line to start the Java service application
 }
 
 # Makes the file $1 writable by the group $serviceGroup.
@@ -135,6 +135,7 @@ function startService {
    getServicePID
    if [ $? -eq 0 ]; then echo -n "$serviceName is already running"; RETVAL=0; return 0; fi
    [[ ! -f $dukeConfig ]] && query_config
+   javaCommandLine="$javaCommand $javaAppArgs $javaArgs"          # command line to start the Java service application
    echo -n "Starting $serviceName   "
    startServiceProcess
    if [ $? -ne 0 ]; then RETVAL=1; echo "failed"; return 1; fi
