@@ -19,9 +19,6 @@ if [ -f $opusConfig ]; then
   . $opusConfig
 fi
 
-# Set this to your Java installation
-JAVA_HOME=/usr/java/latest
-
 serviceNameLo="duke"                                            # service name with the first letter in lowercase
 serviceName="Duke"                                              # service name
 serviceUser=${OPUS_SERVICE_USER:-opus}                          # OS user name for the service
@@ -36,8 +33,7 @@ log4j2file=${DUKE_LOG4J2_CONFIG:-$serviceConfigDir/log4j2duke.xml}       # where
 pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
 dukeConfigHome=${DUKE_CONFIG_DIR:-$serviceUserHome}             # config input to running testfile
 hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
-javaCommand="java"                                              # name of the Java launcher without the path
-javaExe="$JAVA_HOME/bin/$javaCommand"                           # file name of the Java application launcher executable
+javaCommand=${JAVA_BIN:-java}                                              # name of the Java launcher without the path
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
 javaCommandLineKeyword="duke.jar"     # a keyword that occurs on the commandline, used to detect an already running service process and to distinguish it from others
 
@@ -62,7 +58,7 @@ function query_config() {
     echo "No valid config file to duke specified in param dukeConfig, running default."
     javaArgs="-jar $applDir/duke.jar"                 # arguments for Java launcher
   fi
-  javaCommandLine="$javaExe $javaAppArgs $javaArgs"          # command line to start the Java service application
+  javaCommandLine="$javaCommand $javaAppArgs $javaArgs"          # command line to start the Java service application
 }
 
 # Makes the file $1 writable by the group $serviceGroup.
@@ -101,7 +97,7 @@ function startServiceProcess {
    rm -f $pidFile
    makeFileWritable $pidFile || return 1
    makeFileWritable $serviceLogFile || return 1
-   cmd="cd $applDir ; nohup $javaCommandLine >>$serviceLogFile 2>&1 & echo \$! >$pidFile"
+   cmd="nohup $javaCommandLine >>$serviceLogFile 2>&1 & echo \$! >$pidFile"
    su -l $serviceUser -s $SHELL -c "$cmd" || return 1
    sleep 0.1
    pid="$(<$pidFile)"

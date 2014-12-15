@@ -208,5 +208,16 @@ public class CommandProcedure extends BaseDukeProcedure {
   public void setCallback(ICommandCallback callback) {
 	  this.callback = callback;
   }
+  
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
+  	String retValue = "CommandProcedure{nukeCommand:" + getNukeCommand();
+  	retValue += ", initialComand:" + getInitialCommand();
+  	retValue += ", callback:" + getCallback() + "}";
+  	return retValue;
+  }
 
 }

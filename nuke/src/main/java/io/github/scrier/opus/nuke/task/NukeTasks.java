@@ -239,8 +239,8 @@ public class NukeTasks extends BaseListener {
 	  		log.debug("Procedure " + procedure + " finished stopping execution, we have " + getProceduresStopping() + " left.");
 	  	else {
 	  		log.info("Terminate is finished, sending done command.");
-	  		getTerminateCommand().setState(CommandState.DONE);
-	  		updateEntry(getTerminateCommand());
+	  		getStopCommand().setState(CommandState.DONE);
+	  		updateEntry(getStopCommand());
 	  	}
 	  }
   }

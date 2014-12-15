@@ -237,6 +237,7 @@ public class DukeCommander extends BaseListener {
       	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
       }
 	  }
+	  getProceduresToRemove().clear();
   }
 	
 	/**

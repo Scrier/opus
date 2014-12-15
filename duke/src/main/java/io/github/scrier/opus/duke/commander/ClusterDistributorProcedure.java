@@ -129,7 +129,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public int handleOnUpdated(BaseNukeC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		try {
-			log.debug("states[" + states[getState()].getClassName() + "].updated(" + data + ");");
+			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].updated(" + data + ");");
 			states[getState()].updated(data);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
@@ -148,7 +148,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public int handleOnEvicted(BaseNukeC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		try {
-			log.debug("states[" + states[getState()].getClassName() + "].evicted(" + data + ");");
+			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].evicted(" + data + ");");
 			states[getState()].evicted(data);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
@@ -167,7 +167,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
 		try {
-			log.debug("states[" + states[getState()].getClassName() + "].removed(" + key + ");");
+			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].removed(" + key + ");");
 			states[getState()].removed(key);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
@@ -186,7 +186,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public void timeOutTriggered(long id) {
 		log.trace("timeOutTriggered(" + id + ")");
 		try {
-			log.debug("states[" + states[getState()].getClassName() + "].timeout(" + id + ");");
+			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].timeout(" + id + ");");
 			states[getState()].timeout(id);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
@@ -205,7 +205,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	public void onStateChanged(int state) {
 		log.trace("onStateChanged(" + state + ")");
 		try {
-			log.debug("states[" + states[state].getClassName() + "].init();");
+			log.debug("states[" + states[state].getClass().getSimpleName() + "].init();");
 			states[getState()].init();
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
