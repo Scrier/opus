@@ -25,6 +25,8 @@ public abstract class StreamGobbler extends Thread {
 	 */
 	public abstract void handleLine(String line);
 	
+	public abstract void onExit();
+	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -39,6 +41,8 @@ public abstract class StreamGobbler extends Thread {
 			}
 		} catch (IOException ioe) {
 			log.error("IOException in " + this.getClass().getName() + ".", ioe);
+		} finally {
+			onExit();
 		}
 	}
 
