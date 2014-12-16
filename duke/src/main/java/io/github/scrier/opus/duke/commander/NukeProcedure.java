@@ -149,7 +149,8 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 			}
 			if( 0 < ( NukeInfo.REQUESTED_USERS_MODIFIED & modified ) ) {
 				log.debug("[" + getTxID() + "] Requested users changed from " + local.getRequestedUsers() + " to " + info.getRequestedUsers() + ".");
-				local.setRequestedUsers(info.getRequestedUsers());
+				log.error("Skipping to set requested users to the global state due to issue #16, this needs to be fixed for the next release");
+				//local.setRequestedUsers(info.getRequestedUsers());
 			}
 			if( 0 < ( NukeInfo.STATE_MODIFIED & modified ) ) {
 				log.debug("[" + getTxID() + "] State changed from " + local.getState() + " to " + info.getState() + ".");
@@ -279,6 +280,19 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	@Override
   public int getNoOfCompletedCommands() {
 	  return local.getCompletedCommands();
+  }
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return local.toString();
+	}
+
+	@Override
+  public void setRequestedNoOfUsers(int users) {
+	  local.setRequestedUsers(users);
   }
 
 }
