@@ -300,19 +300,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		this.terminateSeconds = terminateSeconds;
 	}
 
-	/**
-	 * @return the waitingForNukeUpdateSeconds
-	 */
-  protected int getWaitingForNukeUpdateSeconds() {
-	  return waitingForNukeUpdateSeconds;
-  }
-
-	/**
-	 * @param waitingForNukeUpdateSeconds the waitingForNukeUpdateSeconds to set
-	 */
-  protected void setWaitingForNukeUpdateSeconds(int waitingForNukeUpdateSeconds) {
-	  this.waitingForNukeUpdateSeconds = waitingForNukeUpdateSeconds;
-  }
 
 	/**
 	 * @return the rampDownUpdateSeconds
@@ -401,7 +388,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @return the timerID
 	 */
-	protected long getTimerID() {
+	public long getTimerID() {
 		return timerID;
 	}
 
@@ -415,7 +402,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @return the terminateID
 	 */
-	protected long getTerminateID() {
+	public long getTerminateID() {
 	  return terminateID;
   }
 
@@ -430,7 +417,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
    * Method to check that the correct number of nukes are in correct state.
    * @return boolean
    */
-  protected boolean isNukesReady() {
+  public boolean isNukesReady() {
   	log.trace("isNukesReady()");
   	log.debug((getMinNodes() <= theContext.getNukes(NukeState.RUNNING).size()) + " = " + getMinNodes() + " <= " + theContext.getNukes(NukeState.RUNNING).size() + ".");
   	return (getMinNodes() <= theContext.getNukes(NukeState.RUNNING).size());
@@ -516,194 +503,15 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	}
 	
 	/**
-	 * Base state for the FSM logic.
-	 * @author andreas.joelsson
+	 * Method to start a timer from the states.
+	 * @param time int with the time in seconds to start.
+	 * @param timerID long with the id of the timer.
 	 */
-	abstract class State {
-		
-		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.State");
-		
-		/**
-		 * Method called each state change.
-		 */
-		public void init() {
-			logLocal.trace("init()");
-			logLocal.error("Default init state setting aborted from state: " + getState() + "."); 
-			setState(ABORTED); 
-		}
-		
-		/**
-		 * Base handling on update methods.
-		 * @param data BaseNukeC
-		 */
-		public void updated(BaseNukeC data)  {
-			logLocal.trace("updated(" + data + ")");
-			logLocal.error("Default update state setting aborted from state: " + getState() + "."); 
-			setState(ABORTED); 
-		}  
-
-		/**
-		 * Base handling on evicted mmethods.
-		 * @param data BaseNukeC
-		 */
-		public void evicted(BaseNukeC data) {
-			logLocal.trace("evicted(" + data + ")");
-			logLocal.error("Default update state setting aborted from state: " + getState() + ".");
-			setState(ABORTED); 
-		}
-
-		/**
-		 * Base handling on removed mmethods.
-		 * @param key Long
-		 */
-		public void removed(Long key) {
-			logLocal.trace("removed(" + key + ")");
-			logLocal.error("Default update state setting aborted from state: " + getState() + ".");
-			setState(ABORTED); 
-		}
-
-		/**
-		 * Base handling on timeout mmethods.
-		 * @param id long
-		 */
-		public void timeout(long id) {
-			logLocal.trace("timeout(" + id + ")");
-			logLocal.error("Default update state setting aborted from state: " + getState() + ".");
-			setState(ABORTED); 
-		}
-		
-		/**
-		 * Method to get the name of the state for debugging.
-		 * @return String with the correct state.
-		 */
-		public String getClassName() {
-			return this.getClass().getName();
-		}
-		
+	public void startTimeout(int time, long timerID) {
+		log.trace("startTimeout(" + time + ", " + timerID + ")");
+		startTimeout(time, timerID, this);
 	}
 	
-	/**
-	 * State handling for Aborted transactions.
-	 * @author andreas.joelsson
-	 * {@code * -> ABORTED}
-	 */
-	private class Aborted extends State {}
-
-	/**
-	 * State handling for Created transactions.
-	 * @author andreas.joelsson
-	 * {@code * -> ABORTED}
-	 */
-	private class Created extends State {}
-	
-	/**
-	 * State handling for Completed transactions
-	 * @author andreas.joelsson
-	 */
-	private class Completed extends State {
-		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.Completed");
-
-		@Override
-		public void init() {
-			logLocal.trace("init()");
-		}
-		
-		@Override
-		public void updated(BaseNukeC data)  {
-			logLocal.trace("updated(" + data + ")");
-		}  
-
-		@Override
-		public void evicted(BaseNukeC data) {
-			logLocal.trace("evicted(" + data + ")");
-		}
-
-		@Override
-		public void removed(Long key) {
-			logLocal.trace("removed(" + key + ")");
-		}
-
-		@Override
-		public void timeout(long id) {
-			logLocal.trace("timeout(" + id + ")");
-		}
-	}
-	
-	private class WaitingForNuke extends State {
-
-		private final Logger logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.WaitingForNuke");
-		
-		/**
-		 * WaitingForNuke handling on init methods.
-		 */
-		@Override
-		public void init() {
-			logLocal.trace("init()");
-			logLocal.info("Starting timeout for waiting for nukes every " + getWaitingForNukeUpdateSeconds() + " second.");
-			startTimeout(getWaitingForNukeUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
-		}
-		
-		/**
-		 * WaitingForNuke handling on update methods.
-		 * @param data BaseNukeC
-		 */
-		@Override
-		public void updated(BaseNukeC data)  {
-			logLocal.trace("updated(" + data + ")");
-		}  
-
-		/**
-		 * WaitingForNuke handling on evicted methods.
-		 * @param data BaseNukeC
-		 */
-		@Override
-		public void evicted(BaseNukeC data) {
-			logLocal.trace("evicted(" + data + ")");
-		}
-
-		/**
-		 * WaitingForNuke handling on removed methods.
-		 * @param key Long
-		 */
-		@Override
-		public void removed(Long key) {
-			logLocal.trace("removed(" + key + ")");
-		}
-
-		/**
-		 * WaitingForNuke handling on timeout methods.
-		 * @param id long
-		 */
-		@Override
-		public void timeout(long id) {
-			logLocal.trace("timeout(" + id + ")");
-			if( id == getTimerID() ) {
-				handleTimerTick();
-			} else if ( id == getTerminateID() ) {
-				logLocal.error("Received terminate timeout during state WAITING_FOR_NUKE.");
-				setState(ABORTED); // not terminating as nothing needs to be terminated.
-			} else {
-				logLocal.error("Received unknown timer id: " + id + " in state WAITING_FOR_NUKE.");
-				setState(ABORTED);
-			}
-		}
-		
-		/**
-		 * Method to handle next timer tick to create new instances of commands to execute.
-		 */
-		private void handleTimerTick() {
-			logLocal.trace("handleTimerTick()");
-			if( true != isNukesReady() ) {
-				logLocal.info("Still waiting for nukes, starting new wait timer for " + getWaitingForNukeUpdateSeconds() + " seconds.");
-				startTimeout(getWaitingForNukeUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
-			} else {
-				logLocal.info("Changing state from WAITING_FOR_NUKE to RAMPING_UP.");
-				setState(RAMPING_UP);
-			}
-		}
-		
-	}
-
 	/**
 	 * State handling for RampingUp transactions.
 	 * @author andreas.joelsson
