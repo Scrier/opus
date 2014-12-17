@@ -5,18 +5,18 @@
   <parent>
     <groupId>opus</groupId>
     <artifactId>io.github.scrier.opus</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.2</version>
   </parent>
   <groupId>io.github.scrier.opus</groupId>
   <artifactId>duke</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
+  <version>0.1.2</version>
   <name>duke</name>
   <url>http://maven.apache.org</url>
   <dependencies>
     <dependency>
       <groupId>io.github.scrier.opus</groupId>
       <artifactId>common</artifactId>
-      <version>0.1.1-SNAPSHOT</version>
+      <version>0.1.2</version>
     </dependency>
   </dependencies>
   <build>
