@@ -34,7 +34,8 @@ pidFile="$applDir/$serviceNameLo.pid"                           # name of PID fi
 dukeConfigHome=${DUKE_CONFIG_DIR:-$serviceUserHome}             # config input to running testfile
 dukeConfig=${DUKE_CONFIG:-$serviceConfigDir/DukeConfig.xml}     # set to predefined config file, if not option will be run.
 hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
-javaCommand=${JAVA_BIN:-java}                                              # name of the Java launcher without the path
+javaCommand="java"                                              # name of the Java launcher without the path
+javaExe=${JAVA_BIN:-java}                                       # what hava exeutable to use.
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
 javaCommandLineKeyword="duke.jar"     # a keyword that occurs on the commandline, used to detect an already running service process and to distinguish it from others
 
@@ -135,7 +136,7 @@ function startService {
    getServicePID
    if [ $? -eq 0 ]; then echo -n "$serviceName is already running"; RETVAL=0; return 0; fi
    [[ ! -f $dukeConfig ]] && query_config
-   javaCommandLine="$javaCommand $javaAppArgs $javaArgs"          # command line to start the Java service application
+   javaCommandLine="$javaExe $javaAppArgs $javaArgs"          # command line to start the Java service application
    echo -n "Starting $serviceName   "
    startServiceProcess
    if [ $? -ne 0 ]; then RETVAL=1; echo "failed"; return 1; fi
