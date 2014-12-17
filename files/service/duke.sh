@@ -33,7 +33,7 @@ log4j2file=${DUKE_LOG4J2_CONFIG:-$serviceConfigDir/log4j2duke.xml}       # where
 pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
 dukeConfigHome=${DUKE_CONFIG_DIR:-$serviceUserHome}             # config input to running testfile
 dukeConfig=${DUKE_CONFIG:-$serviceConfigDir/DukeConfig.xml}     # set to predefined config file, if not option will be run.
-hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
+hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastDukeConfig.xml} # if not set, set iut to home dir.
 javaCommand="java"                                              # name of the Java launcher without the path
 javaExe=${JAVA_BIN:-java}                                       # what hava exeutable to use.
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
@@ -240,7 +240,7 @@ function main {
          checkServiceStatus
          ;;
       log)
-         startLogTail                                      # starts a tail for the nuke output
+         startLogTail                                      # starts a tail for the duke output
          ;;
       debug)
          startDebug "$@"                                   # starts a tail for the log4j output
