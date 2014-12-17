@@ -40,6 +40,8 @@ public class Shared {
 		public static final String EXECUTE_TERMINATE = "execute-terminate";
 		public static final String EXECUTE_FOLDER = "execute-folder";
 		public static final String EXECUTE_COMMAND = "execute-command";
+		public static final String EXECUTE_GOBBLER_DIR = "execute-gobbler-dir";
+		public static final String EXECUTE_GOBBLER_LEVEL = "execute-gobbler-level";
 	}
 	
 	/**

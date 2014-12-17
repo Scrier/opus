@@ -452,12 +452,14 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		} else {
 			while( toExecute > 0 ) {
 				INukeInfo minInfo = null;
+				log.debug("Checking " + availableNukes.size() + " for who gets the ball.");
 				for( INukeInfo info : availableNukes ) {
 					if( minInfo == null ) {
 						minInfo = info;
 					} else {
 						int minAmount = getTotalUsers(retValue, minInfo);
 						int infoAmount = getTotalUsers(retValue, info);
+						log.debug("if( minAmount[" + minAmount + "] > infoAmount[" + infoAmount + "] )");
 						if( minAmount > infoAmount ) {
 							log.debug("Changing info object from " + minInfo + " to " + info + ".");
 							minInfo = info;
@@ -466,16 +468,19 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				}
 				if( null == minInfo ) {
 					throw new RuntimeException("Variable minInfo of type INukeInfo is null although no possible codepath leads to that.");
-				} else if ( retValue.containsKey(minInfo.getNukeID()) ) {
+				} else if ( true == retValue.containsKey(minInfo.getNukeID()) ) {
 					int value = retValue.get(minInfo.getNukeID());
+					log.debug("Changing from " + value + " to " + (value + 1 ) + " commands to nuke id:" + minInfo.getNukeID() + ".");
 					retValue.put(minInfo.getNukeID(), value + 1);
 				} else {
+					log.debug("Addding 1 command to nuke id: " + minInfo.getNukeID() + ".");
 					retValue.put(minInfo.getNukeID(), 1);
 				}
+				minInfo.setRequestedNoOfUsers(minInfo.getRequestedNoOfUsers() + 1);
 				toExecute--;
 			}
-			
 		}
+		log.debug("Returning a suggestion of " + retValue.size() + " nukes to handle distribution " + noOfUsers + " commands.");
 		return retValue;
 	}
 	
@@ -483,6 +488,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		log.trace("getTotalUsers(" + availableNukes + ", " + info + ")");
 		int retValue = info.getRequestedNoOfUsers();
 		if( availableNukes.containsKey(info.getNukeID()) ) {
+			log.debug("Adding " + availableNukes.get(info.getNukeID()) + " to " + retValue + ".");
 			retValue += availableNukes.get(info.getNukeID());
 		}
 		return retValue;
@@ -1023,10 +1029,11 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				} else {
 					logLocal.info("Ramping down unchanged at " + getOldUsers() + ".");
 				}
-				if( 0 == activeUsers ) {
+				if( 0 == activeUsers && 0 == getActiveNukeCommands().size() ) {
 					logLocal.info("All users ramped down. we are done.");
 					setState(COMPLETED);
 				} else {
+					logLocal.info("We have " + activeUsers + " active and waiting for " + getActiveNukeCommands().size() + " stop commands.");
 					startTimeout(getRampDownUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 				}
 			}

@@ -32,10 +32,11 @@ maxShutdownTime=15                                              # maximum number
 log4j2file=${NUKE_LOG4J2_CONFIG:-$serviceConfigDir/log4j2nuke.xml}       # where log4j2 xml configuration file resides.
 pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
 hazelcastConfig=${NUKE_HAZELCAST_CONFIG:-$serviceConfigDir/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
-javaCommand=${JAVA_BIN:-java}                                              # name of the Java launcher without the path
+javaCommand=java                                                # name of the Java launcher without the path
+javaExe=${JAVA_BIN:-java}                                        # what java executable to use. 
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.config=$hazelcastConfig"
 javaArgs="-jar $applDir/nuke.jar"                               # arguments for Java launcher
-javaCommandLine="$javaCommand $javaAppArgs $javaArgs"               # command line to start the Java service application
+javaCommandLine="$javaExe $javaAppArgs $javaArgs"               # command line to start the Java service application
 javaCommandLineKeyword="nuke.jar"                               # a keyword that occurs on the commandline, used to detect an already running service process and to distinguish it from others
 
 # Makes the file $1 writable by the group $serviceGroup.

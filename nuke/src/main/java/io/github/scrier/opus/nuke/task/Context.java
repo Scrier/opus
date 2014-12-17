@@ -110,6 +110,26 @@ public enum Context {
   public NukeTasks getTask() {
 	  return task;
   }
+  
+  /**
+   * Method to get a specified setting connected to a key.
+   * @param key String with the key to look for.
+   * @return String
+   * @throws InvalidOperationException if not initialized correctly.
+   */
+  public String getSetting(String key) throws InvalidOperationException {
+  	return getParent().getSettings().get(key);
+  }
+  
+  /**
+   * Method to check if a specified setting exists.
+   * @param key String with the key to look for.
+   * @return boolean
+   * @throws InvalidOperationException if not initialized correctly.
+   */
+  public boolean containsSetting(String key) throws InvalidOperationException {
+  	return getParent().getSettings().containsKey(key);
+  }
 
 	/**
 	 * @param task the task to set

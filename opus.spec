@@ -77,7 +77,9 @@ mkdir -p %{_var}/log/%{name}/duke
 mkdir -p /home/%{name}
 /bin/chown opus:opus -R /home/%{name}
 /bin/chown opus:opus -R %{_var}/log/%{name}
+/bin/chown opus:opus -R %{_sysconfdir}/%{name}
 /bin/chmod 775 -R %{_var}/log/%{name}
+/bin/chmod 775 -R %{_sysconfdir}/%{name}
 
 
 %postun
@@ -100,6 +102,10 @@ rm -f %{_javadir}/%{name}/nuke.jar
 
 
 %changelog
+ * Wed Dec 17 2014 Andreas Joelsson <andreas.joelsson@gmail.com> - 0.1.2
+   - Fixes for config files and added streamgobblers for file and log4j
+ * Mon Dec 15 2014 Andreas Joelsson <andreas.joelsson@gmail.com> - 0.1.1
+   - First release with rpm and minor fixes
  * Wed Dec 03 2014 Andreas Joelsson <andreas.joelsson@gmail.com> - 0.1.0
    - Initial packaging
 

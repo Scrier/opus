@@ -13,6 +13,7 @@ hs_err_pid*
 
 # Maven
 target/
+dependency-reduced-pom.xml
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

@@ -47,10 +47,13 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 		try {
 			setProcess(getProcessHandler().start());
 			if ( null == gobbler ) {
+				log.debug("No gobbler defined, creating new one!");
 				gobbler = new StreamGobblerToNull(getProcess().getInputStream());
 			} else {
+				log.debug("Setting input stream to gobbler: " + gobbler);
 				gobbler.setInputStream(getProcess().getInputStream());
 			}
+			gobbler.start();
 			int retCode = getProcess().waitFor();
 			if( 0 != retCode ) {
 				log.error("Received returncode: " + retCode);
