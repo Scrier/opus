@@ -16,4 +16,17 @@ public class StreamGobblerToNull extends StreamGobbler {
 		// do nothing.
   }
 
+	@Override
+  public void onExit() {
+	  // do nothing
+  }
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return "StreamGobblerToNull{is: " + getInputStream() + "}";
+	}
+
 }

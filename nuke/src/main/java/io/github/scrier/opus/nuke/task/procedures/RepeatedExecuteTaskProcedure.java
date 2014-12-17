@@ -6,11 +6,16 @@ import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
+import io.github.scrier.opus.nuke.task.Context;
+import io.github.scrier.opus.nuke.task.StreamGobbler;
+import io.github.scrier.opus.nuke.task.StreamGobblerToFile;
+import io.github.scrier.opus.nuke.task.StreamGobblerToLog4j;
 
 public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements Callable<String> {
 
@@ -19,6 +24,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	private NukeCommand command;
 	private boolean repeated;
 	private int completedCommands;
+	private Context theContext = Context.INSTANCE;
 	
 	boolean stopped;
 	boolean terminated;
@@ -39,6 +45,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	 */
 	@Override
   public void init() throws Exception {
+		log.info("init()");
 		if( !getCommand().isRepeated() ) {
 			log.fatal("[" + getTxID() + "] Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
 			throw new RuntimeException("Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
@@ -126,12 +133,22 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
   	} 
 	  String executeString = getCommand().getCommand();
 	  do {
-	  	boolean result = false;
-	  	if( getCommand().getFolder().isEmpty() ) {
-	  		result = executeProcess(executeString, null, null);
-	  	} else {
-	  		result = executeProcess(executeString, new File(getCommand().getFolder()), null);
+	  	File folder = null;
+	  	StreamGobbler gobbler = null;
+	  	if( true != getCommand().getFolder().isEmpty() ) {
+	  		folder = new File(getCommand().getFolder());
 	  	}
+	  	if( true == theContext.containsSetting(Shared.Settings.EXECUTE_GOBBLER_LEVEL) ) {
+	  		log.debug("Creating gobbler StreamGobblerToLog4j");
+	  		gobbler = new StreamGobblerToLog4j(theContext.getSetting(Shared.Settings.EXECUTE_GOBBLER_LEVEL), getCommand().getTxID());
+	  	}
+	  	else if( true == theContext.containsSetting(Shared.Settings.EXECUTE_GOBBLER_DIR) ) {
+	  		log.debug("Creating gobbler StreamGobblerToFile");
+	  		File target = new File(theContext.getSetting(Shared.Settings.EXECUTE_GOBBLER_DIR) + "/" + "process-" + getCommand().getTxID() + ".log");
+	  		target.createNewFile();
+	  		gobbler = new StreamGobblerToFile(target);
+	  	}
+	  	boolean result = executeProcess(executeString, folder, gobbler);
 		  log.debug("[" + getTxID() + "] Process returns: " + result + ".");
 		  if( !isRepeated() && result ) {
 		  	getCommand().setState(CommandState.DONE);

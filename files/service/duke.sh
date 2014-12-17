@@ -32,9 +32,12 @@ maxShutdownTime=15                                              # maximum number
 log4j2file=${DUKE_LOG4J2_CONFIG:-$serviceConfigDir/log4j2duke.xml}       # where log4j2 xml configuration file resides.
 pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
 dukeConfigHome=${DUKE_CONFIG_DIR:-$serviceUserHome}             # config input to running testfile
-hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastNukeConfig.xml} # if not set, set iut to home dir.
-javaCommand=${JAVA_BIN:-java}                                              # name of the Java launcher without the path
+dukeConfig=${DUKE_CONFIG:-$serviceConfigDir/DukeConfig.xml}     # set to predefined config file, if not option will be run.
+hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastDukeConfig.xml} # if not set, set iut to home dir.
+javaCommand="java"                                              # name of the Java launcher without the path
+javaExe=${JAVA_BIN:-java}                                       # what hava exeutable to use.
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
+javaArgs="-jar $applDir/duke.jar $dukeConfig"                   # arguments for Java launcher
 javaCommandLineKeyword="duke.jar"     # a keyword that occurs on the commandline, used to detect an already running service process and to distinguish it from others
 
 # Asks the user for input file if not set.
@@ -58,7 +61,6 @@ function query_config() {
     echo "No valid config file to duke specified in param dukeConfig, running default."
     javaArgs="-jar $applDir/duke.jar"                 # arguments for Java launcher
   fi
-  javaCommandLine="$javaCommand $javaAppArgs $javaArgs"          # command line to start the Java service application
 }
 
 # Makes the file $1 writable by the group $serviceGroup.
@@ -135,6 +137,7 @@ function startService {
    getServicePID
    if [ $? -eq 0 ]; then echo -n "$serviceName is already running"; RETVAL=0; return 0; fi
    [[ ! -f $dukeConfig ]] && query_config
+   javaCommandLine="$javaExe $javaAppArgs $javaArgs"          # command line to start the Java service application
    echo -n "Starting $serviceName   "
    startServiceProcess
    if [ $? -ne 0 ]; then RETVAL=1; echo "failed"; return 1; fi
@@ -237,7 +240,7 @@ function main {
          checkServiceStatus
          ;;
       log)
-         startLogTail                                      # starts a tail for the nuke output
+         startLogTail                                      # starts a tail for the duke output
          ;;
       debug)
          startDebug "$@"                                   # starts a tail for the log4j output
