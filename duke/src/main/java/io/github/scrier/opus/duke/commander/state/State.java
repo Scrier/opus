@@ -1,6 +1,7 @@
 package io.github.scrier.opus.duke.commander.state;
 
 import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.duke.commander.BaseDukeProcedure;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
 
 import org.apache.logging.log4j.LogManager;
@@ -141,6 +142,63 @@ public abstract class State {
 	 */
 	protected boolean isNukesReady() {
 		return parent.isNukesReady();
+	}
+	
+	/**
+	 * Propagated method from parent
+	 * @return int with the users to increase each interval.
+	 */
+	protected int getUserIncrease() {
+		return parent.getUserIncrease();
+	}
+	
+	/**
+	 * Propagated method from parent
+	 * @return int with the maximum number of users to ramp up to.
+	 */
+	protected int getMaxUsers() {
+		return parent.getMaxUsers();
+	}
+	
+	/**
+	 * @return the folder
+	 */
+	public String getFolder() {
+		return parent.getFolder();
+	}
+	
+	/**
+	 * @return the command
+	 */
+	protected String getCommand() {
+		return parent.getCommand();
+	}
+	
+	/**
+	 * @return the repeated
+	 */
+	protected boolean isRepeated() {
+		return parent.isRepeated();
+	}
+	
+	/**
+	 * @return the peakDelaySeconds
+	 */
+	protected int getPeakDelaySeconds() {
+		return parent.getPeakDelaySeconds();
+	}
+	
+	/**
+	 * Method to check if a specific timeout is active.
+	 * @param id long with the id of the timeout to check for.
+	 * @return boolean
+	 */
+  public boolean isTimeoutActive(long id) {
+  	return parent.isTimeoutActive(id);
+  }
+	
+	protected boolean registerProcedure(BaseDukeProcedure procedure) {
+		return parent.registerProcedure(procedure);
 	}
 	
 	/**
