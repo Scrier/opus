@@ -37,6 +37,7 @@ hazelcastConfig=${DUKE_HAZELCAST_CLIENT_CONFIG:-$serviceConfigDir/hazelcastNukeC
 javaCommand="java"                                              # name of the Java launcher without the path
 javaExe=${JAVA_BIN:-java}                                       # what hava exeutable to use.
 javaAppArgs="-Djava.net.preferIPv4Stack=true -Dlog4j.configurationFile=$log4j2file -Dhazelcast.client.config=$hazelcastConfig"
+javaArgs="-jar $applDir/duke.jar $dukeConfig"                   # arguments for Java launcher
 javaCommandLineKeyword="duke.jar"     # a keyword that occurs on the commandline, used to detect an already running service process and to distinguish it from others
 
 # Asks the user for input file if not set.
