@@ -220,6 +220,11 @@ public class ClusterDistributorProcedureTest {
     public int getNoOfCompletedCommands() {
 	    return noOfCompletedCommandsReturned;
     }
+
+		@Override
+    public void setRequestedNoOfUsers(int users) {
+	    this.requestedNoOfUsersReturned = users;
+    }
 		
 	}
 

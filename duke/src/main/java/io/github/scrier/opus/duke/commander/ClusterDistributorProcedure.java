@@ -1029,10 +1029,11 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				} else {
 					logLocal.info("Ramping down unchanged at " + getOldUsers() + ".");
 				}
-				if( 0 == activeUsers ) {
+				if( 0 == activeUsers && 0 == getActiveNukeCommands().size() ) {
 					logLocal.info("All users ramped down. we are done.");
 					setState(COMPLETED);
 				} else {
+					logLocal.info("We have " + activeUsers + " active and waiting for " + getActiveNukeCommands().size() + " stop commands.");
 					startTimeout(getRampDownUpdateSeconds(), getTimerID(), ClusterDistributorProcedure.this);
 				}
 			}
