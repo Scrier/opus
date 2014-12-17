@@ -279,8 +279,14 @@ public class NukeTasks extends BaseListener {
 	  			if( Shared.Commands.Execute.STOP_EXECUTION.equals(command.getCommand()) ) {
 	  				log.info("Received command to stop all executions.");
 	  				setProceduresStopping(distributeExecuteUpdateCommands(CommandState.STOP));
-	  				log.info("Issued stop command to " + getProceduresStopping() + " procedures, waiting for done.");
-	  				setStopCommand(command);
+	  				if( 0 < getProceduresStopping() ) {
+		  				log.info("Issued stop command to " + getProceduresStopping() + " procedures, waiting for done.");
+		  				setStopCommand(command);
+	  				} else {
+	  					log.info("All procedures stopped, updating command.");
+	  					command.setState(CommandState.DONE);
+	  					updateEntry(getStopCommand());
+	  				}
 	  			} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
 	  				log.info("Received command to terminate all executions.");
 	  				setProceduresTerminating(distributeExecuteUpdateCommands(CommandState.TERMINATE));
