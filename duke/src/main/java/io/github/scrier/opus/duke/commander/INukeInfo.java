@@ -25,7 +25,7 @@ public interface INukeInfo {
 	/**
 	 * Method to set the number of users that is requested to execute.
 	 * Need to be removed later on as this is not the correct solution for the handling.
-	 * @param int with the issue
+	 * @param users int with the issue
 	 * @since 0.1.2
 	 */
 	public void setRequestedNoOfUsers(int users);

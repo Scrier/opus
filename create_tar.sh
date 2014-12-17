@@ -1,11 +1,17 @@
-#/bin/bash
+#!/bin/bash
 
 system=opus
-version=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+if [ -z "$1" ]; then
+  version=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+else
+  version="$1"
+fi
 
 if [ -z "$version" ]; then
   echo "Set version for release: "
   read version
+else
+  echo "version: $version"
 fi
 
 folder="$system-$version"

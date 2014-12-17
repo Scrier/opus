@@ -56,23 +56,29 @@ test:
 .PHONY: tar
 tar:
 	mvn -Dmaven.test.skip=true clean package javadoc:jar
-	./create_tar.sh
+	./create_tar.sh haha
 
 ###############################################################################
 # Packaging
 
-MVN_VERSION 		:= $(shell mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+MVN_TARGET  		:= $(shell mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
 COMMON_VERSION 	:= $(shell cd common && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
 DUKE_VERSION 		:= $(shell cd duke && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
 NUKE_VERSION 		:= $(shell cd nuke && mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
+MVN_VERSION     := $(subst -SNAPSHOT,.snapshot,$(MVN_TARGET))
 RPM_DEFINES 	 	:= \
 						--define "version $(MVN_VERSION)" \
 						--define "common_version $(COMMON_VERSION)" \
 						--define "duke_version $(DUKE_VERSION)" \
 						--define "nuke_version $(NUKE_VERSION)"
 
+.PHONY: rpmtar
+rpmtar:
+	mvn -Dmaven.test.skip=true clean package javadoc:jar
+	./create_tar.sh $(MVN_VERSION)
+
 .PHONY: rpm
-rpm: tar
+rpm: rpmtar
 	mkdir -p ~/rpmbuild/{RPMS,SRPMS,BUILD,SOURCES,SPECS}
 	mv *.tar.gz ~/rpmbuild/SOURCES/
 	rpmbuild -bb $(RPM_DEFINES) opus.spec
@@ -80,6 +86,7 @@ rpm: tar
 .PHONY: info
 info: 
 	@echo "MVN_VERSION $(MVN_VERSION)"
+	@echo "MVN_TARGET $(MVN_TARGET)"
 	@echo "RPM_DEFINES $(RPM_DEFINES)"
 	@echo "COMMON_VERSION $(COMMON_VERSION)"
 	@echo "DUKE_VERSION $(DUKE_VERSION)"
