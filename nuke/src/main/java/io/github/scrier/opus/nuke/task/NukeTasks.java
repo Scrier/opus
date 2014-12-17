@@ -285,7 +285,7 @@ public class NukeTasks extends BaseListener {
 	  				} else {
 	  					log.info("All procedures stopped, updating command.");
 	  					command.setState(CommandState.DONE);
-	  					updateEntry(getStopCommand());
+	  					updateEntry(command);
 	  				}
 	  			} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
 	  				log.info("Received command to terminate all executions.");
