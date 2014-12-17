@@ -58,3 +58,7 @@ echo "Setting up folder permissions"
 /bin/chown opus:opus -R /usr/share/javadoc/opus
 /bin/chown opus:opus -R /var/log/opus
 
+echo "Setting rwx rights on folders"
+/bin/chmod 775 -R /etc/opus
+
+
