@@ -36,7 +36,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private int userIncrease;		///< Number of users increase each interval
 	private int peakDelaySeconds;	///< How long in seconds the peak should hold
 	private int terminateSeconds;	///< How many seconds from start the application can run before terminating.
-	private int waitingForNukeUpdateSeconds;	///< Interval to check for available nodes.
 	private boolean repeated;		///< Issues if commands should be repeated or not.
 	private boolean shutDownOnce;	///< guard for only doing one shutdown.
 	private String command;			///< Command to issue to the nodes.
@@ -45,7 +44,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private long timerID;			///< id for the timer tick callback
 	private long terminateID;		///< id for the terminate tick callback.
 
-	private State[] states;
+	private State[] states;		///< State array holding logic for each state.
+	
 	/**
 	 * Constructor
 	 */
@@ -62,6 +62,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		setFolder("");
 		setTimerID(-1L);
 		setTerminateID(-1L);
+		setStates(new State[TERMINATING + 1]);
 	}
 
 	/**
@@ -90,11 +91,10 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			states[ABORTED] = new Aborted(this);
 			states[CREATED] = new Created(this);
 			states[WAITING_FOR_NUKE] = new WaitingForNuke(this);
-			states[RAMPING_UP] = new RampingUp(this); 
+			states[RAMPING_UP] = new RampingUp(this, getIntervalSeconds()); 
 			states[PEAK_DELAY] = new PeakDelay(this);
 			states[RAMPING_DOWN] = new RampingDown(this);
 			states[TERMINATING] = new Terminating(this);
-			states[COMPLETED] = new Completed(this);
 			int exTime = getExecutionTime();
 			if ( exTime > getTerminateSeconds() ) {
 				log.error("Calculated execcutiontime: " + Shared.Methods.formatTime(exTime) + " time overlaps the terminate time: " + Shared.Methods.formatTime(getTerminateSeconds()) + ".");
@@ -229,7 +229,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param minNodes the minNodes to set
 	 */
-	protected void setMinNodes(int minNodes) {
+	private void setMinNodes(int minNodes) {
 		this.minNodes = minNodes;
 	}
 
@@ -243,7 +243,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param maxUsers the maxUsers to set
 	 */
-	protected void setMaxUsers(int maxUsers) {
+	private void setMaxUsers(int maxUsers) {
 		this.maxUsers = maxUsers;
 	}
 
@@ -257,7 +257,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param intervalSeconds the intervalSeconds to set
 	 */
-	protected void setIntervalSeconds(int intervalSeconds) {
+	private void setIntervalSeconds(int intervalSeconds) {
 		this.intervalSeconds = intervalSeconds;
 	}
 
@@ -271,7 +271,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param userIncrease the userIncrease to set
 	 */
-	protected void setUserIncrease(int userIncrease) {
+	private void setUserIncrease(int userIncrease) {
 		this.userIncrease = userIncrease;
 	}
 
@@ -285,7 +285,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param peakDelaySeconds the peakDelaySeconds to set
 	 */
-	protected void setPeakDelaySeconds(int peakDelaySeconds) {
+	private void setPeakDelaySeconds(int peakDelaySeconds) {
 		this.peakDelaySeconds = peakDelaySeconds;
 	}
 
@@ -299,7 +299,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param terminateSeconds the terminateSeconds to set
 	 */
-	protected void setTerminateSeconds(int terminateSeconds) {
+	private void setTerminateSeconds(int terminateSeconds) {
 		this.terminateSeconds = terminateSeconds;
 	}
 
@@ -313,7 +313,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param repeated the repeated to set
 	 */
-	protected void setRepeated(boolean repeated) {
+	private void setRepeated(boolean repeated) {
 		this.repeated = repeated;
 	}
 
@@ -327,7 +327,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param shutDownOnce the shutDownOnce to set
 	 */
-	protected void setShutDownOnce(boolean shutDownOnce) {
+	private void setShutDownOnce(boolean shutDownOnce) {
 	  this.shutDownOnce = shutDownOnce;
   }
 
@@ -341,7 +341,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param command the command to set
 	 */
-	protected void setCommand(String command) {
+	private void setCommand(String command) {
 		this.command = command;
 	}
 
@@ -355,7 +355,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param folder the folder to set
 	 */
-	protected void setFolder(String folder) {
+	private void setFolder(String folder) {
 		this.folder = folder;
 	}
 
@@ -369,7 +369,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param timerID the timerID to set
 	 */
-	protected void setTimerID(long timerID) {
+	private void setTimerID(long timerID) {
 		this.timerID = timerID;
 	}
 
@@ -383,9 +383,25 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	/**
 	 * @param terminateID the terminateID to set
 	 */
-	protected void setTerminateID(long terminateID) {
+	private void setTerminateID(long terminateID) {
 	  this.terminateID = terminateID;
   }
+	
+	/**
+	 * Method used for testing.
+	 * @return
+	 */
+	public void setStates(State[] states) {
+		this.states = states;
+	}
+	
+	/**
+	 * Method used for testing.
+	 * @return
+	 */
+	protected State[] getStates() {
+		return states;
+	}
   
   /**
    * Method to check that the correct number of nukes are in correct state.

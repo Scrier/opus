@@ -58,7 +58,7 @@ public abstract class State {
 	}  
 
 	/**
-	 * Base handling on evicted mmethods.
+	 * Base handling on evicted methods.
 	 * @param data BaseNukeC
 	 */
 	public void evicted(BaseNukeC data) {
@@ -68,7 +68,7 @@ public abstract class State {
 	}
 
 	/**
-	 * Base handling on removed mmethods.
+	 * Base handling on removed methods.
 	 * @param key Long
 	 */
 	public void removed(Long key) {
@@ -92,7 +92,7 @@ public abstract class State {
 	 * @return String with the correct state.
 	 */
 	public String getClassName() {
-		return this.getClass().getName();
+		return this.getClass().getSimpleName();
 	}
 	
 	/**

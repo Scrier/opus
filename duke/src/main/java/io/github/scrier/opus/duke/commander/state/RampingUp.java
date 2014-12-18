@@ -20,7 +20,7 @@ public class RampingUp extends State {
 
 	private static Logger log = LogManager.getLogger(RampingUp.class);
 	
-	private static int DEFAULT_INTERVAL_SECONDS = 5;
+	protected static int DEFAULT_INTERVAL_SECONDS = 5;
 	
 	private int intervalSeconds;		///< Interval seconds to increase each rampup.
 	private int localUserRampedUp;	///< Local information about issues commands.
