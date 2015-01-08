@@ -57,6 +57,7 @@ public class RampingUp extends State {
 	@Override
 	public void updated(BaseNukeC data)  {
 		log.trace("updated(" + data + ")");
+		assertState();
 	}  
 
 	/**
@@ -66,6 +67,7 @@ public class RampingUp extends State {
 	@Override
 	public void evicted(BaseNukeC data) {
 		log.trace("evicted(" + data + ")");
+		assertState();
 	}
 
 	/**
@@ -75,6 +77,7 @@ public class RampingUp extends State {
 	@Override
 	public void removed(Long key) {
 		log.trace("removed(" + key + ")");
+		assertState();
 	}
 
 	/**
@@ -84,6 +87,7 @@ public class RampingUp extends State {
 	@Override
 	public void timeout(long id) {
 		log.trace("timeout(" + id + ")");
+		assertState();
 		if( id == getTimerID() ) {
 			handleTimerTick();
 		} else if ( id == getTerminateID() ) {
@@ -209,6 +213,16 @@ public class RampingUp extends State {
 	 */
   public void setLocalUserRampedUp(int localUserRampedUp) {
 	  this.localUserRampedUp = localUserRampedUp;
+  }
+  
+  /**
+   * Method to assure that we are called in the correct state.
+   */
+  private void assertState() {
+  	if( RAMPING_UP != getState() ) {
+			log.error("Called state RAMPING_UP(" + RAMPING_UP + "), when in state " + getState() + ".");
+			throw new RuntimeException("Called state RAMPING_UP(" + RAMPING_UP + "), when in state " + getState() + ".");
+		} 
   }
 	
 }

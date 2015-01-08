@@ -26,14 +26,20 @@ import io.github.scrier.opus.duke.commander.INukeInfo;
 public class Terminating extends State implements ICommandCallback {
 
 	private static Logger log = LogManager.getLogger(Terminating.class);
+	
+	private static int TERMINATE_UPDATE_SECONDS = 30;
 
 	private int terminateTimeout;
 	private List<Long> activeNukeCommands;
 	private Context theContext = Context.INSTANCE;
 	
 	public Terminating(ClusterDistributorProcedure parent) {
+	  this(parent, TERMINATE_UPDATE_SECONDS);
+  }
+	
+	public Terminating(ClusterDistributorProcedure parent, int terminateTimeout) {
 	  super(parent);
-		setTerminateTimeout(30);
+		setTerminateTimeout(terminateTimeout);
 		setActiveNukeCommands(new ArrayList<Long>());
   }
 	
@@ -59,6 +65,7 @@ public class Terminating extends State implements ICommandCallback {
 	@Override
 	public void updated(BaseNukeC data)  {
 		log.trace("updated(" + data + ")");
+		assertState();
 	}  
 
 	/**
@@ -68,6 +75,7 @@ public class Terminating extends State implements ICommandCallback {
 	@Override
 	public void evicted(BaseNukeC data) {
 		log.trace("evicted(" + data + ")");
+		assertState();
 	}
 
 	/**
@@ -77,6 +85,7 @@ public class Terminating extends State implements ICommandCallback {
 	@Override
 	public void removed(Long key) {
 		log.trace("removed(" + key + ")");
+		assertState();
 	}
 
 	/**
@@ -86,13 +95,14 @@ public class Terminating extends State implements ICommandCallback {
 	@Override
 	public void timeout(long id) {
 		log.trace("timeout(" + id + ")");
+		assertState();
 		if( id == getTimerID() ) {
 			handleTimerTick();
 		} else if ( id == getTerminateID() ) {
 			log.fatal("Received terminate timeout during state TERMINATING.");
 			throw new RuntimeException("Received terminate timeout during state TERMINATING.");
 		} else {
-			log.fatal("Received unknown timer id: " + id + " in state RAMPING_DOWN.");
+			log.fatal("Received unknown timer id: " + id + " in state TERMINATING.");
 			throw new RuntimeException("Received terminate timeout during state TERMINATING.");
 		}
 	}
@@ -158,5 +168,15 @@ public class Terminating extends State implements ICommandCallback {
   public void setActiveNukeCommands(List<Long> activeNukeCommands) {
     this.activeNukeCommands = activeNukeCommands;
   }
+  
+	/**
+	 * Method to assure that we are called in the correct state.
+	 */
+	private void assertState() {
+		if( TERMINATING != getState() ) {
+			log.error("Called state TERMINATING(" + TERMINATING + "), when in state " + getState() + ".");
+			throw new RuntimeException("Called state TERMINATING(" + TERMINATING + "), when in state " + getState() + ".");
+		} 
+	}
 
 }

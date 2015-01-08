@@ -48,6 +48,7 @@ public class WaitingForNuke extends State {
 	@Override
 	public void updated(BaseNukeC data)  {
 		log.trace("updated(" + data + ")");
+		assertState();
 	}  
 
 	/**
@@ -57,6 +58,7 @@ public class WaitingForNuke extends State {
 	@Override
 	public void evicted(BaseNukeC data) {
 		log.trace("evicted(" + data + ")");
+		assertState();
 	}
 
 	/**
@@ -66,6 +68,7 @@ public class WaitingForNuke extends State {
 	@Override
 	public void removed(Long key) {
 		log.trace("removed(" + key + ")");
+		assertState();
 	}
 
 	/**
@@ -75,6 +78,7 @@ public class WaitingForNuke extends State {
 	@Override
 	public void timeout(long id) {
 		log.trace("timeout(" + id + ")");
+		assertState();
 		if( id == getTimerID() ) {
 			handleTimerTick();
 		} else if ( id == getTerminateID() ) {
@@ -112,6 +116,16 @@ public class WaitingForNuke extends State {
 	 */
   public void setWaitingForNukeTimeout(int waitingForNukeTimeout) {
 	  this.waitingForNukeTimeout = waitingForNukeTimeout;
+  }
+  
+  /**
+   * Method to assure that we are called in the correct state.
+   */
+  private void assertState() {
+  	if( WAITING_FOR_NUKE != getState() ) {
+			log.error("Called state WAITING_FOR_NUKE(" + WAITING_FOR_NUKE + "), when in state " + getState() + ".");
+			throw new RuntimeException("Called state WAITING_FOR_NUKE(" + WAITING_FOR_NUKE + "), when in state " + getState() + ".");
+		} 
   }
 
 }

@@ -36,7 +36,8 @@ public enum TestHelper {
 	INSTANCE;
 	
 	private static Logger log = LogManager.getLogger(TestHelper.class);
-
+	private Random randomGenerator = new Random();
+	
 	private TestHelper() {
 
 	}
@@ -141,7 +142,6 @@ public enum TestHelper {
 	 */
 	public ClusterDistributorProcedureTestObj getRandomDistributor() throws Exception {
 		ClusterDistributorProcedureTestObj retValue = new ClusterDistributorProcedureTestObj();
-		Random randomGenerator = new Random();
 		invokeSingleArg(ClusterDistributorProcedure.class, "setMinNodes", int.class, retValue, randomGenerator.nextInt());
 		invokeSingleArg(ClusterDistributorProcedure.class, "setMaxUsers", int.class, retValue, randomGenerator.nextInt());
 		invokeSingleArg(ClusterDistributorProcedure.class, "setIntervalSeconds", int.class, retValue, randomGenerator.nextInt());
@@ -152,8 +152,16 @@ public enum TestHelper {
 		invokeSingleArg(ClusterDistributorProcedure.class, "setShutDownOnce", boolean.class, retValue, randomGenerator.nextBoolean());
 		invokeSingleArg(ClusterDistributorProcedure.class, "setCommand", String.class, retValue, String.format("%f", randomGenerator.nextFloat()));
 		invokeSingleArg(ClusterDistributorProcedure.class, "setFolder", String.class, retValue, String.format("%f", randomGenerator.nextFloat()));
-		invokeSingleArg(ClusterDistributorProcedure.class, "setTimerID", long.class, retValue, randomGenerator.nextLong());
-		invokeSingleArg(ClusterDistributorProcedure.class, "setTerminateID", long.class, retValue, randomGenerator.nextLong());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setTimerID", long.class, retValue, getNextPositiveLong());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setTerminateID", long.class, retValue, getNextPositiveLong());
+		return retValue;
+	}
+	
+	private long getNextPositiveLong() {
+		long retValue = randomGenerator.nextLong();
+		while( retValue < 0 ) {
+			retValue = randomGenerator.nextLong();
+		}
 		return retValue;
 	}
 

@@ -1,8 +1,10 @@
 package io.github.scrier.opus.duke.commander.state;
 
 import static org.junit.Assert.*;
+import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
+import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.BaseActiveObjectMock;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
@@ -70,6 +72,107 @@ public class RampingUpTest {
 		assertEquals(distributor.getTerminateID(), testObject.getTerminateID());
 		assertEquals(distributor.getTimerID(), testObject.getTimerID());
 		assertEquals(distributor.getUserIncrease(), testObject.getUserIncrease());
+	}
+	
+	@Test
+	public void testInit() throws Exception {
+		ClusterDistributorProcedureTestObj distrib = theHelper.getRandomDistributor();
+		RampingUp testObject = new RampingUp(distrib);
+		testObject.init();
+		assertEquals(distrib.TimeoutTime, testObject.getIntervalSeconds());
+		assertEquals(distrib.TimeoutTimerID, testObject.getTimerID());
+		assertEquals(1, distrib.TimeoutCalls);
+	}
+	
+	@Test
+	public void testUpdated() {
+		RampingUp testObject = new RampingUp(distributor);
+		testObject.setState(testObject.RAMPING_UP);
+		testObject.updated(new BaseNukeC(1, 2));
+		assertEquals(distributor.RAMPING_UP, testObject.getState());
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testUpdatedException() {
+		RampingUp testObject = new RampingUp(distributor);
+		testObject.updated(new BaseNukeC(1, 2));
+		fail("Expected an exepction before this.");
+	}
+	
+	@Test
+	public void testEvicted() {
+		RampingUp testObject = new RampingUp(distributor);
+		testObject.setState(testObject.RAMPING_UP);
+		testObject.evicted(new BaseNukeC(1, 2));
+		assertEquals(distributor.RAMPING_UP, testObject.getState());
+	}
+	
+	@Test
+	public void testRemoved() {
+		RampingUp testObject = new RampingUp(distributor);
+		testObject.setState(testObject.RAMPING_UP);
+		testObject.removed(12345L);
+		assertEquals(distributor.RAMPING_UP, testObject.getState());
+	}
+	
+	@Test
+	public void testTimeoutTerminateID() {
+		RampingUp testObject = new RampingUp(distributor);
+		testObject.setState(testObject.RAMPING_UP);
+		testObject.timeout(testObject.getTerminateID());
+		assertEquals(testObject.TERMINATING, testObject.getState());
+	}
+	
+	@Test(expected=RuntimeException.class)
+	public void testTimeoutWrongID() {
+		RampingUp testObject = new RampingUp(distributor);
+		testObject.setState(testObject.RAMPING_UP);
+		long id = 0;
+		while( id == testObject.getTimerID() || id == testObject.getTerminateID() ) {
+			id++;
+		}
+		testObject.timeout(id);
+		fail("Should throw exception");
+	}
+	
+	@Test
+	public void testTimeoutTimeoutOK() throws Exception {
+		ClusterDistributorProcedureTestObj distrib = theHelper.getRandomDistributor();
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setMinNodes", int.class, distrib, 1);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setMaxUsers", int.class, distrib, 5);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setIntervalSeconds", int.class, distrib, 2);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setUserIncrease", int.class, distrib, 2);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setPeakDelaySeconds", int.class, distrib, 10);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setTerminateSeconds", int.class, distrib, 20);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setRepeated", boolean.class, distrib, true);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setShutDownOnce", boolean.class, distrib, true);
+		theContext.addNuke(1L, new NukeInfoMock(2, NukeState.RUNNING));
+		RampingUp testObject = new RampingUp(distrib);
+		testObject.setState(testObject.RAMPING_UP);
+		distrib.nukesReady = true;
+		testObject.timeout(testObject.getTimerID());
+		assertEquals(testObject.RAMPING_UP, testObject.getState());
+		assertEquals(1, distrib.TimeoutCalls);
+	}
+	
+	@Test
+	public void testTimeoutTimeoutChangeState() throws Exception {
+		ClusterDistributorProcedureTestObj distrib = theHelper.getRandomDistributor();
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setMinNodes", int.class, distrib, 1);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setMaxUsers", int.class, distrib, 5);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setIntervalSeconds", int.class, distrib, 2);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setUserIncrease", int.class, distrib, 2);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setPeakDelaySeconds", int.class, distrib, 10);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setTerminateSeconds", int.class, distrib, 20);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setRepeated", boolean.class, distrib, true);
+		theHelper.invokeSingleArg(ClusterDistributorProcedure.class, "setShutDownOnce", boolean.class, distrib, true);
+		theContext.addNuke(1L, new NukeInfoMock(2, NukeState.RUNNING));
+		RampingUp testObject = new RampingUp(distrib);
+		testObject.setState(testObject.RAMPING_UP);
+		distrib.nukesReady = true;
+		testObject.setLocalUserRampedUp(5);
+		testObject.timeout(testObject.getTimerID());
+		assertEquals(testObject.PEAK_DELAY, testObject.getState());
 	}
 	
 	@Test
@@ -161,70 +264,4 @@ public class RampingUpTest {
 		return retValue;
 	}
 	
-	/**
-	 * Helper class
-	 */
-	static long nukeIdCounter = 0;
-	public class NukeInfoMock implements INukeInfo {
-		
-		public long nukeIdReturn;
-		public int noOfUsersReturn;
-		public int requestedNoOfUsersReturned;
-		public NukeState infoStateReturned;
-		public int noOfActiveCommandsReturned;
-		public int noOfRequestedCommandsReturned;
-		public int noOfCompletedCommandsReturned;
-		
-		public NukeInfoMock(int requestedNoOfUsers) {
-			this(requestedNoOfUsers, NukeState.RUNNING);
-		}
-		
-		public NukeInfoMock(int requestedNoOfUsers, NukeState infoState) {
-			this.requestedNoOfUsersReturned = requestedNoOfUsers;
-			this.infoStateReturned = infoState;
-			this.nukeIdReturn = ++nukeIdCounter;
-    }
-
-		@Override
-    public long getNukeID() {
-	    return nukeIdReturn;
-    }
-
-		@Override
-    public int getNoOfUsers() {
-	    return noOfUsersReturn;
-    }
-
-		@Override
-    public int getRequestedNoOfUsers() {
-	    return requestedNoOfUsersReturned;
-    }
-
-		@Override
-    public NukeState getInfoState() {
-	    return infoStateReturned;
-    }
-
-		@Override
-    public int getNoOfActiveCommands() {
-	    return noOfActiveCommandsReturned;
-    }
-
-		@Override
-    public int getNoOfRequestedCommands() {
-	    return noOfRequestedCommandsReturned;
-    }
-
-		@Override
-    public int getNoOfCompletedCommands() {
-	    return noOfCompletedCommandsReturned;
-    }
-
-		@Override
-    public void setRequestedNoOfUsers(int users) {
-	    this.requestedNoOfUsersReturned = users;
-    }
-		
-	}
-
 }

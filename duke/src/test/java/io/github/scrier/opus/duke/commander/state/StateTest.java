@@ -85,7 +85,7 @@ public class StateTest {
 	public void testInit() {
 		State testObject = new StateImpl(distributor);
 		testObject.init();
-		assertEquals(testObject.ABORTED, testObject.getState());
+		assertEquals(testObject.CREATED, testObject.getState());
 	}
 	
 	@Test

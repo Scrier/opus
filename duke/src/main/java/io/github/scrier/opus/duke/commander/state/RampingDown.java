@@ -25,30 +25,30 @@ import io.github.scrier.opus.duke.commander.INukeInfo;
  * }
  */
 public class RampingDown extends State implements ICommandCallback {
-	
+
 	private static Logger log = LogManager.getLogger(RampingDown.class);
-	
+
 	private static int RAMPDOWN_UPDATE_SECONDS = 5;
-	
+
 	private int oldUsers;
 	private boolean doOnce;
 	private List<Long> activeNukeCommands;
 	private int rampDownUpdateSeconds;	///< Update interval for calculating rampdown
-	
+
 	private Context theContext = Context.INSTANCE;
-	
+
 	public RampingDown(ClusterDistributorProcedure parent) {
-	 this(parent, RAMPDOWN_UPDATE_SECONDS);
-  }
-	
+		this(parent, RAMPDOWN_UPDATE_SECONDS);
+	}
+
 	public RampingDown(ClusterDistributorProcedure parent, int rampDownSeconds) {
-	  super(parent);
+		super(parent);
 		setOldUsers(-1);
 		setDoOnce(true);
 		setActiveNukeCommands(new ArrayList<Long>());
 		setRampDownUpdateSeconds(rampDownSeconds);
-  }
-	
+	}
+
 	/**
 	 * RampingDown handling on init methods.
 	 */
@@ -57,7 +57,7 @@ public class RampingDown extends State implements ICommandCallback {
 		log.trace("init()");
 		handleTimerTick();
 	}
-	
+
 	/**
 	 * RampingDown handling on update methods.
 	 * @param data BaseNukeC
@@ -65,6 +65,7 @@ public class RampingDown extends State implements ICommandCallback {
 	@Override
 	public void updated(BaseNukeC data)  {
 		log.trace("updated(" + data + ")");
+		assertState();
 	}  
 
 	/**
@@ -74,6 +75,7 @@ public class RampingDown extends State implements ICommandCallback {
 	@Override
 	public void evicted(BaseNukeC data) {
 		log.trace("evicted(" + data + ")");
+		assertState();
 	}
 
 	/**
@@ -83,6 +85,7 @@ public class RampingDown extends State implements ICommandCallback {
 	@Override
 	public void removed(Long key) {
 		log.trace("removed(" + key + ")");
+		assertState();
 	}
 
 	/**
@@ -92,6 +95,7 @@ public class RampingDown extends State implements ICommandCallback {
 	@Override
 	public void timeout(long id) {
 		log.trace("timeout(" + id + ")");
+		assertState();
 		if( id == getTimerID() ) {
 			handleTimerTick();
 		} else if ( id == getTerminateID() ) {
@@ -102,12 +106,12 @@ public class RampingDown extends State implements ICommandCallback {
 			throw new RuntimeException("Received unknown timer id: " + id + " in state RAMPING_DOWN.");
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void finished(long nukeID, int state, String query, String result) {
+	public void finished(long nukeID, int state, String query, String result) {
 		log.trace("finished(" + nukeID + ", " + state + ", " + query + ", " + result + ")");
 		if( COMPLETED == state ) {
 			log.info("Stop Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
@@ -125,11 +129,11 @@ public class RampingDown extends State implements ICommandCallback {
 			// better handling later?
 			log.debug("Received finish from nukeid " + nukeID + " when we already changed state.");
 		} else {
-				log.fatal("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
+			log.fatal("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
 			throw new RuntimeException("Received finish from nukeid " + nukeID + " but unhandled state: " + state + ".");
 		}
 	}
-	
+
 	/**
 	 * Handle timer ticks.
 	 */
@@ -142,6 +146,9 @@ public class RampingDown extends State implements ICommandCallback {
 			for( INukeInfo info : nukes ) {
 				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.STOP_EXECUTION, CommandState.EXECUTE, this));
 				getActiveNukeCommands().add(info.getNukeID());
+			}
+			if( false == isTimeoutActive(getTimerID()) ) {
+				startTimeout(getRampDownUpdateSeconds(), getTimerID());
 			}
 			setDoOnce(false);
 		} else {
@@ -161,7 +168,7 @@ public class RampingDown extends State implements ICommandCallback {
 			}
 		}
 	}
-	
+
 	/**
 	 * Method to get the number of users from the distributed nukes.
 	 * @return int
@@ -178,57 +185,67 @@ public class RampingDown extends State implements ICommandCallback {
 	/**
 	 * @return the oldUsers
 	 */
-  public int getOldUsers() {
-    return oldUsers;
-  }
+	public int getOldUsers() {
+		return oldUsers;
+	}
 
 	/**
 	 * @param oldUsers the oldUsers to set
 	 */
-  public void setOldUsers(int oldUsers) {
-    this.oldUsers = oldUsers;
-  }
+	public void setOldUsers(int oldUsers) {
+		this.oldUsers = oldUsers;
+	}
 
 	/**
 	 * @return the doOnce
 	 */
-  public boolean isDoOnce() {
-    return doOnce;
-  }
+	public boolean isDoOnce() {
+		return doOnce;
+	}
 
 	/**
 	 * @param doOnce the doOnce to set
 	 */
-  public void setDoOnce(boolean doOnce) {
-    this.doOnce = doOnce;
-  }
+	public void setDoOnce(boolean doOnce) {
+		this.doOnce = doOnce;
+	}
 
 	/**
 	 * @return the activeNukeCommands
 	 */
-  public List<Long> getActiveNukeCommands() {
-    return activeNukeCommands;
-  }
+	public List<Long> getActiveNukeCommands() {
+		return activeNukeCommands;
+	}
 
 	/**
 	 * @param activeNukeCommands the activeNukeCommands to set
 	 */
-  public void setActiveNukeCommands(List<Long> activeNukeCommands) {
-    this.activeNukeCommands = activeNukeCommands;
-  }
+	public void setActiveNukeCommands(List<Long> activeNukeCommands) {
+		this.activeNukeCommands = activeNukeCommands;
+	}
 
 	/**
 	 * @return the rampDownUpdateSeconds
 	 */
-  public int getRampDownUpdateSeconds() {
-	  return rampDownUpdateSeconds;
-  }
+	public int getRampDownUpdateSeconds() {
+		return rampDownUpdateSeconds;
+	}
 
 	/**
 	 * @param rampDownUpdateSeconds the rampDownUpdateSeconds to set
 	 */
-  public void setRampDownUpdateSeconds(int rampDownUpdateSeconds) {
-	  this.rampDownUpdateSeconds = rampDownUpdateSeconds;
-  }
+	public void setRampDownUpdateSeconds(int rampDownUpdateSeconds) {
+		this.rampDownUpdateSeconds = rampDownUpdateSeconds;
+	}
+
+	/**
+	 * Method to assure that we are called in the correct state.
+	 */
+	private void assertState() {
+		if( RAMPING_DOWN != getState() ) {
+			log.error("Called state RAMPING_DOWN(" + RAMPING_DOWN + "), when in state " + getState() + ".");
+			throw new RuntimeException("Called state RAMPING_DOWN(" + RAMPING_DOWN + "), when in state " + getState() + ".");
+		} 
+	}
 
 }

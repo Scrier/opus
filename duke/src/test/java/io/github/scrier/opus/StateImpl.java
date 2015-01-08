@@ -12,4 +12,9 @@ public class StateImpl extends State {
     super(parent);
   }
 	
+	@Override
+	public void init() {
+		
+	}
+	
 }

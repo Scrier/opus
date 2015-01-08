@@ -40,6 +40,7 @@ public class PeakDelay extends State {
 	@Override
 	public void updated(BaseNukeC data)  {
 		log.trace("updated(" + data + ")");
+		assertState();
 	}  
 
 	/**
@@ -49,6 +50,7 @@ public class PeakDelay extends State {
 	@Override
 	public void evicted(BaseNukeC data) {
 		log.trace("evicted(" + data + ")");
+		assertState();
 	}
 
 	/**
@@ -58,6 +60,7 @@ public class PeakDelay extends State {
 	@Override
 	public void removed(Long key) {
 		log.trace("removed(" + key + ")");
+		assertState();
 	}
 
 	/**
@@ -67,6 +70,7 @@ public class PeakDelay extends State {
 	@Override
 	public void timeout(long id) {
 		log.trace("timeout(" + id + ")");
+		assertState();
 		if( id == getTimerID() ) {
 			handleTimerTick();
 		} else if ( id == getTerminateID() ) {
@@ -85,5 +89,15 @@ public class PeakDelay extends State {
 		log.trace("handleTimerTick()");
 		setState(RAMPING_DOWN);
 	}
+	
+	 /**
+   * Method to assure that we are called in the correct state.
+   */
+  private void assertState() {
+  	if( PEAK_DELAY != getState() ) {
+			log.error("Called state PEAK_DELAY(" + PEAK_DELAY + "), when in state " + getState() + ".");
+			throw new RuntimeException("Called state PEAK_DELAY(" + PEAK_DELAY + "), when in state " + getState() + ".");
+		} 
+  }
 
 }
