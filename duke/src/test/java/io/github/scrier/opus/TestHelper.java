@@ -17,6 +17,7 @@ package io.github.scrier.opus;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
@@ -26,11 +27,17 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.IdGenerator;
 
+import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
+
 import java.lang.reflect.Method;
+import java.util.Random;
 
 public enum TestHelper {
 	INSTANCE;
-
+	
+	private static Logger log = LogManager.getLogger(TestHelper.class);
+	private Random randomGenerator = new Random();
+	
 	private TestHelper() {
 
 	}
@@ -93,6 +100,9 @@ public enum TestHelper {
 	public Object invokeSingleArg(Class methodClass, String methodName, Class parameterType, 
 			Object instance, Object parameter) throws Exception {
 		Method privateInvoke = null;
+	   // Trace debugging, see output
+//    for(Method m : methodClass.getDeclaredMethods())
+//        if(m.getName().equals("myMethod")) log.trace(m); else log.trace("not it: " + m);
 		privateInvoke = methodClass.getDeclaredMethod(methodName, parameterType);
 		privateInvoke.setAccessible(true);
 		return privateInvoke.invoke(instance, parameter);
@@ -122,6 +132,37 @@ public enum TestHelper {
 		privateInvoke = methodClass.getDeclaredMethod(methodName);
 		privateInvoke.setAccessible(true);
 		return privateInvoke.invoke(instance);
+	}
+	
+	/**
+	 * Method to get an instance of the ClusterDistributorProcedure class with random values provided for all methods.
+	 * @param myState The state that should be set for the procedure
+	 * @return ClusterDistributorProcedure instance
+	 * @throws Exception thrown when something goes wrong.
+	 */
+	public ClusterDistributorProcedureTestObj getRandomDistributor() throws Exception {
+		ClusterDistributorProcedureTestObj retValue = new ClusterDistributorProcedureTestObj();
+		invokeSingleArg(ClusterDistributorProcedure.class, "setMinNodes", int.class, retValue, randomGenerator.nextInt());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setMaxUsers", int.class, retValue, randomGenerator.nextInt());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setIntervalSeconds", int.class, retValue, randomGenerator.nextInt());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setUserIncrease", int.class, retValue, randomGenerator.nextInt());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setPeakDelaySeconds", int.class, retValue, randomGenerator.nextInt());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setTerminateSeconds", int.class, retValue, randomGenerator.nextInt());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setRepeated", boolean.class, retValue, randomGenerator.nextBoolean());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setShutDownOnce", boolean.class, retValue, randomGenerator.nextBoolean());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setCommand", String.class, retValue, String.format("%f", randomGenerator.nextFloat()));
+		invokeSingleArg(ClusterDistributorProcedure.class, "setFolder", String.class, retValue, String.format("%f", randomGenerator.nextFloat()));
+		invokeSingleArg(ClusterDistributorProcedure.class, "setTimerID", long.class, retValue, getNextPositiveLong());
+		invokeSingleArg(ClusterDistributorProcedure.class, "setTerminateID", long.class, retValue, getNextPositiveLong());
+		return retValue;
+	}
+	
+	private long getNextPositiveLong() {
+		long retValue = randomGenerator.nextLong();
+		while( retValue < 0 ) {
+			retValue = randomGenerator.nextLong();
+		}
+		return retValue;
 	}
 
 }
