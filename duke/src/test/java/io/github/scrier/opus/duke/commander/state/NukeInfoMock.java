@@ -14,13 +14,14 @@ public class NukeInfoMock  implements INukeInfo {
 	public int noOfActiveCommandsReturned;
 	public int noOfRequestedCommandsReturned;
 	public int noOfCompletedCommandsReturned;
+	public int actualNumberOfThreads;
 	
 	public NukeInfoMock(int requestedNoOfUsers) {
 		this(requestedNoOfUsers, NukeState.RUNNING);
 	}
 	
-	public NukeInfoMock(int requestedNoOfUsers, NukeState infoState) {
-		this.requestedNoOfUsersReturned = requestedNoOfUsers;
+	public NukeInfoMock(int requestedNoOfThreads, NukeState infoState) {
+		this.requestedNoOfUsersReturned = requestedNoOfThreads;
 		this.infoStateReturned = infoState;
 		this.nukeIdReturn = ++nukeIdCounter;
   }
@@ -61,8 +62,13 @@ public class NukeInfoMock  implements INukeInfo {
   }
 
 	@Override
-  public void setRequestedNoOfThreads(int users) {
-    this.requestedNoOfUsersReturned = users;
+  public int getActualNoOfThreads() {
+	  return actualNumberOfThreads;
+  }
+
+	@Override
+  public void setRequestedNoOfThreads(int threads) {
+    this.requestedNoOfUsersReturned = threads;
   }
 
 }

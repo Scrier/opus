@@ -164,10 +164,10 @@ public class RampingUp extends State {
 					if( minInfo == null ) {
 						minInfo = info;
 					} else {
-						int minAmount = getTotalUsers(retValue, minInfo);
+						int minInfoAmount = getTotalUsers(retValue, minInfo);
 						int infoAmount = getTotalUsers(retValue, info);
-						log.debug("if( minAmount[" + minAmount + "] > infoAmount[" + infoAmount + "] )");
-						if( minAmount > infoAmount ) {
+						log.debug("if( minInfoAmount[" + minInfoAmount + "] > infoAmount[" + infoAmount + "] )");
+						if( minInfoAmount > infoAmount ) {
 							log.debug("Changing info object from " + minInfo + " to " + info + ".");
 							minInfo = info;
 						}

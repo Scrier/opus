@@ -35,6 +35,12 @@ public interface INukeInfo {
 	 * Method to get the number of users that is requested to execute.
 	 * @return int
 	 */
+	public int getActualNoOfThreads();
+	
+	/**
+	 * Method to get the number of users that is requested to execute.
+	 * @return int
+	 */
 	public int getRequestedNoOfThreads();
 	
 	/**

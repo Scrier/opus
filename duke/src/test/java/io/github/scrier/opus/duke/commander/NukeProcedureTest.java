@@ -76,7 +76,7 @@ public class NukeProcedureTest {
 		assertEquals(info.getCompletedCommands(), testObject.getNoOfCompletedCommands());
 		assertEquals(info.getRequestedCommands(), testObject.getNoOfRequestedCommands());
 		assertEquals(info.getNumberOfThreads(), testObject.getNoOfThreads());
-		assertEquals(info.getRequestedThreads(), testObject.getRequestedNoOfThreads());
+		assertEquals(info.getRequestedThreads(), testObject.getActualNoOfThreads());
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(1, testObject.getTxID());
 	}
@@ -91,7 +91,7 @@ public class NukeProcedureTest {
 		assertEquals(info.getCompletedCommands(), testObject.getNoOfCompletedCommands());
 		assertEquals(info.getRequestedCommands(), testObject.getNoOfRequestedCommands());
 		assertEquals(info.getNumberOfThreads(), testObject.getNoOfThreads());
-		assertEquals(info.getRequestedThreads(), testObject.getRequestedNoOfThreads());
+		assertEquals(info.getRequestedThreads(), testObject.getActualNoOfThreads());
 		assertEquals(testObject.INITIALIZING, testObject.getState());
 		assertEquals(1, testObject.getTxID());
 	}

@@ -30,6 +30,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	
 	private NukeInfo local;
 	private boolean publishToMap;
+	private int requestedNumberOfThreads;
 	
 	public final int INITIALIZING = CREATED + 1;
 	public final int WORKING      = CREATED + 2;
@@ -38,6 +39,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 		log.trace("NukeProcedure(" + info + ")");
 		local = new NukeInfo(info);
 		setPublishToMap(false);
+		setRequestedNoOfThreads(0);
 	}
 	
 	/**
@@ -262,7 +264,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	 */
 	@Override
   public int getRequestedNoOfThreads() {
-	  return local.getRequestedThreads();
+	  return requestedNumberOfThreads;
   }
 
 	/**
@@ -301,13 +303,24 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	 * {@inheritDoc}
 	 */
 	@Override
+  public void setRequestedNoOfThreads(int threads) {
+		requestedNumberOfThreads = threads;
+  }
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int getActualNoOfThreads() {
+		return local.getRequestedThreads();
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public String toString() {
 		return local.toString();
 	}
-
-	@Override
-  public void setRequestedNoOfThreads(int users) {
-	  local.setRequestedThreads(users);
-  }
 
 }

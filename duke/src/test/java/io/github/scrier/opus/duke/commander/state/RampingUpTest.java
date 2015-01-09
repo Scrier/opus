@@ -15,6 +15,8 @@ import io.github.scrier.opus.duke.commander.INukeInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 import org.junit.After;
@@ -223,6 +225,93 @@ public class RampingUpTest {
 		assertEquals(1, check.size());
 		assertEquals(1, list.size());
 		assertEquals(5, check.get(list.get(0)).intValue());
+	}
+	
+	@Test
+	public void testGetDistributionSuggestion5CorrectState50User() throws Exception {
+		List<Long> list = addNukeInfoObjects(5);
+		RampingUp testObject = new RampingUp(distributor);
+		Map<Long, Integer> check = testObject.getDistributionSuggestion(50);
+		assertNotNull(check);
+		assertEquals(5, check.size());
+		assertEquals(5, list.size());
+		assertEquals(10, check.get(list.get(0)).intValue());
+		assertEquals(10, check.get(list.get(1)).intValue());
+		assertEquals(10, check.get(list.get(2)).intValue());
+		assertEquals(10, check.get(list.get(3)).intValue());
+		assertEquals(10, check.get(list.get(4)).intValue());
+	}
+	
+	@Test
+	public void testGetDistributionSuggestion5CorrectState5User5Times() throws Exception {
+		List<Long> list = addNukeInfoObjects(5);
+		RampingUp testObject = new RampingUp(distributor);
+		Map<Long, Integer> check = testObject.getDistributionSuggestion(3);
+		assertNotNull(check);
+		assertEquals(3, check.size());
+		assertEquals(5, list.size());
+		for( Long key : list ) {
+			if( check.containsKey(key) ) {
+				assertEquals(1, check.get(key).intValue());
+			}
+		}
+		check = testObject.getDistributionSuggestion(3);
+		assertEquals(3, check.size());
+		for( Long key : list ) {
+			if( check.containsKey(key) ) {
+				assertEquals(1, check.get(key).intValue());
+			}
+		}
+		check = testObject.getDistributionSuggestion(3);
+		assertEquals(3, check.size());
+		for( Long key : list ) {
+			if( check.containsKey(key) ) {
+				assertEquals(1, check.get(key).intValue());
+			}
+		}
+		check = testObject.getDistributionSuggestion(3);
+		assertEquals(3, check.size());
+		for( Long key : list ) {
+			if( check.containsKey(key) ) {
+				assertEquals(1, check.get(key).intValue());
+			}
+		}
+		check = testObject.getDistributionSuggestion(3);
+		assertEquals(3, check.size());
+		for( Long key : list ) {
+			if( check.containsKey(key) ) {
+				assertEquals(1, check.get(key).intValue());
+			}
+		}
+		for( INukeInfo info : theContext.getNukes() ) {
+			assertEquals(3, info.getRequestedNoOfThreads());
+		}
+	}
+	
+	@Test
+	public void testGetDistributionSuggestion2CorrectState10User2Iterations() throws Exception {
+		addNukeInfoObjects(2);
+		RampingUp testObject = new RampingUp(distributor);
+		Map<Long, Integer> check = testObject.getDistributionSuggestion(5);
+		assertNotNull(check);
+		assertEquals(2, check.size());
+		long keyExpect3 = -1L, keyExpect2 = -1L;
+		for( Map.Entry<Long, Integer> entry : check.entrySet() ) {
+			if( 2 == entry.getValue() ) {
+				keyExpect3 = entry.getKey();
+			} else if ( 3 == entry.getValue() ) {
+				keyExpect2 = entry.getKey();
+			} else {
+				fail("Should be balances between 2 and 3 for fair distribution.");
+			}
+		}
+		assertNotEquals(-1L, keyExpect2);
+		assertNotEquals(-1L, keyExpect3);
+		check = testObject.getDistributionSuggestion(5);
+		assertTrue(check.containsKey(keyExpect2));
+		assertTrue(check.containsKey(keyExpect3));
+		assertEquals(2, check.get(keyExpect2).intValue());
+		assertEquals(3, check.get(keyExpect3).intValue());
 	}
 
 	@Test
