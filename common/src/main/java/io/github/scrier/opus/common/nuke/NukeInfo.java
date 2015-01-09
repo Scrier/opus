@@ -30,8 +30,8 @@ public class NukeInfo extends BaseNukeC {
 	private static Logger log = LogManager.getLogger(NukeInfo.class);
 
 	private long nukeID;
-	private int numberOfUsers;
-	private int requestedUsers;
+	private int numberOfThreads;
+	private int requestedThreads;
 	private boolean repeated;
 	private NukeState state;
 	private int activeCommands;
@@ -39,8 +39,8 @@ public class NukeInfo extends BaseNukeC {
 	private int completedCommands;
 
 	public static final long NUKE_ID_MODIFIED            = 0x0000000000000001L;
-	public static final long NUMBER_OF_USERS_MODIFIED    = 0x0000000000000002L;
-	public static final long REQUESTED_USERS_MODIFIED    = 0x0000000000000004L;
+	public static final long NUMBER_OF_THREADS_MODIFIED  = 0x0000000000000002L;
+	public static final long REQUESTED_THREADS_MODIFIED  = 0x0000000000000004L;
 	public static final long REPEATED_MODIFIED           = 0x0000000000000008L;
 	public static final long STATE_MODIFIED              = 0x0000000000000010L;
 	public static final long ACTIVE_COMMANDS_MODIFIED    = 0x0000000000000020L;
@@ -53,8 +53,8 @@ public class NukeInfo extends BaseNukeC {
 		super(NukeFactory.FACTORY_ID, NukeFactory.NUKE_INFO);
 		log.trace("NukeInfo()");
 		nukeID = 0L;
-		numberOfUsers = 0;
-		requestedUsers = 0;
+		numberOfThreads = 0;
+		requestedThreads = 0;
 		repeated = false;
 		state = NukeState.UNDEFINED;
 		setValuesModified(0L);
@@ -64,8 +64,8 @@ public class NukeInfo extends BaseNukeC {
 		super(obj2copy);
 		log.trace("NukeInfo(" + obj2copy + ")");
 		setNukeID(obj2copy.getNukeID());
-		setNumberOfUsers(obj2copy.getNumberOfUsers());
-		setRequestedUsers(obj2copy.getRequestedUsers());
+		setNumberOfThreads(obj2copy.getNumberOfThreads());
+		setRequestedThreads(obj2copy.getRequestedThreads());
 		setRepeated(obj2copy.isRepeated());
 		setState(obj2copy.getState());
 		setActiveCommands(obj2copy.getActiveCommands());
@@ -78,8 +78,8 @@ public class NukeInfo extends BaseNukeC {
 		if( input instanceof NukeInfo ) {
 			NukeInfo obj2copy = (NukeInfo)input;
 			setNukeID(obj2copy.getNukeID());
-			setNumberOfUsers(obj2copy.getNumberOfUsers());
-			setRequestedUsers(obj2copy.getRequestedUsers());
+			setNumberOfThreads(obj2copy.getNumberOfThreads());
+			setRequestedThreads(obj2copy.getRequestedThreads());
 			setRepeated(obj2copy.isRepeated());
 			setState(obj2copy.getState());
 			setActiveCommands(obj2copy.getActiveCommands());
@@ -105,8 +105,8 @@ public class NukeInfo extends BaseNukeC {
 	public long compare(NukeInfo obj2compare) {
 		long retValue = 0L;
 		retValue |= ( getNukeID() != obj2compare.getNukeID() ) ? NUKE_ID_MODIFIED : 0L;
-		retValue |= ( getNumberOfUsers() != obj2compare.getNumberOfUsers() ) ? NUMBER_OF_USERS_MODIFIED : 0L;
-		retValue |= ( getRequestedUsers() != obj2compare.getRequestedUsers() ) ? REQUESTED_USERS_MODIFIED : 0L;
+		retValue |= ( getNumberOfThreads() != obj2compare.getNumberOfThreads() ) ? NUMBER_OF_THREADS_MODIFIED : 0L;
+		retValue |= ( getRequestedThreads() != obj2compare.getRequestedThreads() ) ? REQUESTED_THREADS_MODIFIED : 0L;
 		retValue |= ( isRepeated() != obj2compare.isRepeated() ) ? REPEATED_MODIFIED : 0L;
 		retValue |= ( getState() != obj2compare.getState() ) ? STATE_MODIFIED : 0L;
 		retValue |= ( getActiveCommands() != obj2compare.getActiveCommands() ) ? ACTIVE_COMMANDS_MODIFIED : 0L;
@@ -127,8 +127,8 @@ public class NukeInfo extends BaseNukeC {
 		log.trace("readData(" + in + ")");
 		super.readData(in);
 		setNukeID(in.readLong());
-		setNumberOfUsers(in.readInt());
-		setRequestedUsers(in.readInt());
+		setNumberOfThreads(in.readInt());
+		setRequestedThreads(in.readInt());
 		setRepeated(in.readBoolean());
 		setState(NukeState.valueOf(in.readUTF()));
 		setActiveCommands(in.readInt());
@@ -144,8 +144,8 @@ public class NukeInfo extends BaseNukeC {
 		log.trace("writeData(" + out + ")");
 		super.writeData(out);
 		out.writeLong(getNukeID());
-		out.writeInt(getNumberOfUsers());
-		out.writeInt(getRequestedUsers());
+		out.writeInt(getNumberOfThreads());
+		out.writeInt(getRequestedThreads());
 		out.writeBoolean(isRepeated());
 		out.writeUTF(getState().toString());
 		out.writeInt(getActiveCommands());
@@ -173,34 +173,34 @@ public class NukeInfo extends BaseNukeC {
 	/**
 	 * @return the numberOfUsers
 	 */
-	public int getNumberOfUsers() {
-		return numberOfUsers;
+	public int getNumberOfThreads() {
+		return numberOfThreads;
 	}
 
 	/**
 	 * @param numberOfUsers the numberOfUsers to set
 	 */
-	public void setNumberOfUsers(int numberOfUsers) {
-		if( this.numberOfUsers != numberOfUsers ) {
-			this.numberOfUsers = numberOfUsers;
-			addValueModified(NUMBER_OF_USERS_MODIFIED);
+	public void setNumberOfThreads(int numberOfUsers) {
+		if( this.numberOfThreads != numberOfUsers ) {
+			this.numberOfThreads = numberOfUsers;
+			addValueModified(NUMBER_OF_THREADS_MODIFIED);
 		}
 	}
 
 	/**
 	 * @return the requestedUsers
 	 */
-	public int getRequestedUsers() {
-		return requestedUsers;
+	public int getRequestedThreads() {
+		return requestedThreads;
 	}
 
 	/**
 	 * @param requestedUsers the requestedUsers to set
 	 */
-	public void setRequestedUsers(int requestedUsers) {
-		if( this.requestedUsers != requestedUsers ) {
-			this.requestedUsers = requestedUsers;
-			addValueModified(REQUESTED_USERS_MODIFIED);
+	public void setRequestedThreads(int requestedUsers) {
+		if( this.requestedThreads != requestedUsers ) {
+			this.requestedThreads = requestedUsers;
+			addValueModified(REQUESTED_THREADS_MODIFIED);
 		}
 	}
 
@@ -305,9 +305,9 @@ public class NukeInfo extends BaseNukeC {
 
 	@Override
 	public String toString() {
-		return "NukeInfo{nukeID:"+nukeID+",numberOfUsers:"+numberOfUsers+ ",requestedUsers:"+requestedUsers+
-				",repeated:"+repeated+",state:"+state+",activeCommands:"+activeCommands+",requestedCommands:"+
-				requestedCommands+",completedCommands:"+completedCommands+"}";
+		return "NukeInfo: {nukeID:"+nukeID+", numberOfThreads:"+numberOfThreads+ ", requestedThreads:"+requestedThreads+
+				", repeated:"+repeated+", state:"+state+", activeCommands:"+activeCommands+", requestedCommands:"+
+				requestedCommands+", completedCommands:"+completedCommands+"}";
 	}
 
 }

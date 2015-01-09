@@ -56,7 +56,7 @@ test:
 .PHONY: tar
 tar:
 	mvn -Dmaven.test.skip=true clean package javadoc:jar
-	./create_tar.sh haha
+	./create_tar.sh 
 
 ###############################################################################
 # Packaging

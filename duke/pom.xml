@@ -9,14 +9,14 @@
   </parent>
   <groupId>io.github.scrier.opus</groupId>
   <artifactId>duke</artifactId>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.2.1-SNAPSHOT</version>
   <name>duke</name>
   <url>http://maven.apache.org</url>
   <dependencies>
     <dependency>
       <groupId>io.github.scrier.opus</groupId>
       <artifactId>common</artifactId>
-      <version>0.1.2-SNAPSHOT</version>
+      <version>0.2.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <build>

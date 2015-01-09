@@ -1,3 +1,18 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
 package io.github.scrier.opus.duke.commander.state;
 
 import io.github.scrier.opus.common.aoc.BaseNukeC;
@@ -130,14 +145,14 @@ public class RampingUp extends State {
 	
   /** 
    * Method to get a suggestion of the number of items to use for distribution.
-   * @param noOfUsers int with the number that we want to use.
+   * @param noOfThreads int with the number that we want to use.
    * @return Map with key Long and Integer value, where key is nukeid and value is amount.
    */
-	public Map<Long, Integer> getDistributionSuggestion(int noOfUsers) {
-		log.trace("getDistributionSuggestion(" + noOfUsers + ")");
+	public Map<Long, Integer> getDistributionSuggestion(int noOfThreads) {
+		log.trace("getDistributionSuggestion(" + noOfThreads + ")");
 		Map<Long, Integer> retValue = new HashMap<Long, Integer>();
 		List<INukeInfo> availableNukes = theContext.getNukes(NukeState.RUNNING);
-		int toExecute = noOfUsers;
+		int toExecute = noOfThreads;
 		if( true == availableNukes.isEmpty() ) {
 			log.error("No available nodes in state " + NukeState.RUNNING + ", cannot continue, was. " + availableNukes.size() +  ".");
 			return null;
@@ -149,10 +164,10 @@ public class RampingUp extends State {
 					if( minInfo == null ) {
 						minInfo = info;
 					} else {
-						int minAmount = getTotalUsers(retValue, minInfo);
+						int minInfoAmount = getTotalUsers(retValue, minInfo);
 						int infoAmount = getTotalUsers(retValue, info);
-						log.debug("if( minAmount[" + minAmount + "] > infoAmount[" + infoAmount + "] )");
-						if( minAmount > infoAmount ) {
+						log.debug("if( minInfoAmount[" + minInfoAmount + "] > infoAmount[" + infoAmount + "] )");
+						if( minInfoAmount > infoAmount ) {
 							log.debug("Changing info object from " + minInfo + " to " + info + ".");
 							minInfo = info;
 						}
@@ -168,17 +183,17 @@ public class RampingUp extends State {
 					log.debug("Addding 1 command to nuke id: " + minInfo.getNukeID() + ".");
 					retValue.put(minInfo.getNukeID(), 1);
 				}
-				minInfo.setRequestedNoOfUsers(minInfo.getRequestedNoOfUsers() + 1);
+				minInfo.setRequestedNoOfThreads(minInfo.getRequestedNoOfThreads() + 1);
 				toExecute--;
 			}
 		}
-		log.debug("Returning a suggestion of " + retValue.size() + " nukes to handle distribution " + noOfUsers + " commands.");
+		log.debug("Returning a suggestion of " + retValue.size() + " nukes to handle distribution " + noOfThreads + " commands.");
 		return retValue;
 	}
 
 	protected int getTotalUsers(Map<Long, Integer> availableNukes, INukeInfo info) {
 		log.trace("getTotalUsers(" + availableNukes + ", " + info + ")");
-		int retValue = info.getRequestedNoOfUsers();
+		int retValue = info.getRequestedNoOfThreads();
 		if( availableNukes.containsKey(info.getNukeID()) ) {
 			log.debug("Adding " + availableNukes.get(info.getNukeID()) + " to " + retValue + ".");
 			retValue += availableNukes.get(info.getNukeID());

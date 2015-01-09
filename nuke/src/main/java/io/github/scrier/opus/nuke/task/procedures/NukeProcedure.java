@@ -1,3 +1,18 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
 package io.github.scrier.opus.nuke.task.procedures;
 
 import org.apache.logging.log4j.LogManager;
@@ -136,7 +151,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 			log.fatal("[" + getTxID() + "] Someone modified nuke id field.");
 			throw new RuntimeException("Someone modified nuke id field.");
 		}
-		if( 0 < (NukeInfo.NUMBER_OF_USERS_MODIFIED & fieldsChanged) ) {
+		if( 0 < (NukeInfo.NUMBER_OF_THREADS_MODIFIED & fieldsChanged) ) {
 			log.fatal("[" + getTxID() + "] Someone other than nuke id: " + getIdentity() + " modified Number of Users.");
 			throw new RuntimeException("Someone other than nuke id: " + getIdentity() + " modified Number of Users.");
 		}
@@ -149,7 +164,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 //			log.fatal("[" + getTxID() + "] Someone other that nuke id: " + getIdentity() + " modified Requested Commands.");
 //			throw new RuntimeException("Someone other that nuke id: " + getIdentity() + " modified Requested Commands.");
 //		}
-		if( 0 < (NukeInfo.REQUESTED_USERS_MODIFIED & fieldsChanged) ) {
+		if( 0 < (NukeInfo.REQUESTED_THREADS_MODIFIED & fieldsChanged) ) {
 			log.fatal("[" + getTxID() + "] Someone other that nuke id: " + getIdentity() + " modified Requested Users.");
 			throw new RuntimeException("Someone other that nuke id: " + getIdentity() + " modified Requested Users.");
 		}
