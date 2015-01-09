@@ -31,12 +31,12 @@ public class NukeInfoMock  implements INukeInfo {
   }
 
 	@Override
-  public int getNoOfUsers() {
+  public int getNoOfThreads() {
     return noOfUsersReturn;
   }
 
 	@Override
-  public int getRequestedNoOfUsers() {
+  public int getRequestedNoOfThreads() {
     return requestedNoOfUsersReturned;
   }
 
@@ -61,7 +61,7 @@ public class NukeInfoMock  implements INukeInfo {
   }
 
 	@Override
-  public void setRequestedNoOfUsers(int users) {
+  public void setRequestedNoOfThreads(int users) {
     this.requestedNoOfUsersReturned = users;
   }
 

@@ -1,3 +1,18 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
 package io.github.scrier.opus.duke.commander;
 
 import org.apache.logging.log4j.LogManager;
@@ -135,9 +150,9 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 				log.debug("[" + getTxID() + "] Completed commands changed from " + local.getCompletedCommands() + " to " + info.getCompletedCommands() + ".");
 				local.setCompletedCommands(info.getCompletedCommands());
 			}
-			if( 0 < ( NukeInfo.NUMBER_OF_USERS_MODIFIED & modified ) ) {
-				log.debug("[" + getTxID() + "] Number of users changed from " + local.getNumberOfUsers() + " to " + info.getNumberOfUsers() + ".");
-				local.setNumberOfUsers(info.getNumberOfUsers());
+			if( 0 < ( NukeInfo.NUMBER_OF_THREADS_MODIFIED & modified ) ) {
+				log.debug("[" + getTxID() + "] Number of users changed from " + local.getNumberOfThreads() + " to " + info.getNumberOfThreads() + ".");
+				local.setNumberOfThreads(info.getNumberOfThreads());
 			}
 			if( 0 < ( NukeInfo.REPEATED_MODIFIED & modified ) ) {
 				log.debug("[" + getTxID() + "] Repeated changed from " + local.isRepeated() + " to " + info.isRepeated() + ".");
@@ -147,8 +162,8 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 				log.debug("[" + getTxID() + "] Requested commands changed from " + local.getRequestedCommands() + " to " + info.getRequestedCommands() + ".");
 				local.setRequestedCommands(info.getRequestedCommands());
 			}
-			if( 0 < ( NukeInfo.REQUESTED_USERS_MODIFIED & modified ) ) {
-				log.debug("[" + getTxID() + "] Requested users changed from " + local.getRequestedUsers() + " to " + info.getRequestedUsers() + ".");
+			if( 0 < ( NukeInfo.REQUESTED_THREADS_MODIFIED & modified ) ) {
+				log.debug("[" + getTxID() + "] Requested users changed from " + local.getRequestedThreads() + " to " + info.getRequestedThreads() + ".");
 				log.error("Skipping to set requested users to the global state due to issue #16, this needs to be fixed for the next release");
 				//local.setRequestedUsers(info.getRequestedUsers());
 			}
@@ -238,16 +253,16 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public int getNoOfUsers() {
-	  return local.getNumberOfUsers();
+  public int getNoOfThreads() {
+	  return local.getNumberOfThreads();
   }
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-  public int getRequestedNoOfUsers() {
-	  return local.getRequestedUsers();
+  public int getRequestedNoOfThreads() {
+	  return local.getRequestedThreads();
   }
 
 	/**
@@ -291,8 +306,8 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	}
 
 	@Override
-  public void setRequestedNoOfUsers(int users) {
-	  local.setRequestedUsers(users);
+  public void setRequestedNoOfThreads(int users) {
+	  local.setRequestedThreads(users);
   }
 
 }
