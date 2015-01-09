@@ -34,6 +34,7 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
   private IMap theMap;
+  private IMap settingsMap;
 	private NukeCommand command;
 
 	@BeforeClass
@@ -46,12 +47,14 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		instance = helper.mockHazelcast();
 		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
 		theMap = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
+		settingsMap = helper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
+		Mockito.when(settingsMap.containsKey(any())).thenReturn(false);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
 		theContext.init(new NukeTasks(instance), theBaseAOC);
 		command = new NukeCommand();
 		command.setComponent(identity);
-		command.setCommand("sleep 2");
+		command.setCommand("sleep 1");
 		command.setRepeated(true);
 		command.setState(CommandState.EXECUTE);
 		command.setKey(12345L);
@@ -85,7 +88,10 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	public void testInit() throws Exception {
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(1000); // force taskswitch
+		int timeout = 5;
+		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(10); // force taskswitch
+		}
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
 		assertEquals(1, testObject.getNukeInfo().getActiveCommands());
@@ -98,7 +104,10 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(1); // force taskswitch
+		int timeout = 5;
+		while( testObject.RUNNING != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(10); // force taskswitch
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(0, testObject.getCompletedCommands());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
@@ -110,12 +119,18 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	@Test
 	public void testWaitForSecondIterate() throws Exception {
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
+		int timeout = 3;
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(1); // force taskswitch
+		while( testObject.RUNNING != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(10); // force taskswitch
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
-		Thread.sleep(3000);
+		timeout = 15;
+		while( 1 != testObject.getCompletedCommands() && timeout-- > 0 ) {
+			Thread.sleep(200);
+		}
 		assertEquals(1, testObject.getCompletedCommands());
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
@@ -126,15 +141,24 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(1); // force taskswitch
+		int timeout = 5;
+		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(10); // force taskswitch
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
-		Thread.sleep(3000);
+		timeout = 15;
+		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
+			Thread.sleep(200);
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
 		command.setState(CommandState.STOP);
 		testObject.handleOnUpdated(command);
-		Thread.sleep(3000);
+		timeout = 15;
+		while( testObject.COMPLETED != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(200);
+		}
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(CommandState.DONE, testObject.getCommand().getState());
 	}
@@ -144,15 +168,24 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(10); // force taskswitch
+		int timeout = 5;
+		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(10); // force taskswitch
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
-		Thread.sleep(3000);
+		timeout = 15;
+		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
+			Thread.sleep(200);
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
 		command.setState(CommandState.TERMINATE);
 		testObject.handleOnUpdated(command);
-		Thread.sleep(500);
+		timeout = 15;
+		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(200);
+		}
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(CommandState.ABORTED, testObject.getCommand().getState());
 	}
@@ -163,7 +196,10 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		command.setCommand("dir");
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(3000);
+		int timeout = 15;
+		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
+			Thread.sleep(200);
+		}
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(CommandState.ABORTED, testObject.getCommand().getState());
 	}
@@ -173,7 +209,10 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(1); // force taskswitch
+		int timeout = 5;
+		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(10); // force taskswitch
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
 		assertEquals(1, testObject.getNukeInfo().getActiveCommands());
@@ -191,7 +230,10 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		Thread.sleep(1); // force taskswitch
+		int timeout = 5;
+		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
+			Thread.sleep(10); // force taskswitch
+		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
 		assertEquals(1, testObject.getNukeInfo().getActiveCommands());
