@@ -18,7 +18,7 @@ package io.github.scrier.opus.duke.commander;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
@@ -76,7 +76,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnUpdated(BaseNukeC data) {
+	public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		if( local.getKey() == data.getKey()) {
 			setPublishToMap(false);
@@ -105,7 +105,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnEvicted(BaseNukeC data) {
+	public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		switch( data.getId() ) {
 			case NukeFactory.NUKE_INFO:

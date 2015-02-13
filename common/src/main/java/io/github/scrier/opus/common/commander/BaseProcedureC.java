@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.common.commander;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,9 +42,9 @@ public abstract class BaseProcedureC {
 	
 	public abstract void shutDown() throws Exception;
 
-	public abstract int handleOnUpdated(BaseNukeC value);
+	public abstract int handleOnUpdated(BaseDataC value);
 	
-	public abstract int handleOnEvicted(BaseNukeC value);
+	public abstract int handleOnEvicted(BaseDataC value);
 	
 	public abstract int handleOnRemoved(Long key);
 	

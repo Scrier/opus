@@ -23,14 +23,16 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseListener;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.duke.DukeFactory;
+import io.github.scrier.opus.common.duke.DukeInfo;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
 
-public class DukeCommander extends BaseListener {
+public class DukeCommander extends BaseListener implements IProcedureWait {
 
 	private static Logger log = LogManager.getLogger(DukeCommander.class);
 
@@ -38,6 +40,8 @@ public class DukeCommander extends BaseListener {
 	private List<BaseDukeProcedure> proceduresToAdd;
 	private List<BaseDukeProcedure> toRemove;
 	private boolean distributorRunning;
+	private final long procToWaitFor = 782452L;
+	private boolean waitingForProcedure;
 
 	public DukeCommander(HazelcastInstance instance) {
 		super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
@@ -45,29 +49,36 @@ public class DukeCommander extends BaseListener {
 		proceduresToAdd = new ArrayList<BaseDukeProcedure>();
 		toRemove = new ArrayList<BaseDukeProcedure>();
 		setDistributorRunning(false);
+		setWaitingForProcedure(false);
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public void init() {
 		log.trace("init()");
 		log.debug("Size is: " + getEntries().size() );
-		for( BaseNukeC nuke : getEntries() ) {
-			log.debug("Instance is: " + nuke + ".");
-			if( NukeFactory.NUKE_INFO == nuke.getId() ) {
-				log.info("Adding new NukeProcedure for NukeInfo: " + nuke + ".");
-				registerProcedure(new NukeProcedure(new NukeInfo(nuke)));
-			}
+		DukeInfo info = null;
+		if( true == isAnotherDukeRunning(info) ) {
+			registerProcedure(new TerminateDukeProcedure(procToWaitFor, this, info));
+			setWaitingForProcedure(true);
+		} else {
+			initializeAsSingleDuke();
 		}
-		startDistributor();
-		intializeProcedures();
 	}
-	
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public void shutDown() {
 		log.trace("shutDown()");
 		clear(getProceduresToAdd());
 		clear(getProcedures());
 		clear(getProceduresToRemove());
 	}
-	
+
 	public boolean registerProcedure(BaseDukeProcedure procedure) {
 		log.trace("registerProcedure(" + procedure + ")");
 		boolean retValue = true;
@@ -78,15 +89,15 @@ public class DukeCommander extends BaseListener {
 		}
 		return retValue;
 	}
-	
+
 	public void clear(List<BaseDukeProcedure> toClear) {
 		log.trace("clear(" + toClear + ")");
 		for( BaseDukeProcedure procedure : toClear ) {
 			try {
-	      procedure.shutDown();
-      } catch (Exception e) {
-      	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
-      }
+				procedure.shutDown();
+			} catch (Exception e) {
+				log.error("shutDown of procedure: " + procedure + " threw Exception", e);
+			}
 		}
 		toClear.clear();
 	}
@@ -129,11 +140,11 @@ public class DukeCommander extends BaseListener {
 	}
 
 	@Override
-  public void preEntry() {
+	public void preEntry() {
 		log.trace("preEntry()");
 		intializeProcedures();
-	  toRemove.clear();
-  }
+		toRemove.clear();
+	}
 
 	public synchronized void intializeProcedures() {
 		log.trace("intializeProcedures()");
@@ -149,31 +160,31 @@ public class DukeCommander extends BaseListener {
 			}
 			getProceduresToAdd().clear();
 		}
-  }
+	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void entryAdded(Long component, BaseNukeC data) {
+	public void entryAdded(Long component, BaseDataC data) {
 		log.trace("entryAdded(" + component + ", " + data + ")");
 		switch( data.getId() ) {
-			case NukeFactory.NUKE_INFO:
-			{
-				log.info("Adding new NukeProcedure for NukeInfo: " + data + ".");
-				registerProcedure(new NukeProcedure(new NukeInfo(data)));
-				break;
-			}
-			case NukeFactory.NUKE_COMMAND: 
-			{
-				// do nothing
-				break;
-			}
-			default:
-			{
-				log.error("Unknown id of data handler with id: " + data.getId() + ".");
-				break;
-			}
+		case NukeFactory.NUKE_INFO:
+		{
+			log.info("Adding new NukeProcedure for NukeInfo: " + data + ".");
+			registerProcedure(new NukeProcedure(new NukeInfo(data)));
+			break;
+		}
+		case NukeFactory.NUKE_COMMAND: 
+		{
+			// do nothing
+			break;
+		}
+		default:
+		{
+			log.error("Unknown id of data handler with id: " + data.getId() + ".");
+			break;
+		}
 		}
 		startDistributor();
 	}	
@@ -182,7 +193,7 @@ public class DukeCommander extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void entryEvicted(Long component, BaseNukeC data) {
+	public void entryEvicted(Long component, BaseDataC data) {
 		log.trace("entryEvicted(" + component + ", " + data + ")");
 		for( BaseDukeProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnEvicted(data);
@@ -218,7 +229,7 @@ public class DukeCommander extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void entryUpdated(Long component, BaseNukeC data) {
+	public void entryUpdated(Long component, BaseDataC data) {
 		log.trace("entryUpdated(" + component + ", " + data + ")");
 		for( BaseDukeProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnUpdated(data);
@@ -236,25 +247,25 @@ public class DukeCommander extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void postEntry() {
+	public void postEntry() {
 		log.trace("postEntry()");
 		intializeProcedures();
-	  shutDownProcedures();
-  }
+		shutDownProcedures();
+	}
 
 	private void shutDownProcedures() {
 		log.trace("shutDownProcedures()");
-	  for( BaseDukeProcedure procedure : getProceduresToRemove() ) {
-	  	try {
-	      procedure.shutDown();
-	      procedures.remove(procedure);
-      } catch (Exception e) {
-      	log.error("shutDown of procedure: " + procedure + " threw Exception", e);
-      }
-	  }
-	  getProceduresToRemove().clear();
-  }
-	
+		for( BaseDukeProcedure procedure : getProceduresToRemove() ) {
+			try {
+				procedure.shutDown();
+				procedures.remove(procedure);
+			} catch (Exception e) {
+				log.error("shutDown of procedure: " + procedure + " threw Exception", e);
+			}
+		}
+		getProceduresToRemove().clear();
+	}
+
 	/**
 	 * Method to handle post events for timers and similar events triggered outside the base methods.
 	 */
@@ -270,7 +281,7 @@ public class DukeCommander extends BaseListener {
 		}
 		shutDownProcedures();
 	}
-	
+
 	/**
 	 * Method to get a list of procedures of a specific class.
 	 * @param procs the class to look for.
@@ -291,14 +302,14 @@ public class DukeCommander extends BaseListener {
 		}
 		return retVal;
 	}
-	
+
 	/**
 	 * @return the procedures
 	 */
 	protected List<BaseDukeProcedure> getProcedures() {
 		return procedures;
 	}
-	
+
 	/**
 	 * Method to get a list of procedures of a specific class.
 	 * @param procs the class to look for.
@@ -319,30 +330,32 @@ public class DukeCommander extends BaseListener {
 		}
 		return retVal;
 	}
-	
+
 	/**
 	 * @return the proceduresToAdd
 	 */
 	protected List<BaseDukeProcedure> getProceduresToAdd() {
 		return proceduresToAdd;
 	}
-	
+
 	/**
 	 * @return the toRemove
 	 */
 	protected List<BaseDukeProcedure> getProceduresToRemove() {
 		return toRemove;
 	}
-	
+
 	/**
 	 * Method to check and start distributor procedure when initialized.
 	 */
 	private void startDistributor() {
 		log.trace("startDistributor()");
-		if( isDistributorRunning() ) {
+		if( isWaitingForProcedure() ) {
+			log.debug("Waiting for procedure to kill other duke.");
+		} else if( isDistributorRunning() ) {
 			log.debug("Distributor already running");
 		} else if ( getProcedures(NukeProcedure.class).isEmpty() &&
-				        getProceduresToAdd(NukeProcedure.class).isEmpty() ) {
+				getProceduresToAdd(NukeProcedure.class).isEmpty() ) {
 			log.info("No nuke procedures running, waiting for first nuke to connect.");
 		} else {
 			log.info("Starting cluster distribution.");
@@ -354,15 +367,72 @@ public class DukeCommander extends BaseListener {
 	/**
 	 * @return the distributorRunning
 	 */
-  public boolean isDistributorRunning() {
-	  return distributorRunning;
-  }
+	public boolean isDistributorRunning() {
+		return distributorRunning;
+	}
 
 	/**
 	 * @param distributorRunning the distributorRunning to set
 	 */
-  public void setDistributorRunning(boolean distributorRunning) {
-	  this.distributorRunning = distributorRunning;
-  }
+	public void setDistributorRunning(boolean distributorRunning) {
+		this.distributorRunning = distributorRunning;
+	}
+	
+	/**
+	 * Method to check if another duke is running from the new duke.
+	 * @return boolean
+	 */
+	public boolean isAnotherDukeRunning(DukeInfo info) {
+		boolean retValue = false;
+		for( BaseDataC data : getEntries() ) {
+			if( DukeFactory.DUKE_INFO == data.getId() ) {
+				retValue = true;
+				info = (DukeInfo)data;
+				break;
+			}
+		}
+		return retValue;
+	}
+	
+	/**
+	 * Method to do initialization when we are sole duke available.
+	 */
+	private void initializeAsSingleDuke() {
+		log.trace("initializeAsSingleDuke()");
+		for( BaseDataC nuke : getEntries() ) {
+			log.debug("Instance is: " + nuke + ".");
+			if( NukeFactory.NUKE_INFO == nuke.getId() ) {
+				log.info("Adding new NukeProcedure for NukeInfo: " + nuke + ".");
+				registerProcedure(new NukeProcedure(new NukeInfo(nuke)));
+			}
+		}
+		startDistributor();
+		intializeProcedures();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void procedureFinished(long identity, int state) {
+		
+		
+		setWaitingForProcedure(false);
+		startDistributor();
+	}
+
+	/**
+	 * @return the waitingForProcedure
+	 */
+	public boolean isWaitingForProcedure() {
+		return waitingForProcedure;
+	}
+
+	/**
+	 * @param waitingForProcedure the waitingForProcedure to set
+	 */
+	public void setWaitingForProcedure(boolean waitingForProcedure) {
+		this.waitingForProcedure = waitingForProcedure;
+	}
 
 }

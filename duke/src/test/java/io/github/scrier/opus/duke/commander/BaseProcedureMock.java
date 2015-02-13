@@ -1,14 +1,14 @@
 package io.github.scrier.opus.duke.commander;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 
 public class BaseProcedureMock extends BaseDukeProcedure {
 	
 	private boolean initCalled;
 	private boolean shutDownCalled;
-	private BaseNukeC onUpdated;
+	private BaseDataC onUpdated;
 	private int onUpdateReturn;
-	private BaseNukeC onEvicted;
+	private BaseDataC onEvicted;
 	private int onEvictedReturn;
 	private long onRemoved;
 	private int onRemovedReturn;
@@ -35,13 +35,13 @@ public class BaseProcedureMock extends BaseDukeProcedure {
   }
 
 	@Override
-  public int handleOnUpdated(BaseNukeC data) {
+  public int handleOnUpdated(BaseDataC data) {
 	  setOnUpdated(data);
 	  return getOnUpdateReturn();
   }
 
 	@Override
-  public int handleOnEvicted(BaseNukeC data) {
+  public int handleOnEvicted(BaseDataC data) {
 		setOnEvicted(data);
 		return getOnEvictedReturn();
   }
@@ -83,14 +83,14 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	/**
 	 * @return the onUpdated
 	 */
-	public BaseNukeC getOnUpdated() {
+	public BaseDataC getOnUpdated() {
 		return onUpdated;
 	}
 
 	/**
 	 * @param onUpdated the onUpdated to set
 	 */
-	public void setOnUpdated(BaseNukeC onUpdated) {
+	public void setOnUpdated(BaseDataC onUpdated) {
 		this.onUpdated = onUpdated;
 	}
 
@@ -111,14 +111,14 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	/**
 	 * @return the onEvicted
 	 */
-	public BaseNukeC getOnEvicted() {
+	public BaseDataC getOnEvicted() {
 		return onEvicted;
 	}
 
 	/**
 	 * @param onEvicted the onEvicted to set
 	 */
-	public void setOnEvicted(BaseNukeC onEvicted) {
+	public void setOnEvicted(BaseDataC onEvicted) {
 		this.onEvicted = onEvicted;
 	}
 

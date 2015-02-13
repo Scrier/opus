@@ -5,7 +5,7 @@ import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.StateImpl;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.duke.commander.BaseActiveObjectMock;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.DukeCommander;
@@ -71,7 +71,7 @@ public class WaitingForNukeTest {
 	public void testUpdated() {
 		WaitingForNuke testObject = new WaitingForNuke(distributor);
 		testObject.setState(testObject.WAITING_FOR_NUKE);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		assertEquals(distributor.WAITING_FOR_NUKE, testObject.getState());
 		checkDefault(testObject);
 	}
@@ -79,7 +79,7 @@ public class WaitingForNukeTest {
 	@Test(expected=RuntimeException.class)
 	public void testUpdatedException() {
 		WaitingForNuke testObject = new WaitingForNuke(distributor);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		fail("Expected an exepction before this.");
 	}
 	
@@ -87,7 +87,7 @@ public class WaitingForNukeTest {
 	public void testEvicted() {
 		WaitingForNuke testObject = new WaitingForNuke(distributor);
 		testObject.setState(testObject.WAITING_FOR_NUKE);
-		testObject.evicted(new BaseNukeC(1, 2));
+		testObject.evicted(new BaseDataC(1, 2));
 		assertEquals(distributor.WAITING_FOR_NUKE, testObject.getState());
 		checkDefault(testObject);
 	}

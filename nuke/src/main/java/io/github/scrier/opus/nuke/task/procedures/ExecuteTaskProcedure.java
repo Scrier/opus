@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -75,7 +75,7 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	 * {@inheritDoc}
 	 */
 	@Override
-  public int handleOnUpdated(BaseNukeC data) {
+  public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		if( data.getKey() == getCommand().getKey() ) {
 			switch ( data.getId() ) {
@@ -96,7 +96,7 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	 * {@inheritDoc}
 	 */
 	@Override
-  public int handleOnEvicted(BaseNukeC data) {
+  public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		if( data.getKey() == getCommand().getKey() ) {
 			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was evicted.");

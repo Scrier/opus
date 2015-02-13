@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.duke.commander.BaseActiveObjectMock;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.DukeCommander;
@@ -71,14 +71,14 @@ public class PeakDelayTest {
 	public void testUpdated() {
 		PeakDelay testObject = new PeakDelay(distributor);
 		testObject.setState(testObject.PEAK_DELAY);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		assertEquals(distributor.PEAK_DELAY, testObject.getState());
 	}
 	
 	@Test(expected=RuntimeException.class)
 	public void testUpdatedException() {
 		PeakDelay testObject = new PeakDelay(distributor);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		fail("Expected an exepction before this.");
 	}
 	
@@ -86,7 +86,7 @@ public class PeakDelayTest {
 	public void testEvicted() {
 		PeakDelay testObject = new PeakDelay(distributor);
 		testObject.setState(testObject.PEAK_DELAY);
-		testObject.evicted(new BaseNukeC(1, 2));
+		testObject.evicted(new BaseDataC(1, 2));
 		assertEquals(distributor.PEAK_DELAY, testObject.getState());
 	}
 	

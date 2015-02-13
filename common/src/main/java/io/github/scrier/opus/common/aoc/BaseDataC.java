@@ -24,25 +24,25 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
-public class BaseNukeC implements IdentifiedDataSerializable {
+public class BaseDataC implements IdentifiedDataSerializable {
 	
-	private static Logger log = LogManager.getLogger(BaseNukeC.class);
+	private static Logger log = LogManager.getLogger(BaseDataC.class);
 	
 	private int txID;
 	private long key;
 	private int factoryID;
 	private int messageID;
 	
-	public BaseNukeC(int factoryID, int messageID) {
-		log.trace("BaseNukeC(" + factoryID + ", " + messageID + ")");
+	public BaseDataC(int factoryID, int messageID) {
+		log.trace("BaseDataC(" + factoryID + ", " + messageID + ")");
 		setTxID(-1);
 		setKey(-1L);
 		setFactoryID(factoryID);
 		setMessageID(messageID);
 	}
 	
-	public BaseNukeC(BaseNukeC obj2copy) {
-		log.trace("BaseNukeC(" + obj2copy + ")");
+	public BaseDataC(BaseDataC obj2copy) {
+		log.trace("BaseDataC(" + obj2copy + ")");
 		setTxID(obj2copy.getTxID());
 		setKey(obj2copy.getKey());
 		setFactoryID(obj2copy.getFactoryId());
@@ -136,7 +136,7 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	 */
 	@Override
 	public String toString() {
-		String retValue = "BaseNukeC{txID:" + getTxID();
+		String retValue = "BaseDataC{txID:" + getTxID();
 		retValue += ", key: " + getKey();
 		retValue += ", factoryID:" + getFactoryId();
 		retValue += ", messageID:" + getId() + "}";

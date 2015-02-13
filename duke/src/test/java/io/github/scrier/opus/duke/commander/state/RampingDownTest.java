@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.BaseActiveObjectMock;
 import io.github.scrier.opus.duke.commander.Context;
@@ -76,14 +76,14 @@ public class RampingDownTest {
 	public void testUpdated() {
 		RampingDown testObject = new RampingDown(distributor);
 		testObject.setState(testObject.RAMPING_DOWN);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		assertEquals(distributor.RAMPING_DOWN, testObject.getState());
 	}
 	
 	@Test(expected=RuntimeException.class)
 	public void testUpdatedException() {
 		RampingDown testObject = new RampingDown(distributor);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		fail("Expected an exepction before this.");
 	}
 	
@@ -91,7 +91,7 @@ public class RampingDownTest {
 	public void testEvicted() {
 		RampingDown testObject = new RampingDown(distributor);
 		testObject.setState(testObject.RAMPING_DOWN);
-		testObject.evicted(new BaseNukeC(1, 2));
+		testObject.evicted(new BaseDataC(1, 2));
 		assertEquals(distributor.RAMPING_DOWN, testObject.getState());
 	}
 	

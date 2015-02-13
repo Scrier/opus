@@ -17,7 +17,7 @@ package io.github.scrier.opus.common.nuke;
 
 import java.io.IOException;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 
-public class NukeCommand extends BaseNukeC {
+public class NukeCommand extends BaseDataC {
 	
 	private static Logger log = LogManager.getLogger(NukeCommand.class);
 	
@@ -56,7 +56,7 @@ public class NukeCommand extends BaseNukeC {
 		setRepeated(obj2copy.isRepeated());
 	}
 	
-	public NukeCommand(BaseNukeC input) throws ClassCastException {
+	public NukeCommand(BaseDataC input) throws ClassCastException {
 		super(input);
 		if( input instanceof NukeCommand ) {
 			NukeCommand obj2copy = (NukeCommand)input;

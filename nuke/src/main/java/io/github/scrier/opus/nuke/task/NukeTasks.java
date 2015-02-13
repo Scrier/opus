@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseListener;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
@@ -122,7 +122,7 @@ public class NukeTasks extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void entryAdded(Long component, BaseNukeC data) {
+  public void entryAdded(Long component, BaseDataC data) {
 		log.trace("entryAdded(" + component + ", " + data + ")");
 		switch( data.getId() ) {
 			case NukeFactory.NUKE_INFO:
@@ -148,7 +148,7 @@ public class NukeTasks extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void entryEvicted(Long component, BaseNukeC data) {
+  public void entryEvicted(Long component, BaseDataC data) {
 		log.trace("entryEvicted(" + component + ", " + data + ")");
 		for( BaseTaskProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnEvicted(data);
@@ -190,7 +190,7 @@ public class NukeTasks extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void entryUpdated(Long component, BaseNukeC data) {
+  public void entryUpdated(Long component, BaseDataC data) {
 		log.trace("entryUpdated(" + component + ", " + data + ")");
 		for( BaseTaskProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnUpdated(data);

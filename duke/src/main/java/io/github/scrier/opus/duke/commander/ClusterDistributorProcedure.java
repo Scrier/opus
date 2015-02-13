@@ -19,7 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.state.Aborted;
 import io.github.scrier.opus.duke.commander.state.Completed;
@@ -144,7 +144,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnUpdated(BaseNukeC data) {
+	public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		try {
 			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].updated(" + data + ");");
@@ -163,7 +163,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnEvicted(BaseNukeC data) {
+	public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		try {
 			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].evicted(" + data + ");");

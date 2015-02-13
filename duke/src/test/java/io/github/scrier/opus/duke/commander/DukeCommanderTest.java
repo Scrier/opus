@@ -10,7 +10,7 @@ import java.util.List;
 
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -90,7 +90,7 @@ public class DukeCommanderTest {
 	public void testInit() {
 		DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);
-		Collection<BaseNukeC> l = new LinkedList<BaseNukeC>();
+		Collection<BaseDataC> l = new LinkedList<BaseDataC>();
 		NukeInfo info = new NukeInfo();
 		info.setState(NukeState.RUNNING);
 		l.add(info);
@@ -209,7 +209,7 @@ public class DukeCommanderTest {
   public void testEntryAddedUnknown() {
   	DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);
-		BaseNukeC input = Mockito.mock(BaseNukeC.class);
+		BaseDataC input = Mockito.mock(BaseDataC.class);
 		testObject.preEntry();
 		testObject.entryAdded(identity, input);
 		testObject.postEntry();

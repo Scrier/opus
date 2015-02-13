@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -93,15 +93,15 @@ public enum Context {
 	 * Method to add a new entry to the map.
 	 * @param data BaseNukeC to add to the map.
 	 */
-	public void addEntry(BaseNukeC data) {
+	public void addEntry(BaseDataC data) {
 		getCommander().addEntry(data);
 	}
 	
-	public boolean updateEntry(BaseNukeC data) {
+	public boolean updateEntry(BaseDataC data) {
 		return getCommander().updateEntry(data);
 	}
 	
-	public boolean removeEntry(BaseNukeC component) {
+	public boolean removeEntry(BaseDataC component) {
 		return getCommander().removeEntry(component);
 	}
 	
