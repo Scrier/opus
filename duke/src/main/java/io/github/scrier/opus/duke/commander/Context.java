@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.nuke.NukeState;
 

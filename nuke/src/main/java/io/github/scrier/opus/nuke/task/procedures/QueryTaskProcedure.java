@@ -18,7 +18,7 @@ package io.github.scrier.opus.nuke.task.procedures;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
 

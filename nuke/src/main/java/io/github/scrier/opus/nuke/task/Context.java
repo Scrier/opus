@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 
 import org.apache.logging.log4j.LogManager;

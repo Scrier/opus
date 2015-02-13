@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.duke.commander.state;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;

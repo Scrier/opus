@@ -22,8 +22,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.commander.BaseProcedureC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.nuke.process.ProcessHandler;
 

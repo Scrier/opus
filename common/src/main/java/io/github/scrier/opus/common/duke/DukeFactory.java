@@ -36,7 +36,6 @@ public class DukeFactory implements DataSerializableFactory {
 		log.trace("DukeFactory()");
 	}
 	
-	
 	@Override
 	public IdentifiedDataSerializable create(int dataID) {
 		log.trace("create(" + dataID + ")");

@@ -17,7 +17,7 @@ package io.github.scrier.opus.common.nuke;
 
 import java.io.IOException;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

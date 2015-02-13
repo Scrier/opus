@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 
 public class DukeCommand extends BaseDataC {
 	

@@ -13,7 +13,7 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.aoc;
+package io.github.scrier.opus.common.data;
 
 import java.util.Collection;
 
@@ -27,14 +27,14 @@ import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 
-public abstract class BaseListener implements EntryListener<Long, BaseDataC> {
+public abstract class DataListener implements EntryListener<Long, BaseDataC> {
 	
-	private static Logger log = LogManager.getLogger(BaseListener.class);
+	private static Logger log = LogManager.getLogger(DataListener.class);
 	
 	private HazelcastInstance instance;
 	private IMap<Long, BaseDataC> sharedMap;
 	
-	public BaseListener(HazelcastInstance instance, String distributedMap) {
+	public DataListener(HazelcastInstance instance, String distributedMap) {
 		setInstance(instance);
 		sharedMap = instance.getMap(distributedMap);
 		sharedMap.addEntryListener(this, true);

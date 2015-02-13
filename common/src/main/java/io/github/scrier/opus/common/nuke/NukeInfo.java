@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.common.nuke;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 
 import java.io.IOException;
 

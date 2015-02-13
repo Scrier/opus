@@ -13,7 +13,7 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.aoc;
+package io.github.scrier.opus.common.data;
 
 import java.io.IOException;
 
@@ -28,14 +28,12 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	
 	private static Logger log = LogManager.getLogger(BaseDataC.class);
 	
-	private int txID;
 	private long key;
 	private int factoryID;
 	private int messageID;
 	
 	public BaseDataC(int factoryID, int messageID) {
 		log.trace("BaseDataC(" + factoryID + ", " + messageID + ")");
-		setTxID(-1);
 		setKey(-1L);
 		setFactoryID(factoryID);
 		setMessageID(messageID);
@@ -43,7 +41,6 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	
 	public BaseDataC(BaseDataC obj2copy) {
 		log.trace("BaseDataC(" + obj2copy + ")");
-		setTxID(obj2copy.getTxID());
 		setKey(obj2copy.getKey());
 		setFactoryID(obj2copy.getFactoryId());
 		setMessageID(obj2copy.getId());
@@ -55,7 +52,6 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	@Override
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")"); 
-		setTxID(in.readInt());
 		setKey(in.readLong());
 		setFactoryID(in.readInt());
 		setMessageID(in.readInt());
@@ -67,7 +63,6 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	@Override
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
-		out.writeInt(getTxID());
 		out.writeLong(getKey());
 		out.writeInt(getFactoryId());
 		out.writeInt(getId());
@@ -104,20 +99,6 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	}
 
 	/**
-	 * @return the txID
-	 */
-	public int getTxID() {
-		return txID;
-	}
-
-	/**
-	 * @param txID the txID to set
-	 */
-	public void setTxID(int txID) {
-		this.txID = txID;
-	}
-
-	/**
 	 * @return the key
 	 */
   public long getKey() {
@@ -136,8 +117,7 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	 */
 	@Override
 	public String toString() {
-		String retValue = "BaseDataC{txID:" + getTxID();
-		retValue += ", key: " + getKey();
+		String retValue = "BaseDataC{key: " + getKey();
 		retValue += ", factoryID:" + getFactoryId();
 		retValue += ", messageID:" + getId() + "}";
 		return retValue;

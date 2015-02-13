@@ -22,8 +22,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseListener;
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.data.DataListener;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
@@ -37,7 +37,7 @@ import io.github.scrier.opus.nuke.task.procedures.NukeProcedure;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
 
-public class NukeTasks extends BaseListener {
+public class NukeTasks extends DataListener {
 	
 	private static Logger log = LogManager.getLogger(NukeTasks.class);
 	

@@ -22,8 +22,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseListener;
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.data.DataListener;
 import io.github.scrier.opus.common.duke.DukeFactory;
 import io.github.scrier.opus.common.duke.DukeInfo;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -32,7 +32,7 @@ import io.github.scrier.opus.common.nuke.NukeInfo;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
 
-public class DukeCommander extends BaseListener implements IProcedureWait {
+public class DukeCommander extends DataListener implements IProcedureWait {
 
 	private static Logger log = LogManager.getLogger(DukeCommander.class);
 

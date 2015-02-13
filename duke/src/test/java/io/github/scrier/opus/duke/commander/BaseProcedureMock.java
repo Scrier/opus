@@ -1,6 +1,6 @@
 package io.github.scrier.opus.duke.commander;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 
 public class BaseProcedureMock extends BaseDukeProcedure {
 	

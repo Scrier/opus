@@ -17,8 +17,8 @@ package io.github.scrier.opus.duke.commander;
 
 import java.util.concurrent.TimeUnit;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
 import io.github.scrier.opus.common.commander.BaseProcedureC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 
 import org.apache.logging.log4j.LogManager;

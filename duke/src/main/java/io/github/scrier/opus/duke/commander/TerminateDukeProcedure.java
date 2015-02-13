@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.duke.commander;
 
-import io.github.scrier.opus.common.aoc.BaseDataC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.duke.DukeCommand;
 import io.github.scrier.opus.common.duke.DukeCommandEnum;
 import io.github.scrier.opus.common.duke.DukeInfo;
