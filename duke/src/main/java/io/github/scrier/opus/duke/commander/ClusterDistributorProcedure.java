@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.state.Aborted;
 import io.github.scrier.opus.duke.commander.state.Completed;
@@ -451,5 +452,14 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		log.trace("startTimeout(" + time + ", " + timerID + ")");
 		startTimeout(time, timerID, this);
 	}
+
+  /**
+   * {@inheritDoc}
+   */
+	@Override
+  public int handleMessage(BaseMsgC message) {
+	  // TODO Auto-generated method stub
+	  return getState();
+  }
 
 }

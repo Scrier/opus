@@ -21,9 +21,9 @@ import org.apache.logging.log4j.Logger;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
-public class DukeFactory implements DataSerializableFactory {
+public class DukeDataFactory implements DataSerializableFactory {
 	
-	private static Logger log = LogManager.getLogger(DukeFactory.class);
+	private static Logger log = LogManager.getLogger(DukeDataFactory.class);
 
 	public static final int FACTORY_ID = 121104;
 	
@@ -32,8 +32,8 @@ public class DukeFactory implements DataSerializableFactory {
 	/**
 	 * Constructor
 	 */
-	public DukeFactory() {
-		log.trace("DukeFactory()");
+	public DukeDataFactory() {
+		log.trace("DukeDataFactory()");
 	}
 	
 	@Override

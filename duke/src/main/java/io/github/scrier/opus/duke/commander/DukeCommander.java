@@ -24,8 +24,9 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.data.DataListener;
-import io.github.scrier.opus.common.duke.DukeFactory;
+import io.github.scrier.opus.common.duke.DukeDataFactory;
 import io.github.scrier.opus.common.duke.DukeInfo;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 
@@ -78,7 +79,30 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		clear(getProcedures());
 		clear(getProceduresToRemove());
 	}
+	
+	/**
+	 * Method to handle incoming messages for the procedures.
+	 * @param message BaseMsgC with the incoming message.
+	 */
+	public void handleInMessage(BaseMsgC message) {
+		log.trace("handleInMessage(" + message + ")");
+		for( BaseDukeProcedure procedure : procedures ) {
+			int result = procedure.handleMessage(message);
+			if( procedure.COMPLETED == result ) {
+				log.debug("Procedure " + procedure + " completed.");
+				removeProcedure(procedure);
+			} else if ( procedure.ABORTED == result ) {
+				log.debug("Procedure " + procedure + " aborted.");
+				removeProcedure(procedure);
+			}
+		}
+	}
 
+	/**
+	 * Method to register a procedure to the working loop.
+	 * @param procedure BaseDukeProcedure to add.
+	 * @return boolean
+	 */
 	public boolean registerProcedure(BaseDukeProcedure procedure) {
 		log.trace("registerProcedure(" + procedure + ")");
 		boolean retValue = true;
@@ -90,6 +114,10 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		return retValue;
 	}
 
+	/**
+	 * Method to clear a specified list of procedures.
+	 * @param toClear List with the procedures to remove.
+	 */
 	public void clear(List<BaseDukeProcedure> toClear) {
 		log.trace("clear(" + toClear + ")");
 		for( BaseDukeProcedure procedure : toClear ) {
@@ -102,6 +130,11 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		toClear.clear();
 	}
 
+	/**
+	 * Method to check if a specific procedures exists in the ones running or the ones about to be added to the run loop.
+	 * @param procedure BaseDukeProcedure to add.
+	 * @return boolean with true if it is contained in one of the 2 lists.
+	 */
 	private boolean contains(BaseDukeProcedure procedure) {
 		log.trace("contains(" + procedure + ")");
 		boolean retValue = procedures.contains(procedure);
@@ -109,11 +142,18 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		return retValue;
 	}
 
+	/**
+	 * Method to remove a specific procedure.
+	 * @param procedure BaseDukeProcedure to remove.
+	 */
 	private void removeProcedure(BaseDukeProcedure procedure) {
 		log.trace("removeProcedure(" + procedure + ")");
 		toRemove.add(procedure);
 	}
 
+	/**
+	 * Method to remove all procedures.
+	 */
 	private void removeAllProcedures() {
 		log.trace("removeAllProcedures()");
 		clear(getProcedures());
@@ -146,6 +186,9 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		toRemove.clear();
 	}
 
+	/**
+	 * Method to initialize all procedures before stepping into the next iteration. 
+	 */
 	public synchronized void intializeProcedures() {
 		log.trace("intializeProcedures()");
 		if( true != getProceduresToAdd().isEmpty() ) {
@@ -253,6 +296,9 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		shutDownProcedures();
 	}
 
+	/**
+	 * Method to shutdown the procedures waiting for termination.
+	 */
 	private void shutDownProcedures() {
 		log.trace("shutDownProcedures()");
 		for( BaseDukeProcedure procedure : getProceduresToRemove() ) {
@@ -385,7 +431,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	public boolean isAnotherDukeRunning(DukeInfo info) {
 		boolean retValue = false;
 		for( BaseDataC data : getEntries() ) {
-			if( DukeFactory.DUKE_INFO == data.getId() ) {
+			if( DukeDataFactory.DUKE_INFO == data.getId() ) {
 				retValue = true;
 				info = (DukeInfo)data;
 				break;
@@ -415,7 +461,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	 */
 	@Override
 	public void procedureFinished(long identity, int state) {
-		
+		// handle the callback from setting up things.
 		
 		setWaitingForProcedure(false);
 		startDistributor();

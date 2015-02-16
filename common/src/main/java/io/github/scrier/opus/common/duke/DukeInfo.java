@@ -41,7 +41,7 @@ public class DukeInfo extends BaseDataC {
 	 * Constructor
 	 */
 	public DukeInfo() {
-		super(DukeFactory.FACTORY_ID, DukeFactory.DUKE_INFO);
+		super(DukeDataFactory.FACTORY_ID, DukeDataFactory.DUKE_INFO);
 		log.trace("DukeInfo()");
 		setDukeID(-1L);
 		setState(DukeState.UNDEFINED);
@@ -72,7 +72,7 @@ public class DukeInfo extends BaseDataC {
 			setDukeID(obj2copy.getDukeID());
 			setState(obj2copy.getState());
 		} else {
-			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof DukeInfo[" + DukeFactory.DUKE_INFO + "], are you using correct class?");
+			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof DukeInfo[" + DukeDataFactory.DUKE_INFO + "], are you using correct class?");
 		}
 	}
 	

@@ -23,21 +23,32 @@ import org.apache.logging.log4j.Logger;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 
-import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
+import io.github.scrier.opus.common.message.SendIF;
 
-public class DukeCommand extends BaseDataC {
+public class DukeCommandMsgC extends BaseMsgC {
 	
-	private static Logger log = LogManager.getLogger(DukeCommand.class);
+	private static Logger log = LogManager.getLogger(DukeCommandMsgC.class);
 	
 	private DukeCommandEnum dukeCommand;
 	private String response;
+	
+	/**
+	 * Constructor
+	 */
+	public DukeCommandMsgC() {
+		super(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND);
+		log.trace("DukeCommandMsgC()");
+		setDukeCommand(DukeCommandEnum.UNDEFINED);
+		setResponse("");
+	}
 
 	/**
 	 * Constructor
 	 */
-	public DukeCommand() {
-		super(DukeFactory.FACTORY_ID, DukeFactory.DUKE_INFO);
-		log.trace("DukeCommand()");
+	public DukeCommandMsgC(SendIF sendIF) {
+		super(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND, sendIF);
+		log.trace("DukeCommandMsgC(" + sendIF + ")");
 		setDukeCommand(DukeCommandEnum.UNDEFINED);
 		setResponse("");
 	}
@@ -46,9 +57,9 @@ public class DukeCommand extends BaseDataC {
 	 * Copy constructor
 	 * @param obj2copy DukeCommand object
 	 */
-	public DukeCommand(DukeCommand obj2copy) {
+	public DukeCommandMsgC(DukeCommandMsgC obj2copy) {
 		super(obj2copy);
-		log.trace("DukeCommand(" + obj2copy + ")");
+		log.trace("DukeCommandMsgC(" + obj2copy + ")");
 		setDukeCommand(obj2copy.getDukeCommand());
 		setResponse(obj2copy.getResponse());
 	}
@@ -58,15 +69,15 @@ public class DukeCommand extends BaseDataC {
 	 * @param input BaseNukeC object
 	 * @throws ClassCastException if provided with a mismatching class.
 	 */
-	public DukeCommand(BaseDataC input) throws ClassCastException {
+	public DukeCommandMsgC(BaseMsgC input) throws ClassCastException {
 		super(input);
-		log.trace("DukeCommand(" + input + ")");
-		if( input instanceof DukeCommand ) {
-			DukeCommand obj2copy = (DukeCommand)input;
+		log.trace("DukeCommandMsgC(" + input + ")");
+		if( input instanceof DukeCommandMsgC ) {
+			DukeCommandMsgC obj2copy = (DukeCommandMsgC)input;
 			setDukeCommand(obj2copy.getDukeCommand());
 			setResponse(obj2copy.getResponse());
 		} else {
-			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof DukeCommand[" + DukeFactory.DUKE_INFO + "], are you using correct class?");
+			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof DukeCommandMsgC[" + DukeMsgFactory.DUKE_COMMAND + "], are you using correct class?");
 		}
 	}
 	

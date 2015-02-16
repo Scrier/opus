@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import io.github.scrier.opus.common.commander.BaseProcedureC;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.SendIF;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -118,6 +119,14 @@ public abstract class BaseDukeProcedure extends BaseProcedureC {
 	 */
 	public DukeCommander getCommander() {
 		return theContext.getCommander();
+	}
+	
+	/**
+	 * Method to get the send interface for the context class.
+	 * @return SendIF to use for messages.
+	 */
+	public SendIF getSendIF() {
+		return theContext.getSendIF();
 	}
 
 }

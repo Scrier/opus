@@ -29,6 +29,7 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	private static Logger log = LogManager.getLogger(BaseDataC.class);
 	
 	private long key;
+	private int txID;
 	private int factoryID;
 	private int messageID;
 	
@@ -42,6 +43,7 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	public BaseDataC(BaseDataC obj2copy) {
 		log.trace("BaseDataC(" + obj2copy + ")");
 		setKey(obj2copy.getKey());
+		setTxID(obj2copy.getTxID());
 		setFactoryID(obj2copy.getFactoryId());
 		setMessageID(obj2copy.getId());
 	}
@@ -53,6 +55,7 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")"); 
 		setKey(in.readLong());
+		setTxID(in.readInt());
 		setFactoryID(in.readInt());
 		setMessageID(in.readInt());
 	}
@@ -64,6 +67,7 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
 		out.writeLong(getKey());
+		out.writeInt(getTxID());
 		out.writeInt(getFactoryId());
 		out.writeInt(getId());
 	}
@@ -99,6 +103,20 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	}
 
 	/**
+	 * @return the txID
+	 */
+  public int getTxID() {
+	  return txID;
+  }
+
+	/**
+	 * @param txID the txID to set
+	 */
+  public void setTxID(int txID) {
+	  this.txID = txID;
+  }
+
+	/**
 	 * @return the key
 	 */
   public long getKey() {
@@ -118,6 +136,7 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	@Override
 	public String toString() {
 		String retValue = "BaseDataC{key: " + getKey();
+		retValue += ", txID:" + getTxID();
 		retValue += ", factoryID:" + getFactoryId();
 		retValue += ", messageID:" + getId() + "}";
 		return retValue;

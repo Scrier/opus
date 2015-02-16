@@ -32,10 +32,19 @@ public class MessageService implements MessageListener<IdentifiedDataSerializabl
 	private MessageIF messageIF;
 	private Map<Integer, ITopic<IdentifiedDataSerializable>> topicsMap;
 	
+	/**
+	 * Construtor
+	 * @param messageIF send interface that will publish messages to the system.
+	 */
 	public MessageService(MessageIF messageIF) {
 		this.messageIF = messageIF;
 	}
 	
+	/**
+	 * Method to register on a factory of messages.
+	 * @param factoryID int with the factory id. 
+	 * @return boolean if successfult or not.
+	 */
 	public boolean registerOnFactory(int factoryID) {
 	 log.trace("registerOnFactory(" + factoryID + ")");
 		boolean retValue = true;
@@ -52,6 +61,11 @@ public class MessageService implements MessageListener<IdentifiedDataSerializabl
 		return retValue;
 	}
 	
+	/**
+	 * Method to unregister on a factory of messages.
+	 * @param factoryID int with the factory id.
+	 * @return boolean if successful or not.
+	 */
 	public boolean unRegisterOnFactory(int factoryID) {
 		log.trace("unRegisterOnFactory(" + factoryID + ")");
 		boolean retValue = true;
@@ -67,6 +81,9 @@ public class MessageService implements MessageListener<IdentifiedDataSerializabl
 		return retValue;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
   public void onMessage(Message<IdentifiedDataSerializable> inMessage) {
 		log.trace("onMessge(" + inMessage + ")");
@@ -74,6 +91,9 @@ public class MessageService implements MessageListener<IdentifiedDataSerializabl
 		messageIF.handleInMessage(msg);
   }
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
   public void publishMessage(BaseMsgC message) {
 	  if( false == topicsMap.containsKey(message.getFactoryId()) ) {

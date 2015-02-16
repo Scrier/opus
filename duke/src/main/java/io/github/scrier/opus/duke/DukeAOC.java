@@ -19,6 +19,7 @@ import java.util.Map;
 
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.DukeCommander;
 import io.github.scrier.opus.duke.io.XmlSettings;
@@ -82,6 +83,15 @@ public class DukeAOC extends BaseActiveObject {
 		log.info("System exit.");
 		System.exit(0);
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public void handleInMessage(BaseMsgC message) {
+		log.trace("handleInMessage(" + message + ")");
+	  commander.handleInMessage(message);
+  }
 
 	
 }

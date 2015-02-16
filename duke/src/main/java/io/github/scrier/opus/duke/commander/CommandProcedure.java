@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -233,6 +234,15 @@ public class CommandProcedure extends BaseDukeProcedure {
   	retValue += ", initialComand:" + getInitialCommand();
   	retValue += ", callback:" + getCallback() + "}";
   	return retValue;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+	@Override
+  public int handleMessage(BaseMsgC message) {
+	  // TODO Auto-generated method stub
+	  return getState();
   }
 
 }

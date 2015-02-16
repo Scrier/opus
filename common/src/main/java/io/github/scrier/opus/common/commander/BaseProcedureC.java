@@ -16,6 +16,7 @@
 package io.github.scrier.opus.common.commander;
 
 import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,15 +39,55 @@ public abstract class BaseProcedureC {
 		this.txID = -1;
 	}
 	
+	/**
+	 * Method to initialize the procedure. Will be called directly after registering as a first step, do your initialization of the procedure here.
+	 * {@code
+	 * init() {
+	 *   // initialize and throw potential exceptions that could happen when initializate this.
+	 * }
+	 * }
+	 * @throws Exception thrown if init method fails to initialize.
+	 */
 	public abstract void init() throws Exception;
 	
+	/**
+	 * Method to shutdown the procedures. Will be called as a last step when a procedure comes to either COMPLETED or ABORTED state. 
+	 * {@code
+	 * shutDown() {
+	 *   // shutdown and throw potential exceptions that could happen when cleaning up.
+	 * }
+	 * }
+	 * @throws Exception thrown if shutdown fails cleaning up.
+	 */
 	public abstract void shutDown() throws Exception;
 
+	/**
+	 * Method to handle updates on the data map.
+	 * @param value BaseDataC with the value of the object updated.
+	 * @return int with the current state of the procedure.
+	 */
 	public abstract int handleOnUpdated(BaseDataC value);
 	
+	/**
+	 * Method to handle if a data class gets evicted from the map due to shortage of memory or similar.
+	 * @param value BaseDataC with the evicted information.
+	 * @return int with the current state of the procedure.
+	 */
 	public abstract int handleOnEvicted(BaseDataC value);
 	
+	/**
+	 * Method to handle a remove event of a data class. 
+	 * @param key long with the key value of the map.
+	 * @return int with the current state of the procedure.
+	 */
 	public abstract int handleOnRemoved(Long key);
+	
+	/**
+	 * Method to handle a message to the procedure.
+	 * @param message BaseMsgC to be handled for the procedure.
+	 * @return int with the current state of the procedure.
+	 */
+	public abstract int handleMessage(BaseMsgC message);
 	
 	/**
 	 * @return the state
@@ -96,5 +137,5 @@ public abstract class BaseProcedureC {
   protected void setTxID(int txID) {
 	  this.txID = txID;
   }
-
+  
 }

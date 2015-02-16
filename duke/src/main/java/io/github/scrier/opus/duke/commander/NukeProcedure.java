@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
@@ -322,5 +323,14 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
 	public String toString() {
 		return local.toString();
 	}
+
+  /**
+   * {@inheritDoc}
+   */
+	@Override
+  public int handleMessage(BaseMsgC message) {
+	  // TODO Auto-generated method stub
+	  return getState();
+  }
 
 }

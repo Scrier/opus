@@ -27,6 +27,7 @@ import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.SendIF;
 import io.github.scrier.opus.common.nuke.NukeState;
 
 import org.apache.logging.log4j.LogManager;
@@ -299,6 +300,14 @@ public enum Context {
   public boolean isTimeoutActive(long id) {
   	log.trace("isTimeoutActive(" + id + ")");
   	return getExecuteItems().contains(id);
+  }
+  
+  /**
+   * Method to get the send interface for messages.
+   * @return SendIF  to use for message sends.
+   */
+  public SendIF getSendIF() {
+  	return baseAoC.getSendIF();
   }
 
 	/**
