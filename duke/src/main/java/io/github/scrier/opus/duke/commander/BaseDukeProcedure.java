@@ -103,6 +103,24 @@ public abstract class BaseDukeProcedure extends BaseProcedureC {
 		log.trace("startTimeout(" + time + ", " + id + ", " + callback + ", " + timeUnit + ")");
 		theContext.startTimeout(time, id, callback, timeUnit);
 	}
+	
+	/**
+	 * Method to terminate an active timeout.
+	 * @param id the id of the timeout to cancel.
+	 * @return boolean if exists and successfully terminate the timeout.
+	 */
+	public boolean terminateTimeout(long id) {
+		log.trace("terminateTimeout(" + id + ")");
+		return theContext.terminateTimeout(id);
+	}
+	
+	/**
+	 * Method to terminate all active timeouts.
+	 */
+	public void terminateTimeouts() {
+		log.trace("terminateTimeouts()");
+		theContext.terminateTimeouts();
+	}
 
 	/**
 	 * Method to check if a specific timeout is active.

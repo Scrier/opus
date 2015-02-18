@@ -457,7 +457,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
    * {@inheritDoc}
    */
 	@Override
-  public int handleMessage(BaseMsgC message) {
+  public int handleInMessage(BaseMsgC message) {
 	  // TODO Auto-generated method stub
 	  return getState();
   }

@@ -328,7 +328,7 @@ public class NukeProcedure extends BaseDukeProcedure implements INukeInfo {
    * {@inheritDoc}
    */
 	@Override
-  public int handleMessage(BaseMsgC message) {
+  public int handleInMessage(BaseMsgC message) {
 	  // TODO Auto-generated method stub
 	  return getState();
   }

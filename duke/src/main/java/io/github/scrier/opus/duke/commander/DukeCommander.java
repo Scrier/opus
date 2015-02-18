@@ -87,7 +87,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	public void handleInMessage(BaseMsgC message) {
 		log.trace("handleInMessage(" + message + ")");
 		for( BaseDukeProcedure procedure : procedures ) {
-			int result = procedure.handleMessage(message);
+			int result = procedure.handleInMessage(message);
 			if( procedure.COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
 				removeProcedure(procedure);
@@ -431,7 +431,8 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	public boolean isAnotherDukeRunning(DukeInfo info) {
 		boolean retValue = false;
 		for( BaseDataC data : getEntries() ) {
-			if( DukeDataFactory.DUKE_INFO == data.getId() ) {
+			if( DukeDataFactory.FACTORY_ID == data.getFactoryId() && 
+					DukeDataFactory.DUKE_INFO == data.getId() ) {
 				retValue = true;
 				info = (DukeInfo)data;
 				break;

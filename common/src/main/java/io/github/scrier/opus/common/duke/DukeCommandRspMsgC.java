@@ -26,30 +26,27 @@ import com.hazelcast.nio.ObjectDataOutput;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.message.SendIF;
 
-public class DukeCommandMsgC extends BaseMsgC {
+public class DukeCommandRspMsgC extends BaseMsgC {
 	
-	private static Logger log = LogManager.getLogger(DukeCommandMsgC.class);
+	private static Logger log = LogManager.getLogger(DukeCommandRspMsgC.class);
 	
-	private DukeCommandEnum dukeCommand;
 	private String response;
 	
 	/**
 	 * Constructor
 	 */
-	public DukeCommandMsgC() {
-		super(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND);
-		log.trace("DukeCommandMsgC()");
-		setDukeCommand(DukeCommandEnum.UNDEFINED);
+	public DukeCommandRspMsgC() {
+		super(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND_RSP);
+		log.trace("DukeCommandRspMsgC()");
 		setResponse("");
 	}
 
 	/**
 	 * Constructor
 	 */
-	public DukeCommandMsgC(SendIF sendIF) {
-		super(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND, sendIF);
-		log.trace("DukeCommandMsgC(" + sendIF + ")");
-		setDukeCommand(DukeCommandEnum.UNDEFINED);
+	public DukeCommandRspMsgC(SendIF sendIF) {
+		super(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND_RSP, sendIF);
+		log.trace("DukeCommandRspMsgC(" + sendIF + ")");
 		setResponse("");
 	}
 	
@@ -57,10 +54,9 @@ public class DukeCommandMsgC extends BaseMsgC {
 	 * Copy constructor
 	 * @param obj2copy DukeCommand object
 	 */
-	public DukeCommandMsgC(DukeCommandMsgC obj2copy) {
+	public DukeCommandRspMsgC(DukeCommandRspMsgC obj2copy) {
 		super(obj2copy);
-		log.trace("DukeCommandMsgC(" + obj2copy + ")");
-		setDukeCommand(obj2copy.getDukeCommand());
+		log.trace("DukeCommandRspMsgC(" + obj2copy + ")");
 		setResponse(obj2copy.getResponse());
 	}
 	
@@ -69,15 +65,14 @@ public class DukeCommandMsgC extends BaseMsgC {
 	 * @param input BaseNukeC object
 	 * @throws ClassCastException if provided with a mismatching class.
 	 */
-	public DukeCommandMsgC(BaseMsgC input) throws ClassCastException {
+	public DukeCommandRspMsgC(BaseMsgC input) throws ClassCastException {
 		super(input);
-		log.trace("DukeCommandMsgC(" + input + ")");
-		if( input instanceof DukeCommandMsgC ) {
-			DukeCommandMsgC obj2copy = (DukeCommandMsgC)input;
-			setDukeCommand(obj2copy.getDukeCommand());
+		log.trace("DukeCommandRspMsgC(" + input + ")");
+		if( input instanceof DukeCommandRspMsgC ) {
+			DukeCommandRspMsgC obj2copy = (DukeCommandRspMsgC)input;
 			setResponse(obj2copy.getResponse());
 		} else {
-			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof DukeCommandMsgC[" + DukeMsgFactory.DUKE_COMMAND + "], are you using correct class?");
+			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof DukeCommandRspMsgC[" + DukeMsgFactory.DUKE_COMMAND_RSP + "], are you using correct class?");
 		}
 	}
 	
@@ -88,7 +83,6 @@ public class DukeCommandMsgC extends BaseMsgC {
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")");
 		super.readData(in);
-		setDukeCommand(DukeCommandEnum.valueOf(in.readUTF()));
 		setResponse(in.readUTF());
 	}
 
@@ -99,22 +93,7 @@ public class DukeCommandMsgC extends BaseMsgC {
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
 		super.writeData(out);
-		out.writeUTF(getDukeCommand().toString());
 		out.writeUTF(getResponse());
-	}
-
-	/**
-	 * @return the dukeCommand
-	 */
-	public DukeCommandEnum getDukeCommand() {
-		return dukeCommand;
-	}
-
-	/**
-	 * @param dukeCommand the dukeCommand to set
-	 */
-	public void setDukeCommand(DukeCommandEnum dukeCommand) {
-		this.dukeCommand = dukeCommand;
 	}
 
 	/**

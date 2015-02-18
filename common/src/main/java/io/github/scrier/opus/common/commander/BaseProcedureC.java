@@ -87,7 +87,7 @@ public abstract class BaseProcedureC {
 	 * @param message BaseMsgC to be handled for the procedure.
 	 * @return int with the current state of the procedure.
 	 */
-	public abstract int handleMessage(BaseMsgC message);
+	public abstract int handleInMessage(BaseMsgC message);
 	
 	/**
 	 * @return the state

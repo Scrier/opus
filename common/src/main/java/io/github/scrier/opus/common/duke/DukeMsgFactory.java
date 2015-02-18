@@ -27,7 +27,8 @@ public class DukeMsgFactory implements DataSerializableFactory {
 
 	public static final int FACTORY_ID = 150112;
 	
-	public static final int DUKE_COMMAND = 1;
+	public static final int DUKE_COMMAND_REQ = 1;
+	public static final int DUKE_COMMAND_RSP = 2;
 	
 	/**
 	 * Constructor
@@ -41,8 +42,11 @@ public class DukeMsgFactory implements DataSerializableFactory {
 		log.trace("create(" + dataID + ")");
 		IdentifiedDataSerializable retValue = null;
 		switch(dataID) {
-			case DUKE_COMMAND:
-				retValue = new DukeCommandMsgC();
+			case DUKE_COMMAND_REQ:
+				retValue = new DukeCommandReqMsgC();
+				break;
+			case DUKE_COMMAND_RSP:
+				retValue = new DukeCommandRspMsgC();
 				break;
 		}
 		return retValue;

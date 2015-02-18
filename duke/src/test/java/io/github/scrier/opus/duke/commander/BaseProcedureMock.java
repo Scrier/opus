@@ -1,6 +1,7 @@
 package io.github.scrier.opus.duke.commander;
 
 import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 
 public class BaseProcedureMock extends BaseDukeProcedure {
 	
@@ -12,6 +13,8 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	private int onEvictedReturn;
 	private long onRemoved;
 	private int onRemovedReturn;
+	private BaseMsgC handleInMessage;
+	private int handleInMessageReturn;
 	
 	BaseProcedureMock() {
 		setInitCalled(false);
@@ -22,6 +25,8 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 		setOnEvictedReturn(CREATED);
 		setOnRemoved(-1L);
 		setOnRemovedReturn(CREATED);
+		setHandleInMessage(null);
+		setHandleInMessageReturn(CREATED);
 	}
 
 	@Override
@@ -50,6 +55,12 @@ public class BaseProcedureMock extends BaseDukeProcedure {
   public int handleOnRemoved(Long key) {
 		setOnRemoved(key);
 		return getOnRemovedReturn();
+  }
+	
+	@Override
+  public int handleInMessage(BaseMsgC message) {
+	  setHandleInMessage(message);
+	  return getHandleInMessageReturn();
   }
 
 	/**
@@ -163,5 +174,33 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	public void setOnRemovedReturn(int onRemovedReturn) {
 		this.onRemovedReturn = onRemovedReturn;
 	}
+
+	/**
+	 * @return the handleInMessage
+	 */
+  public BaseMsgC getHandleInMessage() {
+	  return handleInMessage;
+  }
+
+	/**
+	 * @param handleInMessage the handleInMessage to set
+	 */
+  public void setHandleInMessage(BaseMsgC handleInMessage) {
+	  this.handleInMessage = handleInMessage;
+  }
+
+	/**
+	 * @return the handleInMessageReturn
+	 */
+  public int getHandleInMessageReturn() {
+	  return handleInMessageReturn;
+  }
+
+	/**
+	 * @param handleInMessageReturn the handleInMessageReturn to set
+	 */
+  public void setHandleInMessageReturn(int handleInMessageReturn) {
+	  this.handleInMessageReturn = handleInMessageReturn;
+  }
 
 }
