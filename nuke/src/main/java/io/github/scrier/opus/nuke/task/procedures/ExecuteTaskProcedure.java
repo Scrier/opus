@@ -160,10 +160,10 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	private void handleUpdate(NukeCommand nukeCommand) {
 		log.trace("handleUpdate(" + nukeCommand + ")");
 		if( CommandState.STOP == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getComponent() + ".");
+			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getKey() + ".");
 			setStopped(true);
 		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getComponent() + ".");
+			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getKey() + ".");
 			terminateProcess();
 			setStopped(false);    // not necessary as terminated has precedence.
 			setTerminated(true);

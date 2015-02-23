@@ -214,7 +214,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				log.error("Received out of bound exception in state: " + getState() + ".", e);
 			}
 		}
-		theContext.getCommander().intializeProcedures();
+		theContext.getCommander().initializeProcedures();
 	}
 	
 	/**

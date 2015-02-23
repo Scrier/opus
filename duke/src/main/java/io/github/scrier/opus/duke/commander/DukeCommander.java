@@ -22,13 +22,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.data.BaseDataC;
-import io.github.scrier.opus.common.data.DataListener;
-import io.github.scrier.opus.common.duke.DukeDataFactory;
-import io.github.scrier.opus.common.duke.DukeInfo;
+import io.github.scrier.opus.common.data.*;
+import io.github.scrier.opus.common.duke.*;
+import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
-import io.github.scrier.opus.common.nuke.NukeFactory;
-import io.github.scrier.opus.common.nuke.NukeInfo;
+import io.github.scrier.opus.common.nuke.*;
+import io.github.scrier.opus.duke.commander.NukeProcedure;
 
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
@@ -64,6 +63,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		if( true == isAnotherDukeRunning(info) ) {
 			registerProcedure(new TerminateDukeProcedure(procToWaitFor, this, info));
 			setWaitingForProcedure(true);
+			initializeProcedures();
 		} else {
 			initializeAsSingleDuke();
 		}
@@ -78,24 +78,6 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		clear(getProceduresToAdd());
 		clear(getProcedures());
 		clear(getProceduresToRemove());
-	}
-	
-	/**
-	 * Method to handle incoming messages for the procedures.
-	 * @param message BaseMsgC with the incoming message.
-	 */
-	public void handleInMessage(BaseMsgC message) {
-		log.trace("handleInMessage(" + message + ")");
-		for( BaseDukeProcedure procedure : procedures ) {
-			int result = procedure.handleInMessage(message);
-			if( procedure.COMPLETED == result ) {
-				log.debug("Procedure " + procedure + " completed.");
-				removeProcedure(procedure);
-			} else if ( procedure.ABORTED == result ) {
-				log.debug("Procedure " + procedure + " aborted.");
-				removeProcedure(procedure);
-			}
-		}
 	}
 
 	/**
@@ -182,15 +164,15 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	@Override
 	public void preEntry() {
 		log.trace("preEntry()");
-		intializeProcedures();
+		initializeProcedures();
 		toRemove.clear();
 	}
 
 	/**
 	 * Method to initialize all procedures before stepping into the next iteration. 
 	 */
-	public synchronized void intializeProcedures() {
-		log.trace("intializeProcedures()");
+	public synchronized void initializeProcedures() {
+		log.trace("initializeProcedures()");
 		if( true != getProceduresToAdd().isEmpty() ) {
 			log.debug("Adding " + getProceduresToAdd().size() + " procedures.");
 			for( BaseDukeProcedure procedure : getProceduresToAdd() ) {
@@ -285,6 +267,32 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 			}
 		}
 	}
+	
+	/**
+	 * Method to handle incoming messages for the procedures.
+	 * @param message BaseMsgC with the incoming message.
+	 * @throws InvalidOperationException 
+	 */
+	public void handleInMessage(BaseMsgC message) throws InvalidOperationException {
+		log.trace("handleInMessage(" + message + ")");
+		preEntry();
+		if( DukeMsgFactory.FACTORY_ID == message.getFactoryId() && DukeMsgFactory.DUKE_COMMAND_REQ == message.getId() ) {
+			DukeCommandReqMsgC pDukeCommandReq = new DukeCommandReqMsgC(message);
+			handleMessage(pDukeCommandReq);
+		} else { ///@TODO Might need to check if there is more calls that is needed for the DUKE_COMMAND_REQ message.
+			for( BaseDukeProcedure procedure : procedures ) {
+				int result = procedure.handleInMessage(message);
+				if( procedure.COMPLETED == result ) {
+					log.debug("Procedure " + procedure + " completed.");
+					removeProcedure(procedure);
+				} else if ( procedure.ABORTED == result ) {
+					log.debug("Procedure " + procedure + " aborted.");
+					removeProcedure(procedure);
+				}
+			}
+		}
+		postEntry();
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -292,7 +300,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	@Override
 	public void postEntry() {
 		log.trace("postEntry()");
-		intializeProcedures();
+		initializeProcedures();
 		shutDownProcedures();
 	}
 
@@ -454,7 +462,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 			}
 		}
 		startDistributor();
-		intializeProcedures();
+		initializeProcedures();
 	}
 
 	/**
@@ -480,6 +488,44 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	 */
 	public void setWaitingForProcedure(boolean waitingForProcedure) {
 		this.waitingForProcedure = waitingForProcedure;
+	}
+	
+	/**
+	 * Method to handle the DukeCommandReqMsgC message.
+	 * @param message DukeCommandReqMsgC instance.
+	 * @throws InvalidOperationException 
+	 */
+	protected void handleMessage(DukeCommandReqMsgC message) throws InvalidOperationException {
+		log.trace("handleMessage( " + message + ")");
+		switch( message.getDukeCommand() ) {
+			case STATUS: {
+				log.info("Received message from " + message.getSource() + " to report my current status.");
+				Context instance = Context.INSTANCE;
+				DukeCommandRspMsgC pDukeCommandRsp = new DukeCommandRspMsgC(instance.getSendIF());
+				pDukeCommandRsp.setSource(instance.getIdentity());
+				pDukeCommandRsp.setDestination(message.getSource());
+				pDukeCommandRsp.setTxID(message.getTxID());
+				String response = "Status of duke with id: " + instance.getIdentity();
+				
+				pDukeCommandRsp.setResponse(response);
+				pDukeCommandRsp.send();
+				break;
+			}
+			case STOP: {
+				log.info("Received message from " + message.getSource() + " to stop my execution.");
+				break;
+			}
+			case TERMINATE: {
+				log.info("Received message from " + message.getSource() + " to terminate my execution.");
+				break;
+			}
+			case UNDEFINED: 
+			default: {
+				log.error("Received message from " + message.getSource() + " with unknown enum value: " + message.getDukeCommand() + ".");
+				
+				break;
+			}
+		}
 	}
 
 }

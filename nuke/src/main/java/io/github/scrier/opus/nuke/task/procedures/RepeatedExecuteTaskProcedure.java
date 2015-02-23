@@ -188,11 +188,11 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	private void handleUpdate(NukeCommand nukeCommand) {
 		log.trace("handleUpdate(" + nukeCommand + ")");
 		if( CommandState.STOP == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getComponent() + ".");
+			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getKey() + ".");
 			setRepeated(false);
 			setStopped(true);
 		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getComponent() + ".");
+			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getKey() + ".");
 			setRepeated(false);
 			terminateProcess();
 			setStopped(false);    // not necessary as terminated has precedence.
