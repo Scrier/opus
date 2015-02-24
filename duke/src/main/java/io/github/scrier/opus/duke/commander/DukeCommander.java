@@ -497,35 +497,101 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	 */
 	protected void handleMessage(DukeCommandReqMsgC message) throws InvalidOperationException {
 		log.trace("handleMessage( " + message + ")");
+		Context instance = Context.INSTANCE;
+		DukeCommandRspMsgC pDukeCommandRsp = new DukeCommandRspMsgC(instance.getSendIF());
+		pDukeCommandRsp.setSource(instance.getIdentity());
+		pDukeCommandRsp.setDestination(message.getSource());
+		pDukeCommandRsp.setTxID(message.getTxID());
+		
 		switch( message.getDukeCommand() ) {
 			case STATUS: {
 				log.info("Received message from " + message.getSource() + " to report my current status.");
-				Context instance = Context.INSTANCE;
-				DukeCommandRspMsgC pDukeCommandRsp = new DukeCommandRspMsgC(instance.getSendIF());
-				pDukeCommandRsp.setSource(instance.getIdentity());
-				pDukeCommandRsp.setDestination(message.getSource());
-				pDukeCommandRsp.setTxID(message.getTxID());
 				String response = "Status of duke with id: " + instance.getIdentity();
-				
+				response += getProcedureInformation();
 				pDukeCommandRsp.setResponse(response);
-				pDukeCommandRsp.send();
 				break;
 			}
 			case STOP: {
 				log.info("Received message from " + message.getSource() + " to stop my execution.");
+				List<BaseDukeProcedure> baseProcs = getProcedures(ClusterDistributorProcedure.class);
+				if( 1 < baseProcs.size() ) {
+					pDukeCommandRsp.setResponse("We hade more than one ClusterDistributor running, expected 1, but was " + baseProcs.size() + ".");
+				} else if ( baseProcs.isEmpty() ) {
+					pDukeCommandRsp.setResponse("We have no ClusterDistributor running, cannot stop.");
+				} else {
+					ClusterDistributorProcedure proc = (ClusterDistributorProcedure)baseProcs.get(0);
+					proc.setState(proc.TERMINATING);
+					pDukeCommandRsp.setResponse("Command to terminate has been sent to the nukes, waiting for completion");
+				}
 				break;
 			}
 			case TERMINATE: {
 				log.info("Received message from " + message.getSource() + " to terminate my execution.");
-				break;
+				pDukeCommandRsp.setResponse("Command to terminate is received, and I will issue the command.");
+				pDukeCommandRsp.send();
+				// Might need a sleep or some other bad solution to keep it from going to fast to the shutdown handling.
+				instance.getBaseAoC().shutDown();
+				return; 
+				// we return instead of break due to not send the response twice, 
+				// as well as we will terminate the application so we are not sure that 
+				// the send will work after the termination process is set in motion.
 			}
 			case UNDEFINED: 
 			default: {
 				log.error("Received message from " + message.getSource() + " with unknown enum value: " + message.getDukeCommand() + ".");
-				
+				pDukeCommandRsp.setResponse("We received unknown command " + message.getDukeCommand() + " don't know what to do.");
 				break;
 			}
 		}
+		pDukeCommandRsp.send();
+	}
+	
+	/**
+	 * Method to get the procedure information from the procedures currently in the system.
+	 * @return String
+	 */
+	private String getProcedureInformation() {
+		String response = "";
+		if( false == getProceduresToAdd().isEmpty() ) {
+			response += ", I have " + getProceduresToAdd().size() + " procedures waiting to be added, [";
+			boolean skipFirst = true;
+			for( BaseDukeProcedure proc : getProceduresToAdd() ) {
+				if( skipFirst ) {
+					skipFirst = false;
+				} else {
+					response += ", ";
+				}
+				response += proc.getClass().getSimpleName();
+			}
+			response += "]";
+		}
+		if( false == getProcedures().isEmpty() ) {
+			response += ", we have " + getProcedures().size() + " procedures currently working, [";
+			boolean skipFirst = true;
+			for( BaseDukeProcedure proc : getProcedures() ) {
+				if( skipFirst ) {
+					skipFirst = false;
+				} else {
+					response += ", ";
+				}
+				response += proc.getClass().getSimpleName() + " with state " + proc.getState();
+			}
+			response += "]";
+		}
+		if( false == getProceduresToRemove().isEmpty() ) {
+			response += ", we have " + getProceduresToRemove().size() + " procedures waiting to be removed, [";
+			boolean skipFirst = true;
+			for( BaseDukeProcedure proc : getProceduresToRemove() ) {
+				if( skipFirst ) {
+					skipFirst = false;
+				} else {
+					response += ", ";
+				}
+				response += proc.getClass().getSimpleName();
+			}
+			response += "]";
+		}
+		return response;
 	}
 
 }

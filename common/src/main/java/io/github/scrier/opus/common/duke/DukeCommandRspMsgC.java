@@ -17,6 +17,8 @@ package io.github.scrier.opus.common.duke;
 
 import java.io.IOException;
 
+import javafx.scene.Parent;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -108,6 +110,14 @@ public class DukeCommandRspMsgC extends BaseMsgC {
 	 */
 	public void setResponse(String response) {
 		this.response = response;
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return "DukeCommandRspMsgC{response: " + getResponse() + "} - " + super.toString();
 	}
 	
 }

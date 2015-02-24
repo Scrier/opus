@@ -90,7 +90,11 @@ public class DukeAOC extends BaseActiveObject {
 	@Override
   public void handleInMessage(BaseMsgC message) {
 		log.trace("handleInMessage(" + message + ")");
-	  commander.handleInMessage(message);
+	  try {
+	    commander.handleInMessage(message);
+    } catch (InvalidOperationException e) {
+	    log.error("Command threw a InvalidOperationException from handleInMessage method.", e);
+    }
   }
 
 	
