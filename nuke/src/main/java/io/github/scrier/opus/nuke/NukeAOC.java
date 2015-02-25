@@ -19,6 +19,7 @@ import com.hazelcast.core.HazelcastInstance;
 
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.nuke.task.Context;
 import io.github.scrier.opus.nuke.task.NukeTasks;
 
@@ -48,5 +49,15 @@ public class NukeAOC extends BaseActiveObject {
 		Context.INSTANCE.shutDown();
 		nukeTasks.shutDown();
 	}
+
+	@Override
+  public void handleInMessage(BaseMsgC message) {
+		log.trace("handleInMessage(" + message + ")");
+	  try {
+	  	nukeTasks.handleInMessage(message);
+    } catch (InvalidOperationException e) {
+	    log.error("Command threw a InvalidOperationException from handleInMessage method.", e);
+    }
+  }
 
 }

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -130,6 +131,14 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was removed before we were finished.");
 			setState(ABORTED);
 		}
+	  return getState();
+  }
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int handleInMessage(BaseMsgC message) {
 	  return getState();
   }
 	

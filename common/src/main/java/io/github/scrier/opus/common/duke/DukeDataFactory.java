@@ -15,6 +15,8 @@
  */
 package io.github.scrier.opus.common.duke;
 
+import io.github.scrier.opus.common.data.Constants;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,7 +29,7 @@ public class DukeDataFactory implements DataSerializableFactory {
 
 	public static final int FACTORY_ID = 121104;
 	
-	public static final int DUKE_INFO = 1;
+	public static final int DUKE_INFO = Constants.DUKE_DATA_START + 1;
 	
 	/**
 	 * Constructor

@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
 
@@ -66,6 +67,14 @@ public class QueryTaskProcedure extends BaseTaskProcedure {
   public int handleOnRemoved(Long key) {
 	  // TODO Auto-generated method stub
 	  return 0;
+  }
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int handleInMessage(BaseMsgC message) {
+	  return getState();
   }
 
 	/**

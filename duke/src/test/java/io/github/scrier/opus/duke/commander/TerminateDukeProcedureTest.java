@@ -187,19 +187,6 @@ public class TerminateDukeProcedureTest {
 	}
 	
 	@Test
-	public void handleInMessageWrongFactory() {
-		TerminateDukeProcedure testObject = new TerminateDukeProcedure(identity, callback, dukeInfo);
-		testObject.handleInMessage(new BaseMsgMockC(DukeMsgFactory.FACTORY_ID + 1, DukeMsgFactory.DUKE_COMMAND_RSP));
-		assertEquals(identity, testObject.getIdentity());
-		assertNotNull(testObject.getSendIF());
-		assertEquals(testObject.CREATED, testObject.getState());
-		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
-		assertEquals(-1, callback.State);
-		assertEquals(0, SendIF.size());
-	}
-	
-	@Test
 	public void handleInMessageWrongID() {
 		TerminateDukeProcedure testObject = new TerminateDukeProcedure(identity, callback, dukeInfo);
 		testObject.handleInMessage(new BaseMsgMockC(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND_RSP + 1));

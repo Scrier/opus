@@ -13,15 +13,14 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.duke;
+package io.github.scrier.opus.common.data;
 
-public enum DukeState {
-	UNDEFINED,
-	STARTED,
-	INITIALIZED,
-	RUNNING,
-	DONE,
-	STOPPED,
-	TERMINATED,
-	ABORTED
+public class Constants {
+	
+	public static final int INTERVAL = 500;
+	
+	public static final int DUKE_DATA_START = INTERVAL * 0;
+	public static final int NUKE_DATA_START = INTERVAL * 1;
+	public static final int DUKE_MSG_START  = INTERVAL * 2;
+
 }

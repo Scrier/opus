@@ -24,7 +24,10 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.data.DataListener;
+import io.github.scrier.opus.common.duke.DukeCommandReqMsgC;
+import io.github.scrier.opus.common.duke.DukeMsgFactory;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -203,6 +206,27 @@ public class NukeTasks extends DataListener {
 			}
 		}
   }
+	
+	/**
+	 * Method to handle incoming messages for the procedures.
+	 * @param message BaseMsgC with the incoming message.
+	 * @throws InvalidOperationException 
+	 */
+	public void handleInMessage(BaseMsgC message) throws InvalidOperationException {
+		log.trace("handleInMessage(" + message + ")");
+		preEntry();
+		for( BaseTaskProcedure procedure : procedures ) {
+			int result = procedure.handleInMessage(message);
+			if( procedure.COMPLETED == result ) {
+				log.debug("Procedure " + procedure + " completed.");
+				removeProcedure(procedure);
+			} else if ( procedure.ABORTED == result ) {
+				log.debug("Procedure " + procedure + " aborted.");
+				removeProcedure(procedure);
+			}
+		}
+		postEntry();
+	}
 
 	/**
 	 * {@inheritDoc}

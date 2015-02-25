@@ -102,17 +102,19 @@ public abstract class BaseProcedureC {
 	public void setState(int state) {
 		// We cannot change a complete of aborted procedure.
 		if( ABORTED != getState() && COMPLETED != getState() && this.state != state) {
+			int previousState = this.state;
 			this.state = state;
-			onStateChanged(this.state);
+			onStateChanged(this.state, previousState);
 		}
 	}
 	
 	/**
 	 * Method called when a state is changed.
-	 * @param state int with current state.
+	 * @param newState int with current state.
+	 * @param previousState int with previous state.
 	 */
-	public void onStateChanged(int state) {
-		log.trace("onStateChanged(" + state + ")");
+	public void onStateChanged(int newState, int previousState) {
+		log.trace("onStateChanged(" + newState + ", " + previousState + ")");
 	}
 	
 	/**

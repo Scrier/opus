@@ -15,6 +15,8 @@
  */
 package io.github.scrier.opus.common.duke;
 
+import io.github.scrier.opus.common.data.Constants;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,8 +29,8 @@ public class DukeMsgFactory implements DataSerializableFactory {
 
 	public static final int FACTORY_ID = 150112;
 	
-	public static final int DUKE_COMMAND_REQ = 1;
-	public static final int DUKE_COMMAND_RSP = 2;
+	public static final int DUKE_COMMAND_REQ = Constants.DUKE_MSG_START + 1;
+	public static final int DUKE_COMMAND_RSP = Constants.DUKE_MSG_START + 2;
 	
 	/**
 	 * Constructor

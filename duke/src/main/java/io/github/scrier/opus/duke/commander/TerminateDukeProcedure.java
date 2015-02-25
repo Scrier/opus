@@ -61,6 +61,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 	 * @param callback
 	 */
 	public TerminateDukeProcedure(long identity, IProcedureWait callback, DukeInfo otherDuke) {
+		log.trace("TerminateDukeProcedure(" + identity + ", " + callback + ", " +  otherDuke + ")");
 		this.id = identity;
 		this.callback = callback;
 		this.duke = otherDuke;
@@ -132,16 +133,14 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 	@Override
   public int handleInMessage(BaseMsgC message) {
 		log.trace("handleInMessage(" + message + ")");
-		if( DukeMsgFactory.FACTORY_ID == message.getFactoryId() ) {
-		  switch( message.getId() ) {
-		  	case DukeMsgFactory.DUKE_COMMAND_RSP: {
-		  		DukeCommandRspMsgC command = new DukeCommandRspMsgC(message);
-		  		handleMessage(command);
-		  		break;
-		  	}
-		  }
+		switch( message.getId() ) {
+			case DukeMsgFactory.DUKE_COMMAND_RSP: {
+				DukeCommandRspMsgC command = new DukeCommandRspMsgC(message);
+				handleMessage(command);
+				break;
+			}
 		}
-	  return getState();
+		return getState();
   }
 	
 	/**
