@@ -18,6 +18,7 @@ package io.github.scrier.opus.duke;
 import java.util.Map;
 
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
+import io.github.scrier.opus.common.duke.DukeMsgFactory;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.duke.commander.Context;
@@ -58,6 +59,11 @@ public class DukeAOC extends BaseActiveObject {
 		log.trace("init()");
 		commander = new DukeCommander(getInstance());
 		Context.INSTANCE.init(commander, this);
+		if( true != registerOnFactory(DukeMsgFactory.FACTORY_ID) ) {
+			log.fatal("Unable to register on factoru message. " + DukeMsgFactory.FACTORY_ID + ", cannot continue.");
+			shutDown();
+			return;
+		}
 		settings.init();
 		log.info("Settings read: ");
 		for( Map.Entry<String, String> item : settings.getSettings().entrySet() ) {
@@ -77,6 +83,9 @@ public class DukeAOC extends BaseActiveObject {
 	@Override
 	public void shutDown() {
 		log.trace("shutDown()");
+		if( true != unRegisterOnFactory(DukeMsgFactory.FACTORY_ID) ) {
+			log.fatal("Unable to remove registration for factory id: " + DukeMsgFactory.FACTORY_ID + ".");
+		}
 		commander.shutDown();
 		Context.INSTANCE.shutDown();
 		getInstance().getLifecycleService().shutdown();

@@ -82,10 +82,15 @@ public enum Context {
 	
 	public void shutDown() {
 		this.doOnce = true;
+		if( null != this.clientInfo ) {
+			getCommander().removeEntry(this.clientInfo);
+		}
+		this.clientInfo = null;
 		setCommander(null);
 		setBaseAoC(null);
 		setTxID(0);
 		setNukes(null);
+
 	}
 	
 	public boolean registerProcedure(BaseDukeProcedure procedure) {

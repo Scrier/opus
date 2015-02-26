@@ -154,5 +154,23 @@ public abstract class BaseActiveObject implements MessageIF {
   public void setMsgService(MessageService msgService) {
 	  this.msgService = msgService;
   }
+  
+  /**
+   * Register on a factory id of messages.
+   * @param factoryID int
+   * @return boolean if successfull.
+   */
+  public boolean registerOnFactory(int factoryID) {
+  	return this.msgService.registerOnFactory(factoryID);
+  }
+  
+  /**
+   * Un register on a factory id of messages.
+   * @param factoryID int of the factory id to subscibe to
+   * @return boolean if successfull.
+   */
+  public boolean unRegisterOnFactory(int factoryID) {
+  	return this.msgService.unRegisterOnFactory(factoryID);
+  }
 	
 }

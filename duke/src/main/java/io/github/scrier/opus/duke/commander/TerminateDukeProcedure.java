@@ -65,12 +65,13 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 		this.id = identity;
 		this.callback = callback;
 		this.duke = otherDuke;
-		this.states = new State[WAITING_FOR_TERMINATE + 1];
+		this.states = new State[WAITING_FOR_REMOVE + 1];
 		this.states[ABORTED] = new Aborted();
 		this.states[CREATED] = new Created();
 		this.states[WAITING_FOR_STATUS] = new WaitingForStatus();
 		this.states[WAITING_FOR_STOP] = new WaitingForStop();
 		this.states[WAITING_FOR_TERMINATE] = new WaitingForTerminate();
+		this.states[WAITING_FOR_REMOVE] = new WaitingForRemove();
 	}
 	
 	/**
@@ -120,6 +121,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 	@Override
 	public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
+		log.debug("handleOnRemoved(" + key + ")");
 		if( duke.getKey() == key ) {
 			log.info("Duke is removed, we are done.");
 			setState(COMPLETED);
@@ -305,7 +307,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 	}
 	
 	/**
-	 * State handling the Waiting For Status message.
+	 * State handling the Waiting For Stop message.
 	 */
 	public class WaitingForStop extends State {
 		
@@ -342,7 +344,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 	}
 	
 	/**
-	 * State handling the Waiting For Status message.
+	 * State handling the Waiting For Terminate message.
 	 */
 	public class WaitingForTerminate extends State {
 		
@@ -374,6 +376,35 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				log.info("Timed out while waiting for the terminutae feedback from duke with id: " + duke.getKey() + ", cannot continue.");
 				setState(ABORTED);
 			}
+		}
+		
+	}
+	
+	/**
+	 * State handling the Waiting For Remove message.
+	 */
+	public class WaitingForRemove extends State {
+		
+		public WaitingForRemove() {
+			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.WaitingForRemove");
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void handleMessage(DukeCommandRspMsgC message) {
+			logLocal.trace("handleMessage(" + message + ")");
+			// do nothing
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void handleTimeOut(long id) {
+			logLocal.trace("handleTimeOut(" + id + ")");
+			logLocal.info("Received timeout, should have terminated it with id: " + id + ".");
 		}
 		
 	}

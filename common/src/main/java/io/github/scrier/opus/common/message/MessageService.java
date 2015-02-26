@@ -15,6 +15,7 @@
  */
 package io.github.scrier.opus.common.message;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -33,11 +34,12 @@ public class MessageService implements MessageListener<IdentifiedDataSerializabl
 	private Map<Integer, ITopic<IdentifiedDataSerializable>> topicsMap;
 	
 	/**
-	 * Construtor
+	 * Constructor
 	 * @param messageIF send interface that will publish messages to the system.
 	 */
 	public MessageService(MessageIF messageIF) {
 		this.messageIF = messageIF;
+		this.topicsMap = new HashMap<Integer, ITopic<IdentifiedDataSerializable>>();
 	}
 	
 	/**

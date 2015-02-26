@@ -290,19 +290,21 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	    throws InvalidOperationException {
 		log.trace("handleInMessage(" + message + ")");
 		preEntry();
-		if ( DukeMsgFactory.DUKE_COMMAND_REQ == message.getId()) {
-			DukeCommandReqMsgC pDukeCommandReq = new DukeCommandReqMsgC(message);
-			handleMessage(pDukeCommandReq);
-		} else { // /@TODO Might need to check if there is more calls that is needed
-						 // for the DUKE_COMMAND_REQ message.
-			for (BaseDukeProcedure procedure : procedures) {
-				int result = procedure.handleInMessage(message);
-				if (procedure.COMPLETED == result) {
-					log.debug("Procedure " + procedure + " completed.");
-					removeProcedure(procedure);
-				} else if (procedure.ABORTED == result) {
-					log.debug("Procedure " + procedure + " aborted.");
-					removeProcedure(procedure);
+		if ( theContext.getIdentity() == message.getDestination() ) {
+			if ( DukeMsgFactory.DUKE_COMMAND_REQ == message.getId()) {
+				DukeCommandReqMsgC pDukeCommandReq = new DukeCommandReqMsgC(message);
+				handleMessage(pDukeCommandReq);
+			} else { // /@TODO Might need to check if there is more calls that is needed
+				// for the DUKE_COMMAND_REQ message.
+				for (BaseDukeProcedure procedure : procedures) {
+					int result = procedure.handleInMessage(message);
+					if (procedure.COMPLETED == result) {
+						log.debug("Procedure " + procedure + " completed.");
+						removeProcedure(procedure);
+					} else if (procedure.ABORTED == result) {
+						log.debug("Procedure " + procedure + " aborted.");
+						removeProcedure(procedure);
+					}
 				}
 			}
 		}
