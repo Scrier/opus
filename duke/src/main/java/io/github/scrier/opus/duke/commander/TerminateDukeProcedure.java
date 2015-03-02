@@ -31,28 +31,28 @@ import io.github.scrier.opus.common.message.BaseMsgC;
  * @author andreas.joelsson
  */
 public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOutCallback {
-	
+
 	private static Logger log = LogManager.getLogger(TerminateDukeProcedure.class);
-	
+
 	private long id;
 	private IProcedureWait callback;
 	private DukeInfo duke;
-	
+
 	private final int statusTimeout = 5;		// Time in seconds that duke is allowed to respond in for a status message.
 	private final int stopTimeout = 5;			// Time in seconds that duke is allowed to respond in for a stop message.
 	private final int terminateTimeout = 5;	// Time in seconds that duke is allowed to respond in for a terminate message.
 	private final int removeTimeout = 5;		// Time in seconds that duke is allowed to respond in for a remove of the other duke.
-	
+
 	protected final long STATUS_TIMEOUT_ID    = 456L;
 	protected final long STOP_TIMEOUT_ID      = 457L;
 	protected final long TERMINATE_TIMEOUT_ID = 458L;
 	protected final long REMOVE_TIMEOUT_ID    = 459L;
-	
+
 	public final int WAITING_FOR_STATUS    = CREATED + 1;
 	public final int WAITING_FOR_STOP      = CREATED + 2;
 	public final int WAITING_FOR_TERMINATE = CREATED + 3;
 	public final int WAITING_FOR_REMOVE    = CREATED + 4;
-	
+
 	private State[] states;
 
 	/**
@@ -73,7 +73,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 		this.states[WAITING_FOR_TERMINATE] = new WaitingForTerminate();
 		this.states[WAITING_FOR_REMOVE] = new WaitingForRemove();
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -102,7 +102,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 	 */
 	@Override
 	public int handleOnUpdated(BaseDataC value) {
-	// do nothing
+		// do nothing
 		return getState();
 	}
 
@@ -111,7 +111,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 	 */
 	@Override
 	public int handleOnEvicted(BaseDataC value) {
-	// do nothing
+		// do nothing
 		return getState();
 	}
 
@@ -129,11 +129,11 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 		return getState();
 	}
 
-  /**
-   * {@inheritDoc}
-   */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-  public int handleInMessage(BaseMsgC message) {
+	public int handleInMessage(BaseMsgC message) {
 		log.trace("handleInMessage(" + message + ")");
 		switch( message.getId() ) {
 			case DukeMsgFactory.DUKE_COMMAND_RSP: {
@@ -143,8 +143,29 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 			}
 		}
 		return getState();
-  }
-	
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void onStateChanged(int newState, int previousState) {
+		log.trace("onStateChanged(" + newState + ", " + previousState + ")");
+		try {
+			if( COMPLETED != previousState ) {
+				log.debug("states[" + states[previousState].getClass().getSimpleName() + "].cleanup();");
+				states[previousState].cleanup();
+			}
+			if( COMPLETED != newState ) {
+				log.debug("states[" + states[newState].getClass().getSimpleName() + "].init();");
+				states[newState].init();
+			}
+		} catch ( ArrayIndexOutOfBoundsException e ) {
+			log.fatal("Received ArrayIndexOutOfBoundsException in onStateChanged(" + newState + ", " + previousState + ") method.", e);
+			theContext.getBaseAoC().shutDown();
+		}
+	}
+
 	/**
 	 * Method to handle the DukeCommand message
 	 * @param message DukeCommandMsgC message.
@@ -163,13 +184,13 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 			}
 		}
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void timeOutTriggered(long id) {
-	  log.trace("timeOutTriggered(" + id + ")");
+	public void timeOutTriggered(long id) {
+		log.trace("timeOutTriggered(" + id + ")");
 		try {
 			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].handleTimeOut(" + id + ");");
 			states[getState()].handleTimeOut(id);
@@ -181,8 +202,8 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				setState(ABORTED);
 			}
 		}
-  }
-	
+	}
+
 	/**
 	 * Exposed method to subclasses to start timeouts.
 	 * @param time int with the time in seconds.
@@ -192,7 +213,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 		log.trace("startTimeout(" + time + ", " + id + ")");
 		startTimeout(time,  id, this);
 	}
-	
+
 	/**
 	 * Method to initialize the terminate command.
 	 */
@@ -207,18 +228,18 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 		setState(WAITING_FOR_TERMINATE);
 		startTimeout(terminateTimeout, TERMINATE_TIMEOUT_ID, this);
 	}
-	
+
 	/**
 	 * Base state for the FSM logic.
 	 */
-	public class State {
-		
+	public abstract class State {
+
 		protected Logger logLocal;
-		
+
 		public State() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.State");
 		}
-		
+
 		/**
 		 * Method to handle the DukeCommandMsgC in a specified state.
 		 * @param message DukeCommandMsgC message to handle
@@ -228,7 +249,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 			logLocal.error("Called default state when in state " + getState() + ", cannot continue.");
 			setState(ABORTED);
 		}
-		
+
 		/**
 		 * Method to handle a timeout in a given state.
 		 * @param id long identifying the unique id for the timeout.
@@ -238,40 +259,96 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 			logLocal.error("Called default state when in state " + getState() + ", cannot continue.");
 			setState(ABORTED);
 		}
-		
+
+		/**
+		 * Method called before each state starts working.
+		 * {@code
+		 * setState(newState);
+		 * oldState.cleanup();
+		 * ...
+		 * newState.init();
+		 * ...
+		 * }
+		 */
+		public abstract void init();
+
+		/**
+		 * Method called at the end of each state change.
+		 * {@code
+		 * setState(newState);
+		 * oldState.cleanup();
+		 * ...
+		 * newState.init();
+		 * ...
+		 * }
+		 */
+		public abstract void cleanup();
+
 	}
-	
+
 	/**
 	 * Empty state for not handled information.
 	 */
 	public class Aborted extends State {
-		
+
 		public Aborted() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.Aborted");
 		}
-		
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void cleanup() {
+			logLocal.trace("cleanup()");
+		}
+
 	}
-	
+
 	/**
 	 * Empty state for not handled information.
 	 */
 	public class Created extends State {
-		
+
 		public Created() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.Created");
 		}
-		
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void cleanup() {
+			logLocal.trace("cleanup()");
+		}
+
 	}
-	
+
 	/**
 	 * State handling the Waiting For Status message.
 	 */
 	public class WaitingForStatus extends State {
-		
+
 		public WaitingForStatus() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.WaitingForStatus");
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -291,7 +368,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				setState(WAITING_FOR_STOP);
 			}
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -303,18 +380,37 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				sendTerminateCommand();
 			}
 		}
-		
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void cleanup() {
+			logLocal.trace("cleanup()");
+			if( isTimeoutActive(STATUS_TIMEOUT_ID) ) {
+				terminateTimeout(STATUS_TIMEOUT_ID);
+			}
+		}
+
 	}
-	
+
 	/**
 	 * State handling the Waiting For Stop message.
 	 */
 	public class WaitingForStop extends State {
-		
+
 		public WaitingForStop() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.WaitingForStop");
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -328,7 +424,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				startTimeout(removeTimeout, REMOVE_TIMEOUT_ID);
 			}
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -340,18 +436,37 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				sendTerminateCommand();
 			}
 		}
-		
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void cleanup() {
+			logLocal.trace("cleanup()");
+			if( isTimeoutActive(STOP_TIMEOUT_ID) ) {
+				terminateTimeout(STOP_TIMEOUT_ID);
+			}
+		}
+
 	}
-	
+
 	/**
 	 * State handling the Waiting For Terminate message.
 	 */
 	public class WaitingForTerminate extends State {
-		
+
 		public WaitingForTerminate() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.WaitingForTerminate");
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -365,7 +480,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				startTimeout(removeTimeout, REMOVE_TIMEOUT_ID);
 			}
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -377,18 +492,37 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 				setState(ABORTED);
 			}
 		}
-		
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void cleanup() {
+			logLocal.trace("cleanup()");
+			if( isTimeoutActive(TERMINATE_TIMEOUT_ID) ) {
+				terminateTimeout(TERMINATE_TIMEOUT_ID);
+			}
+		}
+
 	}
-	
+
 	/**
 	 * State handling the Waiting For Remove message.
 	 */
 	public class WaitingForRemove extends State {
-		
+
 		public WaitingForRemove() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.WaitingForRemove");
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -397,7 +531,7 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 			logLocal.trace("handleMessage(" + message + ")");
 			// do nothing
 		}
-		
+
 		/**
 		 * {@inheritDoc}
 		 */
@@ -406,18 +540,50 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 			logLocal.trace("handleTimeOut(" + id + ")");
 			logLocal.info("Received timeout, should have terminated it with id: " + id + ".");
 		}
-		
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void cleanup() {
+			logLocal.trace("cleanup()");
+		}
+
 	}
-	
+
 	/**
 	 * Empty state for not handled information.
 	 */
 	public class Completed extends State {
-		
+
 		public Completed() {
 			logLocal = LogManager.getLogger("io.github.scrier.opus.duke.commander.TerminateDukeProcedure.Completed");
 		}
-		
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void init() {
+			logLocal.trace("init()");
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void cleanup() {
+			logLocal.trace("cleanup()");
+		}
+
 	}
-	
+
 }

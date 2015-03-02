@@ -89,6 +89,15 @@ public class DukeCommanderTest {
 		instance = null;
 		theContext.shutDown();
 	}
+	
+	@Test
+	public void testConstants() {
+		DukeCommander testObject = new DukeCommander(instance);
+		BaseProcedureMock mockCheck = new BaseProcedureMock();
+		assertEquals(testObject.CREATED, mockCheck.CREATED);
+		assertEquals(testObject.ABORTED, mockCheck.ABORTED);
+		assertEquals(testObject.COMPLETED, mockCheck.COMPLETED);
+	}
 
 	@Test
 	public void testConstructor() {

@@ -31,10 +31,6 @@ public abstract class BaseDukeProcedure extends BaseProcedureC {
 
 	protected Context theContext;
 
-	public final int ABORTED = 0;
-	public final int CREATED = 1;
-	public final int COMPLETED = 9999;
-
 	public BaseDukeProcedure() {
 		log.trace("BaseProcedure()");
 		this.theContext = Context.INSTANCE;

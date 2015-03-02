@@ -329,8 +329,14 @@ public class NukeTasks extends DataListener {
 	  			} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
 	  				log.info("Received command to terminate all executions.");
 	  				setProceduresTerminating(distributeExecuteUpdateCommands(CommandState.TERMINATE));
-	  				log.info("Issued terminate command to " + getProceduresTerminating() + " procedures, we hade " + getProceduresStopping() + " that failed stopping, waiting for done.");
-	  				setTerminateCommand(command);
+	  				if( 0 < getProceduresTerminating() ) {
+		  				log.info("Issued terminate command to " + getProceduresTerminating() + " procedures, we hade " + getProceduresStopping() + " that failed stopping, waiting for done.");
+		  				setTerminateCommand(command);
+	  				} else {
+	  					log.info("All procedures terminated, updating command.");
+	  					command.setState(CommandState.DONE);
+	  					updateEntry(command);
+	  				}
 	  				if( null != getStopCommand() ) {
 	  					log.info("Received terminate command before stopped, aborting stop command.");
 	  					setProceduresStopping(0);

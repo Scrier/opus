@@ -40,9 +40,16 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	private List<BaseDukeProcedure> proceduresToAdd;
 	private List<BaseDukeProcedure> toRemove;
 	private boolean distributorRunning;
-	private final long procToWaitFor = 782452L;
+	private final long terminateDukeProcedureID = 782452L;
 	private boolean waitingForProcedure;
 	Context theContext = Context.INSTANCE;
+	
+	/**
+	 * Replicate of procedure states.
+	 */
+	public final int ABORTED = 0;
+	public final int CREATED = 1;
+	public final int COMPLETED = 9999;
 
 	public DukeCommander(HazelcastInstance instance) {
 		super(instance, Shared.Hazelcast.BASE_NUKE_MAP);
@@ -64,7 +71,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		DukeInfo info = isAnotherDukeRunning();
 		if ( null != info ) {
 			log.info("Data is: " + info);
-			registerProcedure(new TerminateDukeProcedure(procToWaitFor, this, info));
+			registerProcedure(new TerminateDukeProcedure(terminateDukeProcedureID, this, info));
 			setWaitingForProcedure(true);
 			initializeProcedures();
 		} else {
@@ -233,10 +240,10 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		log.trace("entryEvicted(" + component + ", " + data + ")");
 		for (BaseDukeProcedure procedure : getProcedures()) {
 			int result = procedure.handleOnEvicted(data);
-			if (procedure.COMPLETED == result) {
+			if ( COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
 				removeProcedure(procedure);
-			} else if (procedure.ABORTED == result) {
+			} else if ( ABORTED == result ) {
 				log.debug("Procedure " + procedure + " aborted.");
 				removeProcedure(procedure);
 			}
@@ -251,10 +258,10 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		log.trace("entryRemoved(" + key + ")");
 		for (BaseDukeProcedure procedure : getProcedures()) {
 			int result = procedure.handleOnRemoved(key);
-			if (procedure.COMPLETED == result) {
+			if ( COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
 				removeProcedure(procedure);
-			} else if (procedure.ABORTED == result) {
+			} else if ( ABORTED == result ) {
 				log.debug("Procedure " + procedure + " aborted.");
 				removeProcedure(procedure);
 			}
@@ -269,10 +276,10 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		log.trace("entryUpdated(" + component + ", " + data + ")");
 		for (BaseDukeProcedure procedure : getProcedures()) {
 			int result = procedure.handleOnUpdated(data);
-			if (procedure.COMPLETED == result) {
+			if ( COMPLETED == result ) {
 				log.debug("Procedure " + procedure + " completed.");
 				removeProcedure(procedure);
-			} else if (procedure.ABORTED == result) {
+			} else if ( ABORTED == result ) {
 				log.debug("Procedure " + procedure + " aborted.");
 				removeProcedure(procedure);
 			}
@@ -298,10 +305,10 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 				// for the DUKE_COMMAND_REQ message.
 				for (BaseDukeProcedure procedure : procedures) {
 					int result = procedure.handleInMessage(message);
-					if (procedure.COMPLETED == result) {
+					if ( COMPLETED == result ) {
 						log.debug("Procedure " + procedure + " completed.");
 						removeProcedure(procedure);
-					} else if (procedure.ABORTED == result) {
+					} else if ( ABORTED == result ) {
 						log.debug("Procedure " + procedure + " aborted.");
 						removeProcedure(procedure);
 					}
@@ -343,10 +350,10 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	 */
 	public void handlePostEntry() {
 		for (BaseDukeProcedure procedure : getProcedures()) {
-			if (procedure.COMPLETED == procedure.getState()) {
+			if ( COMPLETED == procedure.getState()) {
 				log.debug("Procedure " + procedure + " completed.");
 				removeProcedure(procedure);
-			} else if (procedure.ABORTED == procedure.getState()) {
+			} else if ( ABORTED == procedure.getState()) {
 				log.debug("Procedure " + procedure + " aborted.");
 				removeProcedure(procedure);
 			}
@@ -492,10 +499,21 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	 */
 	@Override
 	public void procedureFinished(long identity, int state) {
-		// handle the callback from setting up things.
-
-		setWaitingForProcedure(false);
-		startDistributor();
+		log.trace("procedureFinished(" + identity + ", " + state + ")");
+		if( terminateDukeProcedureID != identity ) {
+			log.error("Received procedure finished from unknown procedure: " + identity + ", expected: " + terminateDukeProcedureID + ".");
+			theContext.shutDown();
+		} else if ( ABORTED == state ) {
+			log.error("Terminate duke procedure failed to terminate other duke, cannot continue.");
+			theContext.shutDown();
+		} else if ( COMPLETED != state ) {
+			log.error("Terminate duke procedure returned unknown state: " + state + " expected " + COMPLETED + ".");
+			theContext.shutDown();
+		} else {
+			log.info("Duke Procedure is terminated, initalizing as a single duke and continuing work.");
+			setWaitingForProcedure(false);
+			initializeAsSingleDuke();
+		}
 	}
 
 	/**

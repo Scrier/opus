@@ -90,7 +90,6 @@ public enum Context {
 		setBaseAoC(null);
 		setTxID(0);
 		setNukes(null);
-
 	}
 	
 	public boolean registerProcedure(BaseDukeProcedure procedure) {
