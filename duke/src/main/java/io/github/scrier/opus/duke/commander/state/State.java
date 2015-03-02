@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.duke.commander.state;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.duke.commander.BaseDukeProcedure;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
 
@@ -66,7 +66,7 @@ public abstract class State {
 	 * Base handling on update methods.
 	 * @param data BaseNukeC
 	 */
-	public void updated(BaseNukeC data)  {
+	public void updated(BaseDataC data)  {
 		log.trace("updated(" + data + ")");
 		log.error("Default update state setting aborted from state: " + getState() + "."); 
 		setState(ABORTED); 
@@ -76,7 +76,7 @@ public abstract class State {
 	 * Base handling on evicted methods.
 	 * @param data BaseNukeC
 	 */
-	public void evicted(BaseNukeC data) {
+	public void evicted(BaseDataC data) {
 		log.trace("evicted(" + data + ")");
 		log.error("Default update state setting aborted from state: " + getState() + ".");
 		setState(ABORTED); 

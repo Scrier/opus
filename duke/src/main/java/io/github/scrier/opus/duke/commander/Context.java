@@ -25,8 +25,11 @@ import java.util.concurrent.TimeUnit;
 
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.duke.DukeInfo;
+import io.github.scrier.opus.common.duke.DukeState;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.SendIF;
 import io.github.scrier.opus.common.nuke.NukeState;
 
 import org.apache.logging.log4j.LogManager;
@@ -51,6 +54,9 @@ public enum Context {
 	private boolean doOnce;
 	private int txID;
 	
+	private DukeState clientState;
+	private DukeInfo clientInfo;
+	
 	private Context() {
 		this.doOnce = true;
 		setCommander(null);
@@ -59,6 +65,8 @@ public enum Context {
 		setNukes(null);
 		setUniqueGenerator(null);
 		this.executeItems = new ArrayList<Long>();
+		this.clientState = DukeState.UNDEFINED;
+		this.clientInfo = null;
 	}
 	
 	public void init(DukeCommander commander, BaseActiveObject baseAoC) {
@@ -74,6 +82,10 @@ public enum Context {
 	
 	public void shutDown() {
 		this.doOnce = true;
+		if( null != this.clientInfo ) {
+			getCommander().removeEntry(this.clientInfo);
+		}
+		this.clientInfo = null;
 		setCommander(null);
 		setBaseAoC(null);
 		setTxID(0);
@@ -93,15 +105,15 @@ public enum Context {
 	 * Method to add a new entry to the map.
 	 * @param data BaseNukeC to add to the map.
 	 */
-	public void addEntry(BaseNukeC data) {
+	public void addEntry(BaseDataC data) {
 		getCommander().addEntry(data);
 	}
 	
-	public boolean updateEntry(BaseNukeC data) {
+	public boolean updateEntry(BaseDataC data) {
 		return getCommander().updateEntry(data);
 	}
 	
-	public boolean removeEntry(BaseNukeC component) {
+	public boolean removeEntry(BaseDataC component) {
 		return getCommander().removeEntry(component);
 	}
 	
@@ -300,6 +312,14 @@ public enum Context {
   	log.trace("isTimeoutActive(" + id + ")");
   	return getExecuteItems().contains(id);
   }
+  
+  /**
+   * Method to get the send interface for messages.
+   * @return SendIF  to use for message sends.
+   */
+  public SendIF getSendIF() {
+  	return baseAoC.getSendIF();
+  }
 
 	/**
 	 * @return the nukes
@@ -335,5 +355,40 @@ public enum Context {
 	private void setUniqueGenerator(IdGenerator uniqueGenerator) {
 		this.uniqueGenerator = uniqueGenerator;
 	}
+
+	/**
+	 * @return the clientState
+	 */
+  public DukeState getClientState() {
+	  return clientState;
+  }
+
+	/**
+	 * @param clientState the clientState to set
+	 */
+  public void setClientState(DukeState clientState) {
+  	if( DukeState.UNDEFINED == clientState ) {
+  		log.error("Received a request to set client state back to UNDEFINED, cannot continue.");
+  		getBaseAoC().shutDown();
+  	} else if ( null == this.clientInfo || DukeState.UNDEFINED == this.clientState ) {
+  		log.info("We publish the duke state " + clientState + " to the info map.");
+  		this.clientInfo = new DukeInfo();
+  		try {
+	      clientInfo.setDukeID(getIdentity());
+	      clientInfo.setKey(getIdentity());
+      } catch (InvalidOperationException e) {
+	      log.fatal("Received a InvalidOperationException when trying to fetch Identity for the client.", e);
+	      getBaseAoC().shutDown();
+      }
+  		clientInfo.setState(clientState);
+  		getCommander().addEntry(clientInfo);
+  		this.clientState = clientState;
+  	} else if( this.clientState != clientState ) {
+  		log.info("Changing duke state from " + this.clientState + " to " + clientState + ".");
+  		clientInfo.setState(clientState);
+  		getCommander().updateEntry(this.clientInfo);
+  		this.clientState = clientState;
+  	}
+  }
 
 }

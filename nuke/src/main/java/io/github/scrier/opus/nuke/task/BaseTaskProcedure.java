@@ -22,8 +22,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
 import io.github.scrier.opus.common.commander.BaseProcedureC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.nuke.process.ProcessHandler;
 
@@ -135,11 +135,11 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 		return theContext.getTask().getNukeInfo();
 	}
 	
-	public void addEntry(BaseNukeC data) {
+	public void addEntry(BaseDataC data) {
 		theContext.addEntry(data);
 	}
 	
-	public boolean updateEntry(BaseNukeC data) {
+	public boolean updateEntry(BaseDataC data) {
 		return theContext.updateEntry(data);
 	}
 	

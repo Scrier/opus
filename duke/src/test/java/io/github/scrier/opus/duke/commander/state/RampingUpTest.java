@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.BaseActiveObjectMock;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
@@ -90,14 +90,14 @@ public class RampingUpTest {
 	public void testUpdated() {
 		RampingUp testObject = new RampingUp(distributor);
 		testObject.setState(testObject.RAMPING_UP);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		assertEquals(distributor.RAMPING_UP, testObject.getState());
 	}
 	
 	@Test(expected=RuntimeException.class)
 	public void testUpdatedException() {
 		RampingUp testObject = new RampingUp(distributor);
-		testObject.updated(new BaseNukeC(1, 2));
+		testObject.updated(new BaseDataC(1, 2));
 		fail("Expected an exepction before this.");
 	}
 	
@@ -105,7 +105,7 @@ public class RampingUpTest {
 	public void testEvicted() {
 		RampingUp testObject = new RampingUp(distributor);
 		testObject.setState(testObject.RAMPING_UP);
-		testObject.evicted(new BaseNukeC(1, 2));
+		testObject.evicted(new BaseDataC(1, 2));
 		assertEquals(distributor.RAMPING_UP, testObject.getState());
 	}
 	

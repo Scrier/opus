@@ -22,9 +22,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseListener;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.data.DataListener;
+import io.github.scrier.opus.common.duke.DukeCommandReqMsgC;
+import io.github.scrier.opus.common.duke.DukeMsgFactory;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -37,7 +40,7 @@ import io.github.scrier.opus.nuke.task.procedures.NukeProcedure;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MapEvent;
 
-public class NukeTasks extends BaseListener {
+public class NukeTasks extends DataListener {
 	
 	private static Logger log = LogManager.getLogger(NukeTasks.class);
 	
@@ -122,7 +125,7 @@ public class NukeTasks extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void entryAdded(Long component, BaseNukeC data) {
+  public void entryAdded(Long component, BaseDataC data) {
 		log.trace("entryAdded(" + component + ", " + data + ")");
 		switch( data.getId() ) {
 			case NukeFactory.NUKE_INFO:
@@ -148,7 +151,7 @@ public class NukeTasks extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void entryEvicted(Long component, BaseNukeC data) {
+  public void entryEvicted(Long component, BaseDataC data) {
 		log.trace("entryEvicted(" + component + ", " + data + ")");
 		for( BaseTaskProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnEvicted(data);
@@ -190,7 +193,7 @@ public class NukeTasks extends BaseListener {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void entryUpdated(Long component, BaseNukeC data) {
+  public void entryUpdated(Long component, BaseDataC data) {
 		log.trace("entryUpdated(" + component + ", " + data + ")");
 		for( BaseTaskProcedure procedure : getProcedures() ) {
 			int result = procedure.handleOnUpdated(data);
@@ -203,6 +206,27 @@ public class NukeTasks extends BaseListener {
 			}
 		}
   }
+	
+	/**
+	 * Method to handle incoming messages for the procedures.
+	 * @param message BaseMsgC with the incoming message.
+	 * @throws InvalidOperationException 
+	 */
+	public void handleInMessage(BaseMsgC message) throws InvalidOperationException {
+		log.trace("handleInMessage(" + message + ")");
+		preEntry();
+		for( BaseTaskProcedure procedure : procedures ) {
+			int result = procedure.handleInMessage(message);
+			if( procedure.COMPLETED == result ) {
+				log.debug("Procedure " + procedure + " completed.");
+				removeProcedure(procedure);
+			} else if ( procedure.ABORTED == result ) {
+				log.debug("Procedure " + procedure + " aborted.");
+				removeProcedure(procedure);
+			}
+		}
+		postEntry();
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -305,8 +329,14 @@ public class NukeTasks extends BaseListener {
 	  			} else if ( Shared.Commands.Execute.TERMINATE_EXECUTION.equals(command.getCommand()) ) {
 	  				log.info("Received command to terminate all executions.");
 	  				setProceduresTerminating(distributeExecuteUpdateCommands(CommandState.TERMINATE));
-	  				log.info("Issued terminate command to " + getProceduresTerminating() + " procedures, we hade " + getProceduresStopping() + " that failed stopping, waiting for done.");
-	  				setTerminateCommand(command);
+	  				if( 0 < getProceduresTerminating() ) {
+		  				log.info("Issued terminate command to " + getProceduresTerminating() + " procedures, we hade " + getProceduresStopping() + " that failed stopping, waiting for done.");
+		  				setTerminateCommand(command);
+	  				} else {
+	  					log.info("All procedures terminated, updating command.");
+	  					command.setState(CommandState.DONE);
+	  					updateEntry(command);
+	  				}
 	  				if( null != getStopCommand() ) {
 	  					log.info("Received terminate command before stopped, aborting stop command.");
 	  					setProceduresStopping(0);

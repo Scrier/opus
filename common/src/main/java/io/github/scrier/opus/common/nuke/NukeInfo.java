@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.common.nuke;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
 
 import java.io.IOException;
 
@@ -25,7 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 
-public class NukeInfo extends BaseNukeC {
+public class NukeInfo extends BaseDataC {
 
 	private static Logger log = LogManager.getLogger(NukeInfo.class);
 
@@ -73,7 +73,7 @@ public class NukeInfo extends BaseNukeC {
 		setCompletedCommands(obj2copy.getCompletedCommands());
 	}
 
-	public NukeInfo(BaseNukeC input) throws ClassCastException {
+	public NukeInfo(BaseDataC input) throws ClassCastException {
 		super(input);
 		if( input instanceof NukeInfo ) {
 			NukeInfo obj2copy = (NukeInfo)input;

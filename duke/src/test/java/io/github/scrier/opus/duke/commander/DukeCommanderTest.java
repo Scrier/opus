@@ -10,7 +10,13 @@ import java.util.List;
 
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.duke.DukeCommandEnum;
+import io.github.scrier.opus.common.duke.DukeCommandReqMsgC;
+import io.github.scrier.opus.common.duke.DukeCommandRspMsgC;
+import io.github.scrier.opus.common.duke.DukeMsgFactory;
+import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeFactory;
@@ -18,6 +24,8 @@ import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -31,15 +39,19 @@ import com.hazelcast.core.MapEvent;
 
 public class DukeCommanderTest {
 	
+	private static Logger log = LogManager.getLogger(DukeCommanderTest.class);
+	
 	static TestHelper helper = TestHelper.INSTANCE;
 	
 	long identity = 972591621L;
+	long otherIdentity = 9785345L;
 	HazelcastInstance instance;
 	BaseActiveObjectMock theBaseAOC;
 	Context theContext = Context.INSTANCE;
 	@SuppressWarnings("rawtypes")
   IMap map;
 	IMap settings;
+	MessageServiceMock MessageMock = new MessageServiceMock();
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -62,18 +74,29 @@ public class DukeCommanderTest {
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_INTERVAL)).thenReturn("3");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_USER_INCREASE)).thenReturn("4");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_PEAK_DELAY)).thenReturn("5");
-		Mockito.when(settings.get(Shared.Settings.EXECUTE_TERMINATE)).thenReturn("6");
+		Mockito.when(settings.get(Shared.Settings.EXECUTE_TERMINATE)).thenReturn("16");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_REPEATED)).thenReturn("true");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_COMMAND)).thenReturn("command");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_FOLDER)).thenReturn("folder");
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
+		theBaseAOC.setMsgService(MessageMock);
+		MessageMock.clear();
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		instance = null;
 		theContext.shutDown();
+	}
+	
+	@Test
+	public void testConstants() {
+		DukeCommander testObject = new DukeCommander(instance);
+		BaseProcedureMock mockCheck = new BaseProcedureMock();
+		assertEquals(testObject.CREATED, mockCheck.CREATED);
+		assertEquals(testObject.ABORTED, mockCheck.ABORTED);
+		assertEquals(testObject.COMPLETED, mockCheck.COMPLETED);
 	}
 
 	@Test
@@ -90,7 +113,7 @@ public class DukeCommanderTest {
 	public void testInit() {
 		DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);
-		Collection<BaseNukeC> l = new LinkedList<BaseNukeC>();
+		Collection<BaseDataC> l = new LinkedList<BaseDataC>();
 		NukeInfo info = new NukeInfo();
 		info.setState(NukeState.RUNNING);
 		l.add(info);
@@ -209,7 +232,7 @@ public class DukeCommanderTest {
   public void testEntryAddedUnknown() {
   	DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);
-		BaseNukeC input = Mockito.mock(BaseNukeC.class);
+		BaseDataC input = Mockito.mock(BaseDataC.class);
 		testObject.preEntry();
 		testObject.entryAdded(identity, input);
 		testObject.postEntry();
@@ -384,6 +407,147 @@ public class DukeCommanderTest {
 		testObject.getProceduresToRemove().add(procedure5);
 		List<BaseDukeProcedure> check = testObject.getProcedures(BaseProcedureMock.class);
 		assertEquals(4, check.size());
+  }
+  
+  @Test
+  public void testDukeCommandReqUndefinedCommand() throws InvalidOperationException {
+  	DukeCommander testObject = new DukeCommander(instance);
+		theContext.init(testObject, theBaseAOC);
+		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
+		input.setSource(otherIdentity);
+		input.setDestination(identity);
+		input.setTxID(2525);
+		input.setDukeCommand(DukeCommandEnum.UNDEFINED);
+		testObject.handleInMessage(input);
+		assertEquals(1, MessageMock.getMessages().size());
+		BaseMsgC baseMsg = MessageMock.getMessage(0);
+		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
+		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
+		assertEquals(otherIdentity, baseMsg.getDestination());
+		assertEquals(identity, baseMsg.getSource());
+		assertEquals(2525, baseMsg.getTxID());
+		assertEquals(0, theBaseAOC.ShutDownCalls);
+		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
+		assertTrue(response.getResponse().contains("We received unknown"));
+  }
+  
+  @Test
+  public void testDukeCommandReqTerminateCommand() throws InvalidOperationException {
+  	DukeCommander testObject = new DukeCommander(instance);
+		theContext.init(testObject, theBaseAOC);
+		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
+		input.setSource(otherIdentity);
+		input.setDestination(identity);
+		input.setTxID(2525);
+		input.setDukeCommand(DukeCommandEnum.TERMINATE);
+		testObject.handleInMessage(input);
+		assertEquals(1, MessageMock.getMessages().size());
+		BaseMsgC baseMsg = MessageMock.getMessage(0);
+		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
+		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
+		assertEquals(otherIdentity, baseMsg.getDestination());
+		assertEquals(identity, baseMsg.getSource());
+		assertEquals(1, theBaseAOC.ShutDownCalls);
+		assertEquals(2525, baseMsg.getTxID());
+		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
+		assertTrue(response.getResponse().contains("Command to terminate is received"));
+  }
+  
+  @Test
+  public void testDukeCommandReqStopCommandNoDistributors() throws InvalidOperationException {
+  	DukeCommander testObject = new DukeCommander(instance);
+		theContext.init(testObject, theBaseAOC);
+		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
+		input.setSource(otherIdentity);
+		input.setDestination(identity);
+		input.setTxID(2525);
+		input.setDukeCommand(DukeCommandEnum.STOP);
+		testObject.handleInMessage(input);
+		assertEquals(1, MessageMock.getMessages().size());
+		BaseMsgC baseMsg = MessageMock.getMessage(0);
+		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
+		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
+		assertEquals(otherIdentity, baseMsg.getDestination());
+		assertEquals(identity, baseMsg.getSource());
+		assertEquals(0, theBaseAOC.ShutDownCalls);
+		assertEquals(2525, baseMsg.getTxID());
+		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
+		assertTrue(response.getResponse().contains("We have no ClusterDistributor running"));
+  }
+  
+  @Test
+  public void testDukeCommandReqStopCommandTooManyDistributors() throws InvalidOperationException {
+  	DukeCommander testObject = new DukeCommander(instance);
+		theContext.init(testObject, theBaseAOC);
+		testObject.getProcedures().add(new ClusterDistributorProcedure());
+		testObject.getProcedures().add(new ClusterDistributorProcedure());
+		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
+		input.setSource(otherIdentity);
+		input.setDestination(identity);
+		input.setTxID(2525);
+		input.setDukeCommand(DukeCommandEnum.STOP);
+		testObject.handleInMessage(input);
+		assertEquals(1, MessageMock.getMessages().size());
+		BaseMsgC baseMsg = MessageMock.getMessage(0);
+		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
+		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
+		assertEquals(otherIdentity, baseMsg.getDestination());
+		assertEquals(identity, baseMsg.getSource());
+		assertEquals(0, theBaseAOC.ShutDownCalls);
+		assertEquals(2525, baseMsg.getTxID());
+		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
+		assertTrue(response.getResponse().contains("We hade more than one ClusterDistributor"));
+  }
+  
+  @Test
+  public void testDukeCommandReqStopCommandDistributors() throws Exception {
+  	DukeCommander testObject = new DukeCommander(instance);
+		theContext.init(testObject, theBaseAOC);
+		ClusterDistributorProcedure clusterDist = new ClusterDistributorProcedure();
+		testObject.getProcedures().add(clusterDist);
+		clusterDist.init();
+		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
+		input.setSource(otherIdentity);
+		input.setDestination(identity);
+		input.setTxID(2525);
+		input.setDukeCommand(DukeCommandEnum.STOP);
+		testObject.handleInMessage(input);
+		assertEquals(1, MessageMock.getMessages().size());
+		BaseMsgC baseMsg = MessageMock.getMessage(0);
+		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
+		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
+		assertEquals(otherIdentity, baseMsg.getDestination());
+		assertEquals(identity, baseMsg.getSource());
+		assertEquals(0, theBaseAOC.ShutDownCalls);
+		assertEquals(2525, baseMsg.getTxID());
+		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
+		assertTrue(response.getResponse().contains("Command to terminate has been sent to the nukes"));
+		assertEquals(clusterDist.TERMINATING, clusterDist.getState());
+  }
+  
+  @Test
+  public void testDukeCommandReqStatusCommandDistributors() throws Exception {
+  	DukeCommander testObject = new DukeCommander(instance);
+		theContext.init(testObject, theBaseAOC);
+		testObject.getProcedures().add(new ClusterDistributorProcedure());
+		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
+		input.setSource(otherIdentity);
+		input.setDestination(identity);
+		input.setTxID(2525);
+		input.setDukeCommand(DukeCommandEnum.STATUS);
+		testObject.handleInMessage(input);
+		assertEquals(1, MessageMock.getMessages().size());
+		BaseMsgC baseMsg = MessageMock.getMessage(0);
+		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
+		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
+		assertEquals(otherIdentity, baseMsg.getDestination());
+		assertEquals(identity, baseMsg.getSource());
+		assertEquals(0, theBaseAOC.ShutDownCalls);
+		assertEquals(2525, baseMsg.getTxID());
+		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
+		log.info("Message: " + response);
+		assertTrue(response.getResponse().contains("Status of duke with id"));
+		assertTrue(response.getResponse().contains("procedures currently working"));
   }
 
 }

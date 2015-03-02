@@ -5,7 +5,7 @@ import io.github.scrier.opus.StateImpl;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.duke.commander.BaseActiveObjectMock;
 import io.github.scrier.opus.duke.commander.CommandProcedure;
@@ -91,7 +91,7 @@ public class StateTest {
 	@Test
 	public void testEvicted() {
 		State testObject = new StateImpl(distributor);
-		testObject.evicted(new BaseNukeC(1,  2));
+		testObject.evicted(new BaseDataC(1,  2));
 		assertEquals(testObject.ABORTED, testObject.getState());
 	}
 	
@@ -112,7 +112,7 @@ public class StateTest {
 	@Test
 	public void testUpdated() {
 		State testObject = new StateImpl(distributor);
-		testObject.updated(new BaseNukeC(1,  2));
+		testObject.updated(new BaseDataC(1,  2));
 		assertEquals(testObject.ABORTED, testObject.getState());
 	}
 	

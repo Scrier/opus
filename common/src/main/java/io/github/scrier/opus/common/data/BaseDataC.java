@@ -13,7 +13,7 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.aoc;
+package io.github.scrier.opus.common.data;
 
 import java.io.IOException;
 
@@ -24,27 +24,26 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
-public class BaseNukeC implements IdentifiedDataSerializable {
+public class BaseDataC implements IdentifiedDataSerializable {
 	
-	private static Logger log = LogManager.getLogger(BaseNukeC.class);
+	private static Logger log = LogManager.getLogger(BaseDataC.class);
 	
-	private int txID;
 	private long key;
+	private int txID;
 	private int factoryID;
 	private int messageID;
 	
-	public BaseNukeC(int factoryID, int messageID) {
-		log.trace("BaseNukeC(" + factoryID + ", " + messageID + ")");
-		setTxID(-1);
+	public BaseDataC(int factoryID, int messageID) {
+		log.trace("BaseDataC(" + factoryID + ", " + messageID + ")");
 		setKey(-1L);
 		setFactoryID(factoryID);
 		setMessageID(messageID);
 	}
 	
-	public BaseNukeC(BaseNukeC obj2copy) {
-		log.trace("BaseNukeC(" + obj2copy + ")");
-		setTxID(obj2copy.getTxID());
+	public BaseDataC(BaseDataC obj2copy) {
+		log.trace("BaseDataC(" + obj2copy + ")");
 		setKey(obj2copy.getKey());
+		setTxID(obj2copy.getTxID());
 		setFactoryID(obj2copy.getFactoryId());
 		setMessageID(obj2copy.getId());
 	}
@@ -55,8 +54,8 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	@Override
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")"); 
-		setTxID(in.readInt());
 		setKey(in.readLong());
+		setTxID(in.readInt());
 		setFactoryID(in.readInt());
 		setMessageID(in.readInt());
 	}
@@ -67,8 +66,8 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	@Override
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
-		out.writeInt(getTxID());
 		out.writeLong(getKey());
+		out.writeInt(getTxID());
 		out.writeInt(getFactoryId());
 		out.writeInt(getId());
 	}
@@ -106,16 +105,16 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	/**
 	 * @return the txID
 	 */
-	public int getTxID() {
-		return txID;
-	}
+  public int getTxID() {
+	  return txID;
+  }
 
 	/**
 	 * @param txID the txID to set
 	 */
-	public void setTxID(int txID) {
-		this.txID = txID;
-	}
+  public void setTxID(int txID) {
+	  this.txID = txID;
+  }
 
 	/**
 	 * @return the key
@@ -136,8 +135,8 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	 */
 	@Override
 	public String toString() {
-		String retValue = "BaseNukeC{txID:" + getTxID();
-		retValue += ", key: " + getKey();
+		String retValue = "BaseDataC{key: " + getKey();
+		retValue += ", txID:" + getTxID();
 		retValue += ", factoryID:" + getFactoryId();
 		retValue += ", messageID:" + getId() + "}";
 		return retValue;

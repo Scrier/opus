@@ -19,7 +19,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.duke.DukeState;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.state.Aborted;
 import io.github.scrier.opus.duke.commander.state.Completed;
@@ -144,7 +146,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnUpdated(BaseNukeC data) {
+	public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		try {
 			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].updated(" + data + ");");
@@ -163,7 +165,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnEvicted(BaseNukeC data) {
+	public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		try {
 			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].evicted(" + data + ");");
@@ -213,17 +215,24 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				log.error("Received out of bound exception in state: " + getState() + ".", e);
 			}
 		}
-		theContext.getCommander().intializeProcedures();
+		theContext.getCommander().initializeProcedures();
 	}
 	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void onStateChanged(int state) {
-		log.trace("onStateChanged(" + state + ")");
+	public void onStateChanged(int newState, int previousState) {
+		log.trace("onStateChanged(" + newState + ")");
+		if( RAMPING_UP == newState ) {
+			theContext.setClientState(DukeState.RUNNING);
+		} else if ( ABORTED == newState ) {
+			theContext.setClientState(DukeState.ABORTED);
+		} else if( RAMPING_DOWN == previousState ) {
+			theContext.setClientState(DukeState.DONE);
+		}
 		try {
-			log.debug("states[" + states[state].getClass().getSimpleName() + "].init();");
+			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].init();");
 			states[getState()].init();
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
@@ -451,5 +460,14 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		log.trace("startTimeout(" + time + ", " + timerID + ")");
 		startTimeout(time, timerID, this);
 	}
+
+  /**
+   * {@inheritDoc}
+   */
+	@Override
+  public int handleInMessage(BaseMsgC message) {
+	  // TODO Auto-generated method stub
+	  return getState();
+  }
 
 }

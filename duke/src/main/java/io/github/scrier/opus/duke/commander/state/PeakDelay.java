@@ -19,7 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.Shared;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
 
 /**
@@ -53,7 +53,7 @@ public class PeakDelay extends State {
 	 * @param data BaseNukeC
 	 */
 	@Override
-	public void updated(BaseNukeC data)  {
+	public void updated(BaseDataC data)  {
 		log.trace("updated(" + data + ")");
 		assertState();
 	}  
@@ -63,7 +63,7 @@ public class PeakDelay extends State {
 	 * @param data BaseNukeC
 	 */
 	@Override
-	public void evicted(BaseNukeC data) {
+	public void evicted(BaseDataC data) {
 		log.trace("evicted(" + data + ")");
 		assertState();
 	}

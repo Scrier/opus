@@ -18,7 +18,8 @@ package io.github.scrier.opus.nuke.task.procedures;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
@@ -77,7 +78,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnUpdated(BaseNukeC data) {
+	public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		if( data.getKey() == getNukeInfo().getKey() ) {
 			switch( data.getId() ) {
@@ -100,7 +101,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnEvicted(BaseNukeC data) {
+	public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		if( data.getKey() == getNukeInfo().getKey() ) {
 			switch( data.getId() ) {
@@ -129,6 +130,14 @@ public class NukeProcedure extends BaseTaskProcedure {
 		}
 		return getState();
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int handleInMessage(BaseMsgC message) {
+	  return getState();
+  }
 
 	/**
 	 * Method to handle updates of the NukeInfo message.

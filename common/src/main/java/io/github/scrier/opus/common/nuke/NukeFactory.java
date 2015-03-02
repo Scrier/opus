@@ -15,6 +15,8 @@
  */
 package io.github.scrier.opus.common.nuke;
 
+import io.github.scrier.opus.common.data.Constants;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -31,8 +33,8 @@ public class NukeFactory implements DataSerializableFactory {
 	
 	public static final int FACTORY_ID = 801023;
 	
-	public static final int NUKE_INFO = 1;
-	public static final int NUKE_COMMAND = 2;
+	public static final int NUKE_INFO =    Constants.NUKE_DATA_START + 1;
+	public static final int NUKE_COMMAND = Constants.NUKE_DATA_START + 2;
 
 	/**
 	 * {@inheritDoc}

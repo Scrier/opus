@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.duke.commander.state;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
@@ -70,7 +70,7 @@ public class RampingUp extends State {
 	 * @param data BaseNukeC
 	 */
 	@Override
-	public void updated(BaseNukeC data)  {
+	public void updated(BaseDataC data)  {
 		log.trace("updated(" + data + ")");
 		assertState();
 	}  
@@ -80,7 +80,7 @@ public class RampingUp extends State {
 	 * @param data BaseNukeC
 	 */
 	@Override
-	public void evicted(BaseNukeC data) {
+	public void evicted(BaseDataC data) {
 		log.trace("evicted(" + data + ")");
 		assertState();
 	}
