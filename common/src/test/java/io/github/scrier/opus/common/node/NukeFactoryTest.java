@@ -17,7 +17,7 @@ package io.github.scrier.opus.common.node;
 
 import static org.junit.Assert.*;
 import io.github.scrier.opus.common.TestHelper;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 
 import org.apache.logging.log4j.Level;
@@ -30,7 +30,7 @@ import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
 public class NukeFactoryTest {
 
-	NukeFactory testObject;
+	NukeDataFactory testObject;
 	
 	@BeforeClass
 	public static void setupClass() {
@@ -39,7 +39,7 @@ public class NukeFactoryTest {
 	
 	@Before
 	public void setup() {
-		testObject = new NukeFactory();
+		testObject = new NukeDataFactory();
 	}
 	
 	@After
@@ -49,7 +49,7 @@ public class NukeFactoryTest {
 	
 	@Test
 	public void testNukeInfoFactoryCreate() {
-		IdentifiedDataSerializable actual = testObject.create(NukeFactory.NUKE_INFO);
+		IdentifiedDataSerializable actual = testObject.create(NukeDataFactory.NUKE_INFO);
 		assertNotNull(actual);
 		NukeInfo expected = new NukeInfo();
 		assertEquals(expected.getClass(), actual.getClass());
@@ -63,7 +63,7 @@ public class NukeFactoryTest {
 	
 	@Test
 	public void testFactoryID() {
-		assertEquals(801023, NukeFactory.FACTORY_ID);
+		assertEquals(801023, NukeDataFactory.FACTORY_ID);
 	}
 	
 	

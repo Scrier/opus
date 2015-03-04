@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
@@ -34,20 +34,13 @@ public class NukeProcedure extends BaseTaskProcedure {
 
 	private static Logger log = LogManager.getLogger(NukeProcedure.class);
 
-	private long identity;
 
 	public final int WAITING_TO_BE_TAKEN = CREATED + 1;
 	public final int INITIALIZING        = CREATED + 2;
 	public final int RUNNING             = CREATED + 3;
 	public final int SHUTTING_DOWN       = CREATED + 4;
 	
-	boolean stopped;
-	boolean terminated;
-	
-	public NukeProcedure(long identity) {
-		setIdentity(identity);
-		setStopped(false);
-		setTerminated(false);
+	public NukeProcedure() {
 	}
 
 	/**
@@ -70,8 +63,6 @@ public class NukeProcedure extends BaseTaskProcedure {
 	@Override
 	public void shutDown() throws Exception {
 		log.trace("shutDown()");
-		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -82,14 +73,9 @@ public class NukeProcedure extends BaseTaskProcedure {
 		log.trace("handleOnUpdated(" + data + ")");
 		if( data.getKey() == getNukeInfo().getKey() ) {
 			switch( data.getId() ) {
-				case NukeFactory.NUKE_INFO: {
+				case NukeDataFactory.NUKE_INFO: {
 					NukeInfo nukeInfo = new NukeInfo(data);
 					handleUpdate(nukeInfo);
-					break;
-				}
-				case NukeFactory.NUKE_COMMAND:
-				default: {
-					// do nothing.
 					break;
 				}
 			}
@@ -105,11 +91,10 @@ public class NukeProcedure extends BaseTaskProcedure {
 		log.trace("handleOnEvicted(" + data + ")");
 		if( data.getKey() == getNukeInfo().getKey() ) {
 			switch( data.getId() ) {
-				case NukeFactory.NUKE_INFO: {
+				case NukeDataFactory.NUKE_INFO: {
 					log.fatal("[" + getTxID() + "] Nuke info about this node was evicted from the map. Terminating.");
 					throw new RuntimeException("Nuke info about node " + getNukeInfo().getKey() + " was evicted from the map. Terminating.");
 				}
-				case NukeFactory.NUKE_COMMAND:
 				default: {
 					log.fatal("[" + getTxID() + "] Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnEvicted.");
 					throw new RuntimeException("Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnEvicted.");
@@ -220,49 +205,5 @@ public class NukeProcedure extends BaseTaskProcedure {
 		log.fatal("[" + getTxID() + "] Not implemented handleUnresponsive.");
 		throw new RuntimeException("Not implemented handleUnresponsive.");
 	}
-
-	/**
-	 * @return the identity
-	 */
-	private long getIdentity() {
-		return identity;
-	}
-
-	/**
-	 * @param identity the identity to set
-	 */
-	private void setIdentity(long identity) {
-		this.identity = identity;
-	}
-	
-  /**
-   * @param stopped the stopped to set
-   */
-  public void setStopped(boolean stopped) {
-  	this.stopped = stopped;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isStopped() {
-	  return this.stopped;
-  }
-	
-  /**
-   * @param terminated the terminated to set
-   */
-  public void setTerminated(boolean terminated) {
-  	this.terminated = terminated;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isTerminated() {
-	  return this.terminated;
-  }
 
 }

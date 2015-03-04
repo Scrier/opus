@@ -22,25 +22,42 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.commander.BaseProcedureC;
-import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.Constants;
+import io.github.scrier.opus.common.nuke.CommandState;
+import io.github.scrier.opus.common.nuke.NukeExecuteIndMsgC;
+import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.nuke.process.ProcessHandler;
 
-public abstract class BaseTaskProcedure extends BaseProcedureC {
+public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 
 	private static Logger log = LogManager.getLogger(BaseTaskProcedure.class);
 
-	private Context theContext;
 	private ProcessHandler processHandler;
 	private Process process;
+	private String command;
+	private String folder;
+	private int msgTxID;
+	private CommandState currentCommandState;
 
 	public BaseTaskProcedure() {
 		log.trace("BaseTaskProcedure");
-		theContext = Context.INSTANCE;
-		setTxID(theContext.getNextTxID());
 		setProcessHandler(null);
 		setProcess(null);
+		setCommand("");
+		setFolder("");
+		setMsgTxID(-1);
+		setCurrentCommandState(CommandState.UNDEFINED);
+	}
+	
+	public BaseTaskProcedure(NukeExecuteReqMsgC message) {
+		log.trace("BaseTaskProcedure");
+		setProcessHandler(null);
+		setProcess(null);
+		setCommand(message.getCommand());
+		setFolder(message.getFolder());
+		setMsgTxID(message.getTxID());
+		setCurrentCommandState(CommandState.UNDEFINED);
 	}
 
 	/**
@@ -117,7 +134,7 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 	 * @return ThreadPoolExecutor to get threads from.
 	 */
 	protected ThreadPoolExecutor getExecutor() {
-		return theContext.getExecutor();
+		return getContext().getExecutor();
 	}
 	
 	protected void terminateProcess() {
@@ -132,29 +149,79 @@ public abstract class BaseTaskProcedure extends BaseProcedureC {
 	 * @return NukeInfo object.
 	 */
 	public NukeInfo getNukeInfo() {
-		return theContext.getTask().getNukeInfo();
-	}
-	
-	public void addEntry(BaseDataC data) {
-		theContext.addEntry(data);
-	}
-	
-	public boolean updateEntry(BaseDataC data) {
-		return theContext.updateEntry(data);
+		return getContext().getTask().getNukeInfo();
 	}
 	
 	/**
-	 * Check if the process was stopped by the CommandState.STOP command.
-	 * <p>overridden by terminated as that command has precedence.</p>
-	 * @return boolean
+	 * @return the command
 	 */
-	public abstract boolean isStopped();
-	
-	/**
-	 * Check if the process was terminated by the CommandState.TERMINATE command.
-	 * <p>overrides stopped as terminated has precedence.</p>
-	 * @return boolean
-	 */
-	public abstract boolean isTerminated();
+	public String getCommand() {
+		return command;
+	}
 
+	/**
+	 * @param command the command to set
+	 */
+	public void setCommand(String command) {
+		this.command = command;
+	}
+
+	/**
+	 * @return the folder
+	 */
+	public String getFolder() {
+		return folder;
+	}
+
+	/**
+	 * @param folder the folder to set
+	 */
+	public void setFolder(String folder) {
+		this.folder = folder;
+	}
+
+	/**
+	 * @return the msgTxID
+	 */
+  public int getMsgTxID() {
+	  return msgTxID;
+  }
+
+	/**
+	 * @param msgTxID the msgTxID to set
+	 */
+  public void setMsgTxID(int msgTxID) {
+	  this.msgTxID = msgTxID;
+  }
+  
+  /**
+   * 
+   * @param newState
+   */
+  protected void sendCommandStateUpdate(CommandState newState) {
+  	if( newState != getCurrentCommandState() ) {
+  		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(getSendIF());
+  		pNukeExecuteInd.setSource(getIdentity());
+  		pNukeExecuteInd.setDestination(Constants.MSG_TO_ALL);
+  		pNukeExecuteInd.setTxID(getTxID());
+  		pNukeExecuteInd.setStatus(newState);
+  		pNukeExecuteInd.send();
+  		setCurrentCommandState(newState);
+  	}
+  }
+
+	/**
+	 * @return the currentCommandState
+	 */
+  private CommandState getCurrentCommandState() {
+	  return currentCommandState;
+  }
+
+	/**
+	 * @param currentCommandState the currentCommandState to set
+	 */
+  private void setCurrentCommandState(CommandState currentCommandState) {
+	  this.currentCommandState = currentCommandState;
+  }
+	
 }

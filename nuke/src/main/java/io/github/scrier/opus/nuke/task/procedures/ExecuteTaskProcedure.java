@@ -24,26 +24,18 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
-import io.github.scrier.opus.common.nuke.NukeCommand;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
 
 public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<String> {
 	
 	private static Logger log = LogManager.getLogger(ExecuteTaskProcedure.class);
 	
-	private NukeCommand command;
-	
-	boolean stopped;
-	boolean terminated;
-	
 	public final int RUNNING = CREATED + 1;
 	
-	public ExecuteTaskProcedure(NukeCommand command) {
-		log.trace("ExecuteTaskProcedure(" + command + ")");
-		setCommand(new NukeCommand(command));
-		setStopped(false);
-		setTerminated(false);
+	public ExecuteTaskProcedure(NukeExecuteReqMsgC message) {
+		super(message);
+		log.trace("ExecuteTaskProcedure(" + message + ")");
 	}
 
 	/**
@@ -78,18 +70,6 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	@Override
   public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
-		if( data.getKey() == getCommand().getKey() ) {
-			switch ( data.getId() ) {
-				case NukeFactory.NUKE_COMMAND: {
-					NukeCommand nukeCommand = new NukeCommand(data);
-					handleUpdate(nukeCommand);
-					break;
-				}
-				default: {
-					throw new RuntimeException("Unhandled id: " + data.getId() + " received in RepeatedExecuteTaskProcedure.handleOnUpdated(" + data + ").");
-				}
-			}
-		}
 	  return getState();
   }
 
@@ -99,10 +79,6 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	@Override
   public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
-		if( data.getKey() == getCommand().getKey() ) {
-			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was evicted.");
-			setState(ABORTED);
-		}
 	  return getState();
   }
 
@@ -112,10 +88,6 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	@Override
   public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
-		if( key == getCommand().getKey() && true != isProcedureFinished() ) {
-			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was removed before we were finished.");
-			setState(ABORTED);
-		}
 	  return getState();
   }
 	
@@ -134,93 +106,23 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
   public String call() throws Exception {
 		log.trace("call()");
 		setState(RUNNING);
-		getCommand().setState(CommandState.WORKING);
-		if( true != updateEntry(getCommand()) ) {
-			log.error("[" + getTxID() + "] Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
-			setState(ABORTED);
-  		return "Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call";
-  	} 
-	  String executeString = getCommand().getCommand();
+		sendCommandStateUpdate(CommandState.WORKING);
+	  String executeString = getCommand();
 	  boolean result = false;
-  	if( getCommand().getFolder().isEmpty() ) {
+  	if( getFolder().isEmpty() ) {
   		result = executeProcess(executeString, null, null);
   	} else {
-  		result = executeProcess(executeString, new File(getCommand().getFolder()), null);
+  		result = executeProcess(executeString, new File(getFolder()), null);
   	}
 	  log.debug("[" + getTxID() + "] Process returns: " + result + ".");
 	  if( result ) {
-	  	getCommand().setState(CommandState.DONE);
+	  	sendCommandStateUpdate(CommandState.DONE);
 	  	setState(COMPLETED);
 	  } else {
-	  	getCommand().setState(CommandState.ABORTED);
+	  	sendCommandStateUpdate(CommandState.ABORTED);
 	  	setState(ABORTED);
 	  }
-  	if( true != updateEntry(getCommand()) ) { // this command should trigger call to OnUpdated that should terminate this procedure.
-  		log.error("[" + getTxID() + "] Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
-  		return "Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call";
-  	} 
 	  return null;
-  }
-	
-	/**
-	 * Method to handle updates to the NukeCommand associated with this task procedure.
-	 * @param nukeCommand NukeCommand to handle.
-	 */
-	private void handleUpdate(NukeCommand nukeCommand) {
-		log.trace("handleUpdate(" + nukeCommand + ")");
-		if( CommandState.STOP == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getKey() + ".");
-			setStopped(true);
-		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getKey() + ".");
-			terminateProcess();
-			setStopped(false);    // not necessary as terminated has precedence.
-			setTerminated(true);
-		}
-	}
-
-	/**
-	 * @return the command
-	 */
-  public NukeCommand getCommand() {
-	  return command;
-  }
-
-	/**
-	 * @param command the command to set
-	 */
-  public void setCommand(NukeCommand command) {
-	  this.command = command;
-  }
-  
-  /**
-   * @param stopped the stopped to set
-   */
-  public void setStopped(boolean stopped) {
-  	this.stopped = stopped;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isStopped() {
-	  return this.stopped;
-  }
-	
-  /**
-   * @param terminated the terminated to set
-   */
-  public void setTerminated(boolean terminated) {
-  	this.terminated = terminated;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isTerminated() {
-	  return this.terminated;
   }
 
 }

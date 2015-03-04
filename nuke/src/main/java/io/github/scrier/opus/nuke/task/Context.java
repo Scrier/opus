@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.SendIF;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -167,6 +168,10 @@ public enum Context {
 	
 	protected ThreadPoolExecutor getExecutor() {
 		return executor;
+	}
+	
+	public SendIF getSendIF() {
+		return parent.getSendIF();
 	}
 	
 }

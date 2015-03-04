@@ -24,6 +24,7 @@ public class Shared {
 
 		public static final String COMMON_MAP_UNIQUE_ID = "hazelcast-map-unique-id";
 		public static final String COMMON_UNIQUE_ID = "hazelcast-unique-id";
+		public static final String COMMON_SAGA_ID = "hazelcast-saga-id";
 	}
 	
 	public static class Settings {

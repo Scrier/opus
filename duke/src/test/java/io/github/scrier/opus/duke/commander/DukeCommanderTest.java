@@ -19,7 +19,7 @@ import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeCommand;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -250,7 +250,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertFalse(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnEvicted());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnEvicted().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnEvicted().getId());
   }
   
   @Test
@@ -265,7 +265,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnEvicted());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnEvicted().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnEvicted().getId());
   }
   
   @Test
@@ -280,7 +280,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnEvicted());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnEvicted().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnEvicted().getId());
   }
   
   @Test
@@ -338,7 +338,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertFalse(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnUpdated());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnUpdated().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnUpdated().getId());
   }
   
   @Test
@@ -353,7 +353,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnUpdated());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnUpdated().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnUpdated().getId());
   }
   
   @Test
@@ -368,7 +368,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnUpdated());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnUpdated().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnUpdated().getId());
   }
   
   @Test

@@ -115,6 +115,14 @@ public abstract class BaseActiveObject implements MessageIF {
 	}
 	
 	/**
+	 * Returns a unique identifier for a saga id.
+	 * @return long
+	 */
+	public long getNextSagaID() {
+		return getInstance().getIdGenerator(Shared.Hazelcast.COMMON_SAGA_ID).newId();
+	}
+	
+	/**
 	 * Method to initialize your active object, called before any information is available.
 	 */
 	public abstract void init();

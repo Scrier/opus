@@ -25,10 +25,8 @@ import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
-import io.github.scrier.opus.common.nuke.NukeCommand;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
-import io.github.scrier.opus.nuke.task.Context;
 import io.github.scrier.opus.nuke.task.StreamGobbler;
 import io.github.scrier.opus.nuke.task.StreamGobblerToFile;
 import io.github.scrier.opus.nuke.task.StreamGobblerToLog4j;
@@ -37,23 +35,17 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 
 	private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedure.class);
 	
-	private NukeCommand command;
 	private boolean repeated;
 	private int completedCommands;
-	private Context theContext = Context.INSTANCE;
-	
-	boolean stopped;
-	boolean terminated;
 	
 	public final int RUNNING = CREATED + 1;
 	
-	public RepeatedExecuteTaskProcedure(NukeCommand command) {
-		log.trace("RepeatedExecuteTaskProcedure(" + command + ")");
-		setCommand(command);
+	public RepeatedExecuteTaskProcedure(NukeExecuteReqMsgC message) {
+		super(message);
+		log.trace("RepeatedExecuteTaskProcedure(" + message + ")");
+		setRepeated(message.isRepeated());
 		setCompletedCommands(0);
-		setRepeated(command.isRepeated());
-		setStopped(false);
-		setTerminated(false);
+		setRepeated(message.isRepeated());
 	}
 	
 	/**
@@ -62,7 +54,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	@Override
   public void init() throws Exception {
 		log.info("init()");
-		if( !getCommand().isRepeated() ) {
+		if( !isRepeated() ) {
 			log.fatal("[" + getTxID() + "] Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
 			throw new RuntimeException("Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
 		} else {
@@ -93,18 +85,6 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	@Override
   public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
-		if( data.getKey() == getCommand().getKey() ) {
-			switch ( data.getId() ) {
-				case NukeFactory.NUKE_COMMAND: {
-					NukeCommand nukeCommand = new NukeCommand(data);
-					handleUpdate(nukeCommand);
-					break;
-				}
-				default: {
-					throw new RuntimeException("Unhandled id: " + data.getId() + " received in RepeatedExecuteTaskProcedure.handleOnUpdated(" + data + ").");
-				}
-			}
-		}
 	  return getState();
   }
 
@@ -114,10 +94,6 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	@Override
   public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
-		if( data.getKey() == getCommand().getKey() ) {
-			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was evicted.");
-			setState(ABORTED);
-		}
 	  return getState();
   }
 
@@ -127,10 +103,6 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	@Override
   public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
-		if( key == getCommand().getKey() && true != isProcedureFinished() ) {
-			log.error("[" + getTxID() + "] NukeCommand: " + getNukeInfo() + " was removed before we were finished.");
-			setState(ABORTED);
-		}
 	  return getState();
   }
 	
@@ -149,80 +121,38 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
   public String call() throws Exception {
 		log.trace("call()");
 		setState(RUNNING);
-		getCommand().setState(CommandState.WORKING);
-		if( true != updateEntry(getCommand()) ) {
-			log.error("[" + getTxID() + "] Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
-			setState(ABORTED);
-  		return "Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call";
-  	} 
-	  String executeString = getCommand().getCommand();
+		sendCommandStateUpdate(CommandState.WORKING);
+	  String executeString = getCommand();
 	  do {
 	  	File folder = null;
 	  	StreamGobbler gobbler = null;
-	  	if( true != getCommand().getFolder().isEmpty() ) {
-	  		folder = new File(getCommand().getFolder());
+	  	if( true != getFolder().isEmpty() ) {
+	  		folder = new File(getFolder());
 	  	}
-	  	if( true == theContext.containsSetting(Shared.Settings.EXECUTE_GOBBLER_LEVEL) ) {
+	  	if( true == getContext().containsSetting(Shared.Settings.EXECUTE_GOBBLER_LEVEL) ) {
 	  		log.debug("Creating gobbler StreamGobblerToLog4j");
-	  		gobbler = new StreamGobblerToLog4j(theContext.getSetting(Shared.Settings.EXECUTE_GOBBLER_LEVEL), getCommand().getTxID());
+	  		gobbler = new StreamGobblerToLog4j(getContext().getSetting(Shared.Settings.EXECUTE_GOBBLER_LEVEL), getMsgTxID());
 	  	}
-	  	else if( true == theContext.containsSetting(Shared.Settings.EXECUTE_GOBBLER_DIR) ) {
+	  	else if( true == getContext().containsSetting(Shared.Settings.EXECUTE_GOBBLER_DIR) ) {
 	  		log.debug("Creating gobbler StreamGobblerToFile");
-	  		File target = new File(theContext.getSetting(Shared.Settings.EXECUTE_GOBBLER_DIR) + "/" + "process-" + getCommand().getTxID() + ".log");
+	  		File target = new File(getContext().getSetting(Shared.Settings.EXECUTE_GOBBLER_DIR) + "/" + "process-" + getMsgTxID() + ".log");
 	  		target.createNewFile();
 	  		gobbler = new StreamGobblerToFile(target);
 	  	}
 	  	boolean result = executeProcess(executeString, folder, gobbler);
 		  log.debug("[" + getTxID() + "] Process returns: " + result + ".");
 		  if( !isRepeated() && result ) {
-		  	getCommand().setState(CommandState.DONE);
+		  	sendCommandStateUpdate(CommandState.DONE);
 		  	setState(COMPLETED);
 		  } else if( true != result ){
-		  	getCommand().setState(CommandState.ABORTED);
+		  	sendCommandStateUpdate(CommandState.ABORTED);
 		  	setState(ABORTED);
 		  }
 		  incCompletedCommands();
 	  } while ( RUNNING == getState() && isRepeated() );
-  	if( true != updateEntry(getCommand()) ) { // this command should trigger call to OnUpdated that should terminate this procedure.
-  		log.error("[" + getTxID() + "] Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call");
-  		return "Unable to update command: " + getCommand() + " in ExecuteTaskProcedure.call";
-  	} 
 	  return null;
   }
 	
-	/**
-	 * Method to handle updates to the NukeCommand associated with this task procedure.
-	 * @param nukeCommand NukeCommand to handle.
-	 */
-	private void handleUpdate(NukeCommand nukeCommand) {
-		log.trace("handleUpdate(" + nukeCommand + ")");
-		if( CommandState.STOP == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to stop execution from " + nukeCommand.getKey() + ".");
-			setRepeated(false);
-			setStopped(true);
-		} else if ( CommandState.TERMINATE == nukeCommand.getState() ) {
-			log.info("[" + getTxID() + "] Received command to terminate execution from " + nukeCommand.getKey() + ".");
-			setRepeated(false);
-			terminateProcess();
-			setStopped(false);    // not necessary as terminated has precedence.
-			setTerminated(true);
-		}
-	}
-
-	/**
-	 * @return the command
-	 */
-  public NukeCommand getCommand() {
-	  return command;
-  }
-
-	/**
-	 * @param command the command to set
-	 */
-  public void setCommand(NukeCommand command) {
-	  this.command = command;
-  }
-
 	/**
 	 * @return the repeated
 	 */
@@ -258,34 +188,4 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	  this.completedCommands = completedCommands;
   }
   
-  /**
-   * @param stopped the stopped to set
-   */
-  public void setStopped(boolean stopped) {
-  	this.stopped = stopped;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isStopped() {
-	  return this.stopped;
-  }
-	
-  /**
-   * @param terminated the terminated to set
-   */
-  public void setTerminated(boolean terminated) {
-  	this.terminated = terminated;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isTerminated() {
-	  return this.terminated;
-  }
-
 }

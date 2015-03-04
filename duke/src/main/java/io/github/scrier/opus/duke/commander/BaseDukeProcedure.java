@@ -40,6 +40,10 @@ public abstract class BaseDukeProcedure extends BaseProcedureC {
 	public long getUniqueID() {
 		return theContext.getUniqueID();
 	}
+	
+	public long getNextSagaID() {
+		return theContext.getNextSagaID();
+	}
 
 	public void addEntry(BaseDataC data) {
 		theContext.addEntry(data);

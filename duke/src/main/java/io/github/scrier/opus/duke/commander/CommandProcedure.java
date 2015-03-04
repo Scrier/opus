@@ -20,197 +20,101 @@ import org.apache.logging.log4j.Logger;
 
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
-import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.CommandState;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeExecuteIndMsgC;
+import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeExecuteRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeMsgFactory;
 
 public class CommandProcedure extends BaseDukeProcedure {
 	
 	private static Logger log = LogManager.getLogger(CommandProcedure.class);
-	
-	public final int WORKING = CREATED + 1;
-	public final int REMOVING = CREATED + 2;
-	
-	private NukeCommand nukeCommand;
-	private CommandState initialComand;
-	
-	private ICommandCallback callback;
 
-	public CommandProcedure(long component, String command, CommandState state) {
-		this(component, command, state, false, null);
+	public final int INITIALIZING = CREATED + 1;
+	public final int WORKING =      CREATED + 2;
+	public final int REMOVING =     CREATED + 3;
+	
+	private long destination;
+	private String command;
+	private boolean repeated;
+	private String folder;
+	private ICommandCallback callback;
+	private CommandState currentState;
+	private String response;
+	private long sagaID;
+
+	public CommandProcedure(long destination, String command) {
+		this(destination, command, false, null);
 	}
 	
-	public CommandProcedure(long component, String command, CommandState state, ICommandCallback callback) {
-		this(component, command, state, false, callback);
+	public CommandProcedure(long destination, String command, ICommandCallback callback) {
+		this(destination, command, false, callback);
 	}
 	
-	public CommandProcedure(long component, String command, CommandState state, boolean repeated) {
-		this(component, command, state, repeated, null);
+	public CommandProcedure(long destination, String command, boolean repeated) {
+		this(destination, command, repeated, null);
 	}
 	
-	public CommandProcedure(long component, String command, CommandState state, boolean repeated, ICommandCallback callback) {
-		this(component, command, "", state, repeated, callback);
+	public CommandProcedure(long destination, String command, boolean repeated, ICommandCallback callback) {
+		this(destination, command, "", repeated, callback);
 	}
 	
-	public CommandProcedure(long component, String command, String folder, CommandState state, boolean repeated) {
-		this(component, command, folder, state, repeated, null);
+	public CommandProcedure(long destination, String command, String folder, boolean repeated) {
+		this(destination, command, folder, repeated, null);
 	}
 	
-	public CommandProcedure(long component, String command, String folder, CommandState state, boolean repeated, ICommandCallback callback) {
-		log.trace("CommandProcedure(" + component + ", " + command + ", " + folder + ", " + state + ", " + repeated + ", " + callback + ")");
-		this.nukeCommand = new NukeCommand();
-		this.nukeCommand.setComponent(component);
-		this.nukeCommand.setCommand(command);
-		this.nukeCommand.setFolder(folder);
-		this.nukeCommand.setRepeated(repeated);
-		this.nukeCommand.setState(state);
-		this.nukeCommand.setTxID(getTxID());
-		setInitialCommand(state);
+	public CommandProcedure(long destination, String command, String folder, boolean repeated, ICommandCallback callback) {
+		log.trace("CommandProcedure(" + destination + ", " + command + ", " + folder + ", " + repeated + ", " + callback + ")");
+		setDestination(destination);
+		setCommand(command);
+		setFolder(folder);
+		setRepeated(repeated);
 		setCallback(callback);
+		setCurrentState(CommandState.UNDEFINED);
+		setSagaID(getNextSagaID());
 	}
 
 	@Override
 	public void init() throws Exception {
 		log.trace("init()");
-		addEntry(getNukeCommand());
-		setState(WORKING);
+		NukeExecuteReqMsgC pNukeExecuteReq = new NukeExecuteReqMsgC(getSendIF());
+		pNukeExecuteReq.setTxID(getTxID());
+		pNukeExecuteReq.setSource(getIdentity());
+		pNukeExecuteReq.setDestination(getDestination());
+		pNukeExecuteReq.setCommand(getCommand());
+		pNukeExecuteReq.setFolder(getFolder());
+		pNukeExecuteReq.setRepeated(isRepeated());
+		pNukeExecuteReq.send();
+		setState(INITIALIZING);
 	}
 
 	@Override
 	public void shutDown() throws Exception {
 		log.trace("shutDown()");
 		if( null != getCallback() ) {
-			getCallback().finished(getNukeCommand().getComponent(),
-					getState(), getNukeCommand().getCommand(), getNukeCommand().getResponse());
+			getCallback().finished(getDestination(),
+					getState(), getCommand(), getResponse());
 		}
 	}
 
 	@Override
 	public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
-		switch( data.getId() ) {
-			case NukeFactory.NUKE_COMMAND: {
-				NukeCommand command = new NukeCommand(data);
-				handleUpdate(command);
-				break;
-			}
-			case NukeFactory.NUKE_INFO:
-			default: {
-				// do nothing
-				break;
-			}
-		}
 		return getState();
 	}
 
 	@Override
 	public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
-		if( getTxID() == data.getTxID() ) {
-			log.error("Our command was evicted from the map, cannot continue.");
-			//@TODO: Handle evicted state better by commanding a new command or similar.
-			setState(ABORTED);
-		}
 		return getState();
 	}
 
 	@Override
 	public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
-		if( getNukeCommand().getKey() == key ) {
-			if( REMOVING != getState() ) {
-				log.error("Someone else removed our command data " + key + ", aborting.");
-				//@TODO: Handle removed in wrong state better. Renew or terminate application perhaps?
-				setState(ABORTED);
-			} else {
-				log.info("Command was removed from map, we are done.");
-				setState(COMPLETED);
-			}
-		}
 		return getState();
 	}
 	
-	private void handleUpdate(NukeCommand command) {
-		log.trace("handleUpdate(" + command + ")");
-		if( getTxID() == command.getTxID() ) {
-			if( getNukeCommand().getComponent() != command.getComponent() ) {
-				throw new RuntimeException("Stored command: " +  getNukeCommand() + " and incoming command: " + command + " differs after txid check.");
-			} else {
-				switch( command.getState() ) {
-					case EXECUTE:
-					case QUERY: {
-						log.debug("Command is execute/query.");
-						break;
-					} 
-					case WORKING: {
-						log.debug("Command is working.");
-						break;
-					}
-					case DONE: {
-						log.debug("Command is done, lets remove it.");
-						removeEntry(getNukeCommand());
-						setState(REMOVING);
-						break;
-					}
-					case ABORTED: {
-						log.debug("Aborted command: " + getNukeCommand() + ".");
-						setState(ABORTED);
-						break;
-					}
-					case UNDEFINED: {
-						log.error("Unimplemented command " + command.getState() + ", aborting.");
-						setState(ABORTED);
-						break;
-					}
-					case STOP: {
-						log.debug("Command was stopped, expected.");
-						setState(COMPLETED);
-						break;
-					}
-					default: {
-						log.error("Unknown state of command " + command.getState() + ", aborting.");
-						setState(ABORTED);
-						break;
-					}
-				} // switch( command.getState() ) {
-			}
-		} // if( getTxID() == command.getTxID() ) {
-	}
-	
-//  Might be used later. Therefore we don't remove it for now.
-//	/**
-//	 * Method to handle update of the command data and set to aborted if not working.
-//	 * @param data BaseNukeC instance to update.
-//	 */
-//	private void updateEntry(BaseNukeC data) {
-//		log.trace("handleOnRupdateEntryemoved(" + data + ")");
-//		if( true != updateEntry(data, getID()) ) {
-//			log.error("Unable to update entry " + data + ", aborting.");
-//			setState(ABORTED);
-//		}
-//	}
-	
-	/**
-	 * @return the nukeCommand
-	 */
-	protected NukeCommand getNukeCommand() {
-		return nukeCommand;
-	}
-
-	/**
-	 * @return the command
-	 */
-  public CommandState getInitialCommand() {
-	  return initialComand;
-  }
-
-	/**
-	 * @param command the command to set
-	 */
-  public void setInitialCommand(CommandState command) {
-	  this.initialComand = command;
-  }
-
 	/**
 	 * @return the callback
 	 */
@@ -230,9 +134,13 @@ public class CommandProcedure extends BaseDukeProcedure {
    */
   @Override
   public String toString() {
-  	String retValue = "CommandProcedure{nukeCommand:" + getNukeCommand();
-  	retValue += ", initialComand:" + getInitialCommand();
-  	retValue += ", callback:" + getCallback() + "}";
+  	String retValue = "CommandProcedure{destination:" + getDestination();
+  	retValue += ", command:" + getCommand();
+  	retValue += ", repeated:" + isRepeated();
+  	retValue += ", folder:" + getFolder();
+  	retValue += ", callback:" + getCallback();
+  	retValue += ", currentState:" + getCurrentState();
+  	retValue += ", response:" + getResponse() + "}";
   	return retValue;
   }
 
@@ -241,8 +149,151 @@ public class CommandProcedure extends BaseDukeProcedure {
    */
 	@Override
   public int handleInMessage(BaseMsgC message) {
-	  // TODO Auto-generated method stub
+		log.trace("handleInMessage(" + message + ")");
+	  switch( message.getId() ) {
+	  	case NukeMsgFactory.NUKE_EXECUTE_RSP: {
+	  		log.debug("Received NUKE_EXECUTE_RSP message.");
+	  		NukeExecuteRspMsgC pNukeExecuteRsp = new NukeExecuteRspMsgC(message);
+	  		handleMessage(pNukeExecuteRsp);
+	  		break;
+	  	}
+	  	case NukeMsgFactory.NUKE_EXECUTE_IND: {
+	  		log.debug("Received NUKE_EXECUTE_IND message.");
+	  		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(message);
+	  		handleMessage(pNukeExecuteInd);
+	  		break;
+	  	}
+	  }
 	  return getState();
+  }
+
+	/**
+	 * @return the destination
+	 */
+  public long getDestination() {
+	  return destination;
+  }
+
+	/**
+	 * @param destination the destination to set
+	 */
+  public void setDestination(long destination) {
+	  this.destination = destination;
+  }
+
+	/**
+	 * @return the command
+	 */
+  public String getCommand() {
+	  return command;
+  }
+
+	/**
+	 * @param command the command to set
+	 */
+  public void setCommand(String command) {
+	  this.command = command;
+  }
+
+	/**
+	 * @return the repeated
+	 */
+  public boolean isRepeated() {
+	  return repeated;
+  }
+
+	/**
+	 * @param repeated the repeated to set
+	 */
+  public void setRepeated(boolean repeated) {
+	  this.repeated = repeated;
+  }
+
+	/**
+	 * @return the folder
+	 */
+  public String getFolder() {
+	  return folder;
+  }
+
+	/**
+	 * @param folder the folder to set
+	 */
+  public void setFolder(String folder) {
+	  this.folder = folder;
+  }
+
+	/**
+	 * @return the currentState
+	 */
+  public CommandState getCurrentState() {
+	  return currentState;
+  }
+
+	/**
+	 * @param currentState the currentState to set
+	 */
+  public void setCurrentState(CommandState currentState) {
+	  this.currentState = currentState;
+  }
+
+	/**
+	 * @return the response
+	 */
+  public String getResponse() {
+	  return response;
+  }
+
+	/**
+	 * @param response the response to set
+	 */
+  public void setResponse(String response) {
+	  this.response = response;
+  }
+  
+	/**
+	 * @return the sagaID
+	 */
+  public long getSagaID() {
+	  return sagaID;
+  }
+
+	/**
+	 * @param sagaID the sagaID to set
+	 */
+  public void setSagaID(long sagaID) {
+	  this.sagaID = sagaID;
+  }
+  
+  /**
+   * Method to handle the NukeExecuteRspMsgC message.
+   * @param message NukeExecuteRspMsgC instance
+   */
+  protected void handleMessage(NukeExecuteRspMsgC message) {
+  	log.trace(" handleMessage(" + message + ")");
+  	if( getTxID() == message.getTxID() ) {
+  		log.info("Received: " + message);
+  		setResponse(message.getResponse());
+  		setState(WORKING);
+  	}
+  }
+  
+  /**
+   * Method to handle the NukeExecuteIndMsgC message.
+   * @param message NukeExecuteIndMsgC instance
+   */
+  protected void handleMessage(NukeExecuteIndMsgC message) {
+  	log.trace(" handleMessage(" + message + ")");
+  	if( getDestination() == message.getSource() ) {
+  		log.info("Received: " + message);
+  		if( WORKING != getState() ) {
+  			log.error("Received NukeExecuteIndMsgC when not in state WORKING.");
+  		} else {
+  			log.info("[" + getTxID() + "] Changed status to: " + message.getStatus() + ".");
+  			setCurrentState(message.getStatus());
+  			
+  		}
+  	}
   }
 
 }

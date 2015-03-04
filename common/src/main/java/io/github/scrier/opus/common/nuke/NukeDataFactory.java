@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.common.nuke;
 
-import io.github.scrier.opus.common.data.Constants;
+import io.github.scrier.opus.common.Constants;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,18 +23,17 @@ import org.apache.logging.log4j.LogManager;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
-public class NukeFactory implements DataSerializableFactory {
+public class NukeDataFactory implements DataSerializableFactory {
 	
-	private static Logger log = LogManager.getLogger(NukeFactory.class);
+	private static Logger log = LogManager.getLogger(NukeDataFactory.class);
 	
-	public NukeFactory() { 
-		log.trace("NukeFactory()");
+	public NukeDataFactory() { 
+		log.trace("NukeDataFactory()");
 	}
 	
 	public static final int FACTORY_ID = 801023;
 	
 	public static final int NUKE_INFO =    Constants.NUKE_DATA_START + 1;
-	public static final int NUKE_COMMAND = Constants.NUKE_DATA_START + 2;
 
 	/**
 	 * {@inheritDoc}
@@ -46,9 +45,6 @@ public class NukeFactory implements DataSerializableFactory {
 		switch(dataID) {
 			case NUKE_INFO:
 				retValue = new NukeInfo();
-				break;
-			case NUKE_COMMAND:
-				retValue = new NukeCommand();
 				break;
 		}
 		return retValue;

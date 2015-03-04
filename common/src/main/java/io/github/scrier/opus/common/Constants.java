@@ -13,14 +13,17 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.data;
+package io.github.scrier.opus.common;
 
 public class Constants {
 	
 	public static final int INTERVAL = 500;
 	
+	public static final long MSG_TO_ALL     = -12345L;
+	
 	public static final int DUKE_DATA_START = INTERVAL * 0;
 	public static final int NUKE_DATA_START = INTERVAL * 1;
 	public static final int DUKE_MSG_START  = INTERVAL * 2;
+	public static final int NUKE_MSG_START  = INTERVAL * 3;
 
 }

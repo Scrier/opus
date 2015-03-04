@@ -50,7 +50,7 @@ public class NukeInfo extends BaseDataC {
 	private long valuesModified;
 
 	public NukeInfo() {
-		super(NukeFactory.FACTORY_ID, NukeFactory.NUKE_INFO);
+		super(NukeDataFactory.FACTORY_ID, NukeDataFactory.NUKE_INFO);
 		log.trace("NukeInfo()");
 		nukeID = 0L;
 		numberOfThreads = 0;
@@ -86,7 +86,7 @@ public class NukeInfo extends BaseDataC {
 			setRequestedCommands(obj2copy.getRequestedCommands());
 			setCompletedCommands(obj2copy.getCompletedCommands());
 		} else {
-			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeInfo[" + NukeFactory.NUKE_INFO + "], are you using correct class?");
+			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeInfo[" + NukeDataFactory.NUKE_INFO + "], are you using correct class?");
 		}
 	}
 
