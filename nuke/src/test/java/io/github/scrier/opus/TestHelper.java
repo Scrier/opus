@@ -49,7 +49,7 @@ public enum TestHelper {
 	
 	public IdGenerator mockIdGen(HazelcastInstance instance, String key, long values) {
 		IdGenerator idGen = Mockito.mock(IdGenerator.class);
-		Mockito.when(idGen.newId()).thenReturn(values).thenReturn(-1L);
+		Mockito.when(idGen.newId()).thenReturn(values).thenReturn(Constants.HC_UNDEFINED);
 		Mockito.when(instance.getIdGenerator(key)).thenReturn(idGen);
 		return idGen;
 	}

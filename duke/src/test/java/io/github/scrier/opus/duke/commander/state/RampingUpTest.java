@@ -3,6 +3,7 @@ package io.github.scrier.opus.duke.commander.state;
 import static org.junit.Assert.*;
 import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.TestHelper;
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.nuke.NukeState;
@@ -33,6 +34,7 @@ public class RampingUpTest {
 
 	private HazelcastInstance instance;
 	private long identity = 82345L;
+	private long sagaID = 111122L;
 	private long component = 23581L;
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
@@ -49,6 +51,7 @@ public class RampingUpTest {
 	public void setUp() throws Exception {
 		instance = theHelper.mockHazelcast();
 		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
 		theMap = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
@@ -295,7 +298,7 @@ public class RampingUpTest {
 		Map<Long, Integer> check = testObject.getDistributionSuggestion(5);
 		assertNotNull(check);
 		assertEquals(2, check.size());
-		long keyExpect3 = -1L, keyExpect2 = -1L;
+		long keyExpect3 = Constants.HC_UNDEFINED, keyExpect2 = Constants.HC_UNDEFINED;
 		for( Map.Entry<Long, Integer> entry : check.entrySet() ) {
 			if( 2 == entry.getValue() ) {
 				keyExpect3 = entry.getKey();
@@ -305,8 +308,8 @@ public class RampingUpTest {
 				fail("Should be balances between 2 and 3 for fair distribution.");
 			}
 		}
-		assertNotEquals(-1L, keyExpect2);
-		assertNotEquals(-1L, keyExpect3);
+		assertNotEquals(Constants.HC_UNDEFINED, keyExpect2);
+		assertNotEquals(Constants.HC_UNDEFINED, keyExpect3);
 		check = testObject.getDistributionSuggestion(5);
 		assertTrue(check.containsKey(keyExpect2));
 		assertTrue(check.containsKey(keyExpect3));

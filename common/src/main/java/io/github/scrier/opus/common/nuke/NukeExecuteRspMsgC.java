@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.message.SendIF;
 
@@ -30,7 +31,7 @@ public class NukeExecuteRspMsgC extends BaseMsgC {
 	
 	private static Logger log = LogManager.getLogger(NukeExecuteRspMsgC.class);
 	
-	private String response;
+	private long processID;
 	
 	/**
 	 * Constructor
@@ -38,7 +39,7 @@ public class NukeExecuteRspMsgC extends BaseMsgC {
 	public NukeExecuteRspMsgC() {
 		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_EXECUTE_RSP);
 		log.trace("NukeExecuteRspMsgC()");
-		setResponse("");
+		setProcessID(Constants.HC_UNDEFINED);
 	}
 
 	/**
@@ -47,7 +48,7 @@ public class NukeExecuteRspMsgC extends BaseMsgC {
 	public NukeExecuteRspMsgC(SendIF sendIF) {
 		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_EXECUTE_RSP, sendIF);
 		log.trace("NukeExecuteRspMsgC(" + sendIF + ")");
-		setResponse("");
+		setProcessID(Constants.HC_UNDEFINED);
 	}
 	
 	/**
@@ -57,7 +58,7 @@ public class NukeExecuteRspMsgC extends BaseMsgC {
 	public NukeExecuteRspMsgC(NukeExecuteRspMsgC obj2copy) {
 		super(obj2copy);
 		log.trace("NukeExecuteRspMsgC(" + obj2copy + ")");
-		setResponse(obj2copy.getResponse());
+		setProcessID(obj2copy.getProcessID());
 	}
 	
 	/**
@@ -70,7 +71,7 @@ public class NukeExecuteRspMsgC extends BaseMsgC {
 		log.trace("NukeExecuteRspMsgC(" + input + ")");
 		if( input instanceof NukeExecuteRspMsgC ) {
 			NukeExecuteRspMsgC obj2copy = (NukeExecuteRspMsgC)input;
-			setResponse(obj2copy.getResponse());
+			setProcessID(obj2copy.getProcessID());
 		} else {
 			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeExecuteRspMsgC[" + NukeMsgFactory.NUKE_EXECUTE_RSP + "], are you using correct class?");
 		}
@@ -83,7 +84,7 @@ public class NukeExecuteRspMsgC extends BaseMsgC {
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")");
 		super.readData(in);
-		setResponse(in.readUTF());
+		setProcessID(in.readLong());
 	}
 
 	/**
@@ -93,29 +94,29 @@ public class NukeExecuteRspMsgC extends BaseMsgC {
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
 		super.writeData(out);
-		out.writeUTF(getResponse());
+		out.writeLong(getProcessID());
 	}
 
-	/**
-	 * @return the response
-	 */
-	public String getResponse() {
-		return response;
-	}
-
-	/**
-	 * @param response the response to set
-	 */
-	public void setResponse(String response) {
-		this.response = response;
-	}
-	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-		return "NukeExecuteRspMsgC{response: " + getResponse() + "} - " + super.toString();
+		return "NukeExecuteRspMsgC{processID: " + getProcessID() + "} - " + super.toString();
 	}
+
+	/**
+	 * @return the processID
+	 */
+  public long getProcessID() {
+	  return processID;
+  }
+
+	/**
+	 * @param processID the processID to set
+	 */
+  public void setProcessID(long processID) {
+	  this.processID = processID;
+  }
 	
 }

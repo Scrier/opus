@@ -64,7 +64,7 @@ public class CommandProcedure extends BaseDukeProcedure {
 	}
 	
 	public CommandProcedure(long destination, String command, String folder, boolean repeated, ICommandCallback callback) {
-		log.trace("CommandProcedure(" + destination + ", " + command + ", " + folder + ", " + repeated + ", " + callback + ")");
+		log.trace("CommandProcedure(" + destination + ", \"" + command + "\", \"" + folder + "\", " + repeated + ", " + callback + ")");
 		setDestination(destination);
 		setCommand(command);
 		setFolder(folder);
@@ -272,9 +272,14 @@ public class CommandProcedure extends BaseDukeProcedure {
   protected void handleMessage(NukeExecuteRspMsgC message) {
   	log.trace(" handleMessage(" + message + ")");
   	if( getTxID() == message.getTxID() ) {
-  		log.info("Received: " + message);
-  		setResponse(message.getResponse());
-  		setState(WORKING);
+  		if( INITIALIZING != getState() ) {
+  			log.error("Received NukeExecuteRspMsgC in wrong state: " + getState() + ", expected: " + INITIALIZING + ".");
+  			setState(ABORTED);
+  		} else {
+	  		log.info("Received: " + message);
+	  		setResponse(message.getResponse());
+	  		setState(WORKING);
+  		}
   	}
   }
   
@@ -288,10 +293,27 @@ public class CommandProcedure extends BaseDukeProcedure {
   		log.info("Received: " + message);
   		if( WORKING != getState() ) {
   			log.error("Received NukeExecuteIndMsgC when not in state WORKING.");
+  			setState(ABORTED);
   		} else {
   			log.info("[" + getTxID() + "] Changed status to: " + message.getStatus() + ".");
+  			switch( message.getStatus() ) {
+  				case ABORTED: {
+  					log.info("Task reports aborted state with response: " + message.getResponse() + ".");
+  					setResponse(message.getResponse());
+  					setState(ABORTED);
+  					break;
+  				}
+  				case DONE: {
+  					log.info("Task reports done state with response: " + message.getResponse() + ".");
+  					setResponse(message.getResponse());
+  					setState(COMPLETED);
+  					break;
+  				}
+  				default: {
+  					// do nothing.
+  				}
+  			}
   			setCurrentState(message.getStatus());
-  			
   		}
   	}
   }

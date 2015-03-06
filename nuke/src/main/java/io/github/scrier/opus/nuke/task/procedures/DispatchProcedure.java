@@ -116,19 +116,10 @@ public class DispatchProcedure extends BaseNukeProcedure {
 	 */
 	protected void handleMessage(NukeExecuteReqMsgC msg) {
 		log.trace("handleMessage(" + msg + ")");
-		String response = "Started a ";
 		if( msg.isRepeated() ) {
 			registerProcedure(new RepeatedExecuteTaskProcedure(msg));
-			response += "RepeatedExecuteTaskProcedure procedure.";
 		} else {
 			registerProcedure(new ExecuteTaskProcedure(msg));
-			response += "ExecuteTaskProcedure procedure.";
 		}
-		NukeExecuteRspMsgC pNukeExecuteRsp = new NukeExecuteRspMsgC(getSendIF());
-		pNukeExecuteRsp.setSource(getIdentity());
-		pNukeExecuteRsp.setDestination(msg.getSource());
-		pNukeExecuteRsp.setTxID(msg.getTxID());
-		pNukeExecuteRsp.setResponse(response);
-		pNukeExecuteRsp.send();
 	}
 }

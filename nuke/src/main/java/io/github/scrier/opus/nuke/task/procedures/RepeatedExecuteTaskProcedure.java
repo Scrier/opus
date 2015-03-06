@@ -145,7 +145,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		  	sendCommandStateUpdate(CommandState.DONE);
 		  	setState(COMPLETED);
 		  } else if( true != result ){
-		  	sendCommandStateUpdate(CommandState.ABORTED);
+		  	sendCommandStateUpdate(CommandState.ABORTED, getErrorMessage());
 		  	setState(ABORTED);
 		  }
 		  incCompletedCommands();

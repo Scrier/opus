@@ -21,11 +21,16 @@ import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
+import io.github.scrier.opus.common.node.NukeFactoryTest;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeExecuteRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeMsgFactory;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
+import io.github.scrier.opus.nuke.task.Context;
 
 public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<String> {
 	
@@ -36,6 +41,7 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	public ExecuteTaskProcedure(NukeExecuteReqMsgC message) {
 		super(message);
 		log.trace("ExecuteTaskProcedure(" + message + ")");
+		setProcessID(Constants.HC_UNDEFINED);
 	}
 
 	/**
@@ -44,6 +50,8 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	@Override
   public void init() throws Exception {
 		log.trace("init()");
+		setProcessID(getUniqueID());
+		sendResponse();
 	  getExecutor().submit(this);
 	  getNukeInfo().setActiveCommands(getNukeInfo().getActiveCommands() + 1);
 	  getNukeInfo().setRequestedCommands(getNukeInfo().getRequestedCommands() + 1);
@@ -96,6 +104,17 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	 */
 	@Override
   public int handleInMessage(BaseMsgC message) {
+		log.trace("handleInMessage(" + message + ")");
+		switch( message.getId() ) {
+			case NukeMsgFactory.NUKE_STOP_REQ: {
+				///TODO send to base task for common handling.
+				break;
+			}
+			case NukeMsgFactory.NUKE_TERMINATE_REQ: {
+				///TODO send to base task for common handling
+				break;
+			}
+		}
 	  return getState();
   }
 	
@@ -119,7 +138,7 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	  	sendCommandStateUpdate(CommandState.DONE);
 	  	setState(COMPLETED);
 	  } else {
-	  	sendCommandStateUpdate(CommandState.ABORTED);
+	  	sendCommandStateUpdate(CommandState.ABORTED, getErrorMessage());
 	  	setState(ABORTED);
 	  }
 	  return null;

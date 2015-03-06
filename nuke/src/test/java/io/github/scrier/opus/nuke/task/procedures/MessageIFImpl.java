@@ -13,18 +13,23 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common;
+package io.github.scrier.opus.nuke.task.procedures;
 
-public class Constants {
+import io.github.scrier.opus.common.message.BaseMsgC;
+import io.github.scrier.opus.common.message.MessageIF;
+
+import com.hazelcast.core.HazelcastInstance;
+
+public class MessageIFImpl implements MessageIF {
 	
-	public static final int INTERVAL = 500;
 	
-	public static final long HC_UNDEFINED   = -1L;
-	public static final long MSG_TO_ALL     = -12345L;
-	
-	public static final int DUKE_DATA_START = INTERVAL * 0;
-	public static final int NUKE_DATA_START = INTERVAL * 1;
-	public static final int DUKE_MSG_START  = INTERVAL * 2;
-	public static final int NUKE_MSG_START  = INTERVAL * 3;
+	@Override
+  public HazelcastInstance getInstance() {
+    return null;
+  }
+
+	@Override
+  public void handleInMessage(BaseMsgC message) {
+  }
 
 }

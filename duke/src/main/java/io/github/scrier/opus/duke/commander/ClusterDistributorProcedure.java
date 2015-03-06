@@ -18,6 +18,7 @@ package io.github.scrier.opus.duke.commander;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.duke.DukeState;
@@ -77,8 +78,8 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		setShutDownOnce(true);
 		setCommand("");
 		setFolder("");
-		setTimerID(-1L);
-		setTerminateID(-1L);
+		setTimerID(Constants.HC_UNDEFINED);
+		setTerminateID(Constants.HC_UNDEFINED);
 		setStates(new State[TERMINATING + 1]);
 	}
 

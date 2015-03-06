@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.data.BaseDataC;
 
 public class DukeInfo extends BaseDataC {
@@ -43,7 +44,7 @@ public class DukeInfo extends BaseDataC {
 	public DukeInfo() {
 		super(DukeDataFactory.FACTORY_ID, DukeDataFactory.DUKE_INFO);
 		log.trace("DukeInfo()");
-		setDukeID(-1L);
+		setDukeID(Constants.HC_UNDEFINED);
 		setState(DukeState.UNDEFINED);
 		resetValuesModified();
 	}

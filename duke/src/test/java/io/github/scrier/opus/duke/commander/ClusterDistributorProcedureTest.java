@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.scrier.opus.TestHelper;
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -65,8 +66,8 @@ public class ClusterDistributorProcedureTest {
 		assertEquals(true, testObject.isShutDownOnce());
 		assertEquals("", testObject.getCommand());
 		assertEquals("", testObject.getFolder());
-		assertEquals(-1L, testObject.getTimerID());
-		assertEquals(-1L, testObject.getTerminateID());
+		assertEquals(Constants.HC_UNDEFINED, testObject.getTimerID());
+		assertEquals(Constants.HC_UNDEFINED, testObject.getTerminateID());
 	}
 
 }

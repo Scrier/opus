@@ -19,6 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
@@ -91,6 +92,14 @@ public enum Context {
 	 */
 	private void setInstance(HazelcastInstance instance) {
 		this.instance = instance;
+	}
+	
+	/**
+	 * Method to get a cluster unique id key for use.
+	 * @return long
+	 */
+	public long getUniqueID() {
+		return getInstance().getIdGenerator(Shared.Hazelcast.COMMON_UNIQUE_ID).newId();
 	}
 
 	/**

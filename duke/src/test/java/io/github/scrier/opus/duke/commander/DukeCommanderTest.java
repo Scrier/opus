@@ -18,7 +18,6 @@ import io.github.scrier.opus.common.duke.DukeMsgFactory;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
-import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
@@ -45,6 +44,7 @@ public class DukeCommanderTest {
 	
 	long identity = 972591621L;
 	long otherIdentity = 9785345L;
+	long sagaID = 83873L;
 	HazelcastInstance instance;
 	BaseActiveObjectMock theBaseAOC;
 	Context theContext = Context.INSTANCE;
@@ -66,6 +66,7 @@ public class DukeCommanderTest {
 	public void setUp() throws Exception {
 		instance = helper.mockHazelcast();
 		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
 		map = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, 11L);
 		settings = helper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
@@ -117,7 +118,7 @@ public class DukeCommanderTest {
 		NukeInfo info = new NukeInfo();
 		info.setState(NukeState.RUNNING);
 		l.add(info);
-		l.add(new NukeCommand());
+		l.add(new NukeInfo());
 		Mockito.when(map.values()).thenReturn(l);
 		testObject.init();
 		assertFalse(testObject.getProcedures().isEmpty());
@@ -214,16 +215,6 @@ public class DukeCommanderTest {
 		theContext.init(testObject, theBaseAOC);
 		testObject.preEntry();
 		testObject.entryAdded(identity, new NukeInfo());
-		testObject.postEntry();
-		assertTrue(testObject.getProceduresToAdd().isEmpty());
-  }
-  
-  @Test
-  public void testEntryAddedNukeCommand() {
-  	DukeCommander testObject = new DukeCommander(instance);
-		theContext.init(testObject, theBaseAOC);
-		testObject.preEntry();
-		testObject.entryAdded(identity, new NukeCommand());
 		testObject.postEntry();
 		assertTrue(testObject.getProceduresToAdd().isEmpty());
   }
@@ -402,7 +393,7 @@ public class DukeCommanderTest {
 		testObject.getProcedures().add(procedure3);
 		testObject.getProcedures().add(procedure4);
 		testObject.getProcedures().add(new ClusterDistributorProcedure());
-		testObject.getProcedures().add(new CommandProcedure(12345L, "this is command", CommandState.QUERY));
+		testObject.getProcedures().add(new CommandProcedure(12345L, "this is command"));
 		testObject.getProcedures().add(new NukeProcedure(new NukeInfo()));
 		testObject.getProceduresToRemove().add(procedure5);
 		List<BaseDukeProcedure> check = testObject.getProcedures(BaseProcedureMock.class);

@@ -1,5 +1,5 @@
 /**
- * Licensed under the Apache License, Version 2.0 (the "License");
+8 * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
@@ -67,7 +67,7 @@ public class Terminating extends State implements ICommandCallback {
 		List<INukeInfo> nukes = theContext.getNukes();
 		log.info("Sending terminate command to " + nukes.size() + " nukes will terminate this applicatio in " + getTerminateTimeout() + " seconds.");
 		for( INukeInfo info : nukes ) {
-			registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.TERMINATE_EXECUTION, CommandState.EXECUTE, this));
+			registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.TERMINATE_EXECUTION, this));
 			getActiveNukeCommands().add(info.getNukeID());
 		}
 		startTimeout(getTerminateTimeout(), getTimerID());

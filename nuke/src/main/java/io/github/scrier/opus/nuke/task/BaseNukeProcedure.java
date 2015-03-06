@@ -80,6 +80,14 @@ public abstract class BaseNukeProcedure extends BaseProcedureC {
 	}
 	
 	/**
+	 * Method to get a cluster unique id to use.
+	 * @return long
+	 */
+	public long getUniqueID() {
+		return this.theContext.getUniqueID();
+	}
+	
+	/**
 	 * Method to get the send interface for use with messages.
 	 * @return SendIF to use for sending messgages.
 	 */

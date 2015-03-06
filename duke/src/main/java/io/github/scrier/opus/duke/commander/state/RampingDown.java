@@ -21,11 +21,8 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
-import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
-import io.github.scrier.opus.duke.commander.CommandProcedure;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.ICommandCallback;
 import io.github.scrier.opus.duke.commander.INukeInfo;
@@ -159,7 +156,7 @@ public class RampingDown extends State implements ICommandCallback {
 			List<INukeInfo> nukes = theContext.getNukes();
 			log.info("Sending stop command to " + nukes.size() + " nukes.");
 			for( INukeInfo info : nukes ) {
-				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.STOP_EXECUTION, CommandState.EXECUTE, this));
+				//TODO Stop command to be send.
 				getActiveNukeCommands().add(info.getNukeID());
 			}
 			if( false == isTimeoutActive(getTimerID()) ) {

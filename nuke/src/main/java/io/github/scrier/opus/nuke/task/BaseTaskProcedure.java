@@ -26,6 +26,7 @@ import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeExecuteIndMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeExecuteRspMsgC;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.nuke.process.ProcessHandler;
 
@@ -39,6 +40,10 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	private String folder;
 	private int msgTxID;
 	private CommandState currentCommandState;
+	private String errorMessage;
+	private long source;
+	private long sagaID;
+	private long processID;
 
 	public BaseTaskProcedure() {
 		log.trace("BaseTaskProcedure");
@@ -47,7 +52,10 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 		setCommand("");
 		setFolder("");
 		setMsgTxID(-1);
+		setSource(Constants.HC_UNDEFINED);
 		setCurrentCommandState(CommandState.UNDEFINED);
+		setSagaID(Constants.HC_UNDEFINED);
+		setProcessID(Constants.HC_UNDEFINED);
 	}
 	
 	public BaseTaskProcedure(NukeExecuteReqMsgC message) {
@@ -57,6 +65,8 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 		setCommand(message.getCommand());
 		setFolder(message.getFolder());
 		setMsgTxID(message.getTxID());
+		setSource(message.getSource());
+		setSagaID(message.getSagaID());
 		setCurrentCommandState(CommandState.UNDEFINED);
 	}
 
@@ -67,7 +77,7 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	 * @param gobbler StreamGobbler optional for handling process output. 
 	 * @return boolean
 	 */
-	public boolean executeProcess(String executeString, File directory, StreamGobbler gobbler) {
+	public synchronized boolean executeProcess(String executeString, File directory, StreamGobbler gobbler) {
 		log.trace("executeProcess(" + executeString + ", " + directory + ", " + gobbler + ")");
 		boolean retValue = true;
 		setProcessHandler(new ProcessHandler(executeString.split(" ")));
@@ -87,15 +97,22 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 			}
 			gobbler.start();
 			int retCode = getProcess().waitFor();
+			if( getProcess().isAlive() ) {
+				log.error("Process still alive, although ret code returned.");
+			}
+			log.info("Received returncode: " + retCode);
 			if( 0 != retCode ) {
 				log.error("Received returncode: " + retCode);
+				setErrorMessage("Command: " + getCommand() + ", on node " + getIdentity() + ", received return code: " + retCode + ".");
 				retValue = false;
 			}
 		} catch ( IOException e ) {
 			log.error("IOException when starting process.", e);
+			setErrorMessage("Command: " + getCommand() + ", on node " + getIdentity() + ", received IOException: " + e.getMessage() + ".");
 			retValue = false;
 		} catch ( InterruptedException e ) {
 			log.error("InterruptedException received when waiting for process.", e);
+			setErrorMessage("Command: " + getCommand() + ", on node " + getIdentity() + ", received InterruptedException: " + e.getMessage() + ".");
 			retValue = false;
 		}
 		return retValue;
@@ -195,33 +212,113 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
   }
   
   /**
-   * 
-   * @param newState
+   * Method to send a command indication update.
+   * @param newState The state to change to.
    */
   protected void sendCommandStateUpdate(CommandState newState) {
+  	sendCommandStateUpdate(newState, "");
+  }
+  
+  /**
+   * Method to send a command indication update.
+   * @param newState The state to change to.
+   * @param extraInformation message with reasoning behind a state change.
+   */
+  protected synchronized void sendCommandStateUpdate(CommandState newState, String extraInformation) {
   	if( newState != getCurrentCommandState() ) {
+  		setCurrentCommandState(newState);
   		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(getSendIF());
   		pNukeExecuteInd.setSource(getIdentity());
   		pNukeExecuteInd.setDestination(Constants.MSG_TO_ALL);
   		pNukeExecuteInd.setTxID(getTxID());
+  		pNukeExecuteInd.setProcessID(getProcessID());
   		pNukeExecuteInd.setStatus(newState);
   		pNukeExecuteInd.send();
-  		setCurrentCommandState(newState);
   	}
   }
 
 	/**
 	 * @return the currentCommandState
 	 */
-  private CommandState getCurrentCommandState() {
+  private synchronized CommandState getCurrentCommandState() {
 	  return currentCommandState;
   }
 
 	/**
 	 * @param currentCommandState the currentCommandState to set
 	 */
-  private void setCurrentCommandState(CommandState currentCommandState) {
+  private synchronized void setCurrentCommandState(CommandState currentCommandState) {
 	  this.currentCommandState = currentCommandState;
   }
+
+	/**
+	 * @return the errorMessage
+	 */
+  public String getErrorMessage() {
+	  return errorMessage;
+  }
+
+	/**
+	 * @param errorMessage the errorMessage to set
+	 */
+  public void setErrorMessage(String errorMessage) {
+	  this.errorMessage = errorMessage;
+  }
+
+	/**
+	 * @return the source
+	 */
+  public long getSource() {
+	  return source;
+  }
+
+	/**
+	 * @param source the source to set
+	 */
+  public void setSource(long source) {
+	  this.source = source;
+  }
+
+	/**
+	 * @return the sagaID
+	 */
+  public long getSagaID() {
+	  return sagaID;
+  }
+
+	/**
+	 * @param sagaID the sagaID to set
+	 */
+  public void setSagaID(long sagaID) {
+	  this.sagaID = sagaID;
+  }
+  
+	/**
+	 * @return the processID
+	 */
+  public long getProcessID() {
+	  return processID;
+  }
+
+	/**
+	 * @param processID the processID to set
+	 */
+  public void setProcessID(long processID) {
+	  this.processID = processID;
+  }
+  
+	/**
+	 * Method to send response to the requesting part.
+	 */
+	protected void sendResponse() {
+		log.trace("sendResponse()");
+		NukeExecuteRspMsgC pNukeExecuteRsp = new NukeExecuteRspMsgC(getSendIF());
+		pNukeExecuteRsp.setSource(getIdentity());
+		pNukeExecuteRsp.setDestination(getSource());
+		pNukeExecuteRsp.setTxID(getTxID());
+		pNukeExecuteRsp.setProcessID(getProcessID());
+		pNukeExecuteRsp.setSagaID(getSagaID());
+		pNukeExecuteRsp.send();
+	}
 	
 }

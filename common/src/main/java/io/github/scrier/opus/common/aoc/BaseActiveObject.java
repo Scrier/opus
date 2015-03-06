@@ -15,6 +15,7 @@
  */
 package io.github.scrier.opus.common.aoc;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.MessageIF;
@@ -43,7 +44,7 @@ public abstract class BaseActiveObject implements MessageIF {
 	 */
 	public BaseActiveObject(HazelcastInstance instance) {
 		setInstance(instance);
-		setIdentity(-1L);
+		setIdentity(Constants.HC_UNDEFINED);
 		setCorrectInitPerformed(false);
 		setSettings(null);
 		setMsgService(null);

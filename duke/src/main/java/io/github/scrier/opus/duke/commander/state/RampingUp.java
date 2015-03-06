@@ -130,7 +130,7 @@ public class RampingUp extends State {
 				for( Entry<Long, Integer> command : distribution.entrySet() ) {
 					log.debug("Sending " + command.getValue() + " commands to nuke with id: " + command.getKey() + ".");
 					for( int i = 0; i < command.getValue(); i++ ) {
-						registerProcedure(new CommandProcedure(command.getKey(), getCommand(), getFolder(), CommandState.EXECUTE, isRepeated()));
+						registerProcedure(new CommandProcedure(command.getKey(), getCommand(), getFolder(), isRepeated()));
 					}
 				}
 				log.info("Ramping up from " + getLocalUserRampedUp() + " to " + (getLocalUserRampedUp() + usersToAdd) + ", of a total of " + getMaxUsers() + ".");

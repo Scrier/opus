@@ -17,6 +17,7 @@ package io.github.scrier.opus.duke.commander;
 
 import static org.junit.Assert.*;
 import io.github.scrier.opus.TestHelper;
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.duke.DukeCommandEnum;
 import io.github.scrier.opus.common.duke.DukeCommandReqMsgC;
@@ -90,7 +91,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 	}
@@ -103,7 +104,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_STATUS, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(1, SendIF.size());
 		BaseMsgC msg = SendIF.getMessage(0);
@@ -142,7 +143,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 	}
@@ -155,7 +156,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 	}
@@ -168,7 +169,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 	}
@@ -181,7 +182,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 	}
@@ -194,7 +195,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 	}
@@ -209,7 +210,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -227,7 +228,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -247,7 +248,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_STATUS, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -268,7 +269,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_STOP, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
 		assertFalse(testObject.isTimeoutActive(testObject.STATUS_TIMEOUT_ID));
@@ -296,7 +297,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_STOP, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -317,7 +318,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_REMOVE, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertTrue(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
 		assertFalse(testObject.isTimeoutActive(testObject.STATUS_TIMEOUT_ID));
@@ -337,7 +338,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_TERMINATE, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -358,7 +359,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_REMOVE, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertTrue(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
 		assertFalse(testObject.isTimeoutActive(testObject.STATUS_TIMEOUT_ID));
@@ -377,7 +378,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -396,7 +397,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -414,7 +415,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -431,7 +432,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -449,7 +450,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_STATUS, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -467,7 +468,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_TERMINATE, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
 		assertFalse(testObject.isTimeoutActive(testObject.STATUS_TIMEOUT_ID));
@@ -493,7 +494,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_STOP, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -511,7 +512,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_TERMINATE, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
 		assertFalse(testObject.isTimeoutActive(testObject.STATUS_TIMEOUT_ID));
@@ -537,7 +538,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.WAITING_FOR_TERMINATE, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -555,7 +556,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
 		assertFalse(testObject.isTimeoutActive(testObject.STATUS_TIMEOUT_ID));
@@ -573,7 +574,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));
@@ -591,7 +592,7 @@ public class TerminateDukeProcedureTest {
 		assertNotNull(testObject.getSendIF());
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(expectedTxID, testObject.getTxID());
-		assertEquals(-1L, callback.Identity);
+		assertEquals(Constants.HC_UNDEFINED, callback.Identity);
 		assertEquals(-1, callback.State);
 		assertEquals(0, SendIF.size());
 		assertFalse(testObject.isTimeoutActive(testObject.REMOVE_TIMEOUT_ID));

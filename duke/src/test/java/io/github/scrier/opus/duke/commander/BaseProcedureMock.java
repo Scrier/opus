@@ -1,5 +1,6 @@
 package io.github.scrier.opus.duke.commander;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 
@@ -23,7 +24,7 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 		setOnUpdateReturn(CREATED);
 		setOnEvicted(null);
 		setOnEvictedReturn(CREATED);
-		setOnRemoved(-1L);
+		setOnRemoved(Constants.HC_UNDEFINED);
 		setOnRemovedReturn(CREATED);
 		setHandleInMessage(null);
 		setHandleInMessageReturn(CREATED);
