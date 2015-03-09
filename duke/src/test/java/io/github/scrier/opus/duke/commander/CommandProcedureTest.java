@@ -99,7 +99,6 @@ public class CommandProcedureTest {
 		NukeExecuteRspMsgC input = new NukeExecuteRspMsgC();
 		input.setSource(component);
 		input.setTxID(testObject.getTxID() + 1);
-		input.setResponse("ok");
 		input.setDestination(identity);
 		testObject.handleInMessage(input);
 		assertEquals(testObject.INITIALIZING, testObject.getState());
@@ -112,7 +111,6 @@ public class CommandProcedureTest {
 		NukeExecuteRspMsgC input = new NukeExecuteRspMsgC();
 		input.setSource(component);
 		input.setTxID(testObject.getTxID());
-		input.setResponse("ok");
 		input.setDestination(identity);
 		testObject.handleInMessage(input);
 		assertEquals(testObject.ABORTED, testObject.getState());
@@ -125,7 +123,6 @@ public class CommandProcedureTest {
 		NukeExecuteRspMsgC input = new NukeExecuteRspMsgC();
 		input.setSource(component);
 		input.setTxID(testObject.getTxID());
-		input.setResponse("ok");
 		input.setDestination(identity);
 		testObject.handleInMessage(input);
 		assertEquals(testObject.WORKING, testObject.getState());
@@ -137,7 +134,6 @@ public class CommandProcedureTest {
 		testObject.setState(testObject.WORKING);
 		NukeExecuteIndMsgC input = new NukeExecuteIndMsgC();
 		input.setSource(component + 1);
-		input.setResponse("ok");
 		input.setDestination(identity);
 		input.setStatus(CommandState.UNDEFINED);
 		testObject.handleInMessage(input);
@@ -150,7 +146,6 @@ public class CommandProcedureTest {
 		testObject.setState(testObject.INITIALIZING);
 		NukeExecuteIndMsgC input = new NukeExecuteIndMsgC();
 		input.setSource(component);
-		input.setResponse("ok");
 		input.setDestination(identity);
 		input.setStatus(CommandState.UNDEFINED);
 		testObject.handleInMessage(input);
@@ -194,7 +189,6 @@ public class CommandProcedureTest {
 	private void testDefaultCommandState(CommandProcedure testObject, CommandState commandState, int expectedState) {
 	  NukeExecuteIndMsgC input = new NukeExecuteIndMsgC();
 		input.setSource(component);
-		input.setResponse("ok");
 		input.setDestination(identity);
 		input.setStatus(commandState);
 		testObject.handleInMessage(input);

@@ -137,7 +137,7 @@ public class RampingDownTest {
 	public void testFinishedWrongState() {
 		RampingDown testObject = new RampingDown(distributor);
 		testObject.setState(testObject.RAMPING_DOWN);
-		testObject.finished(1L, testObject.ABORTED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.ABORTED, "haha", "hoho");
 		fail("Should throw exception.");
 	}
 	
@@ -145,7 +145,7 @@ public class RampingDownTest {
 	public void testFinishedTerminating() {
 		RampingDown testObject = new RampingDown(distributor);
 		testObject.setState(testObject.TERMINATING);
-		testObject.finished(1L, testObject.TERMINATING, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.TERMINATING, "haha", "hoho");
 		assertEquals(testObject.TERMINATING, testObject.getState());
 	}
 	
@@ -153,7 +153,7 @@ public class RampingDownTest {
 	public void testFinishedUnknownID() {
 		RampingDown testObject = new RampingDown(distributor);
 		testObject.setState(testObject.RAMPING_DOWN);
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		fail("Should throw exception.");
 	}
 	
@@ -163,7 +163,7 @@ public class RampingDownTest {
 		testObject.setState(testObject.RAMPING_DOWN);
 		testObject.getActiveNukeCommands().add(1L);
 		distributor.timeoutActive = true;
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		assertEquals(0, distributor.TimeoutCalls);
 	}
 	
@@ -173,7 +173,7 @@ public class RampingDownTest {
 		testObject.setState(testObject.RAMPING_DOWN);
 		testObject.getActiveNukeCommands().add(1L);
 		distributor.timeoutActive = false;
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		assertEquals(distributor.TimeoutTime, testObject.getRampDownUpdateSeconds());
 		assertEquals(distributor.TimeoutTimerID, testObject.getTimerID());
 		assertEquals(1, distributor.TimeoutCalls);

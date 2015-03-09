@@ -149,7 +149,7 @@ public class TeminatingTest {
 	public void testFinishedWrongState() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
-		testObject.finished(1L, testObject.ABORTED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.ABORTED, "haha", "hoho");
 		fail("Should throw exception.");
 	}
 	
@@ -157,7 +157,7 @@ public class TeminatingTest {
 	public void testFinishedTerminating() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
-		testObject.finished(1L, testObject.TERMINATING, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.TERMINATING, "haha", "hoho");
 		assertEquals(testObject.TERMINATING, testObject.getState());
 	}
 	
@@ -165,7 +165,7 @@ public class TeminatingTest {
 	public void testFinishedUnknownID() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		fail("Should throw exception.");
 	}
 	
@@ -175,7 +175,7 @@ public class TeminatingTest {
 		testObject.setState(testObject.TERMINATING);
 		testObject.getActiveNukeCommands().add(1L);
 		distributor.timeoutActive = true;
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		assertEquals(0, distributor.TimeoutCalls);
 		assertEquals(testObject.COMPLETED, testObject.getState());
 	}
@@ -187,7 +187,7 @@ public class TeminatingTest {
 		testObject.getActiveNukeCommands().add(1L);
 		testObject.getActiveNukeCommands().add(2L);
 		distributor.timeoutActive = true;
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		assertEquals(0, distributor.TimeoutCalls);
 		assertEquals(testObject.TERMINATING, testObject.getState());
 	}

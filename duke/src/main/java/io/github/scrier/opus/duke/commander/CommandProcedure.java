@@ -18,6 +18,7 @@ package io.github.scrier.opus.duke.commander;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
@@ -40,7 +41,7 @@ public class CommandProcedure extends BaseDukeProcedure {
 	private String folder;
 	private ICommandCallback callback;
 	private CommandState currentState;
-	private String response;
+	private long processID;
 	private long sagaID;
 
 	public CommandProcedure(long destination, String command) {
@@ -70,6 +71,7 @@ public class CommandProcedure extends BaseDukeProcedure {
 		setFolder(folder);
 		setRepeated(repeated);
 		setCallback(callback);
+		setProcessID(Constants.HC_UNDEFINED);
 		setCurrentState(CommandState.UNDEFINED);
 		setSagaID(getNextSagaID());
 	}
@@ -92,8 +94,8 @@ public class CommandProcedure extends BaseDukeProcedure {
 	public void shutDown() throws Exception {
 		log.trace("shutDown()");
 		if( null != getCallback() ) {
-			getCallback().finished(getDestination(),
-					getState(), getCommand(), getResponse());
+			getCallback().finished(getDestination(), getProcessID(),
+					getState(), getCommand(), "");
 		}
 	}
 
@@ -140,7 +142,7 @@ public class CommandProcedure extends BaseDukeProcedure {
   	retValue += ", folder:" + getFolder();
   	retValue += ", callback:" + getCallback();
   	retValue += ", currentState:" + getCurrentState();
-  	retValue += ", response:" + getResponse() + "}";
+  	retValue += ", processID: " + getProcessID() + "}";
   	return retValue;
   }
 
@@ -236,21 +238,21 @@ public class CommandProcedure extends BaseDukeProcedure {
   public void setCurrentState(CommandState currentState) {
 	  this.currentState = currentState;
   }
-
-	/**
-	 * @return the response
-	 */
-  public String getResponse() {
-	  return response;
-  }
-
-	/**
-	 * @param response the response to set
-	 */
-  public void setResponse(String response) {
-	  this.response = response;
-  }
   
+	/**
+	 * @return the processID
+	 */
+  public long getProcessID() {
+	  return processID;
+  }
+
+	/**
+	 * @param processID the processID to set
+	 */
+  public void setProcessID(long processID) {
+	  this.processID = processID;
+  }
+
 	/**
 	 * @return the sagaID
 	 */
@@ -277,7 +279,7 @@ public class CommandProcedure extends BaseDukeProcedure {
   			setState(ABORTED);
   		} else {
 	  		log.info("Received: " + message);
-	  		setResponse(message.getResponse());
+	  		setProcessID(message.getProcessID());
 	  		setState(WORKING);
   		}
   	}
@@ -290,30 +292,32 @@ public class CommandProcedure extends BaseDukeProcedure {
   protected void handleMessage(NukeExecuteIndMsgC message) {
   	log.trace(" handleMessage(" + message + ")");
   	if( getDestination() == message.getSource() ) {
-  		log.info("Received: " + message);
-  		if( WORKING != getState() ) {
-  			log.error("Received NukeExecuteIndMsgC when not in state WORKING.");
-  			setState(ABORTED);
+  		if( getProcessID() != message.getProcessID() ) {
+  			log.debug("Message not for us, expected: " + getProcessID() + ", received: " + message.getProcessID() + ".");
   		} else {
-  			log.info("[" + getTxID() + "] Changed status to: " + message.getStatus() + ".");
-  			switch( message.getStatus() ) {
-  				case ABORTED: {
-  					log.info("Task reports aborted state with response: " + message.getResponse() + ".");
-  					setResponse(message.getResponse());
-  					setState(ABORTED);
-  					break;
+  			log.info("Received: " + message);
+  			if( WORKING != getState() ) {
+  				log.error("Received NukeExecuteIndMsgC when not in state WORKING.");
+  				setState(ABORTED);
+  			} else {
+  				log.info("[" + getTxID() + "] Changed status to: " + message.getStatus() + ".");
+  				switch( message.getStatus() ) {
+  					case ABORTED: {
+  						log.info("Task reports aborted state.");
+  						setState(ABORTED);
+  						break;
+  					}
+  					case DONE: {
+  						log.info("Task reports done state.");
+  						setState(COMPLETED);
+  						break;
+  					}
+  					default: {
+  						// do nothing.
+  					}
   				}
-  				case DONE: {
-  					log.info("Task reports done state with response: " + message.getResponse() + ".");
-  					setResponse(message.getResponse());
-  					setState(COMPLETED);
-  					break;
-  				}
-  				default: {
-  					// do nothing.
-  				}
+  				setCurrentState(message.getStatus());
   			}
-  			setCurrentState(message.getStatus());
   		}
   	}
   }
