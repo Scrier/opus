@@ -23,6 +23,7 @@ import io.github.scrier.opus.common.message.MessageService;
 public class MessageServiceMock extends MessageService {
 	
 	private ArrayList<BaseMsgC> messages;
+	private final int DefaultTimeout = 10;
 	
 	public MessageServiceMock() {
 		super(new MessageIFImpl());
@@ -65,6 +66,21 @@ public class MessageServiceMock extends MessageService {
 	 */
   private void setMessages(ArrayList<BaseMsgC> messages) {
 	  this.messages = messages;
+  }
+  
+  public void waitForMessages(int expectedNoOfMessages) {
+  	waitForMessages(expectedNoOfMessages, DefaultTimeout);
+  }
+  
+  public void waitForMessages(int expectedNoOfMessages, int timeout) {
+  	timeout *= 10;
+  	while( expectedNoOfMessages > messages.size() && timeout-- > 0 ) {
+  		try {
+	      Thread.sleep(100);
+      } catch (InterruptedException e) {
+	      return;
+      }
+  	}
   }
   
 }

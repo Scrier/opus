@@ -26,6 +26,9 @@ import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeMsgFactory;
+import io.github.scrier.opus.common.nuke.NukeStopReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateReqMsgC;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
 import io.github.scrier.opus.nuke.task.StreamGobbler;
 import io.github.scrier.opus.nuke.task.StreamGobblerToFile;
@@ -35,7 +38,6 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 
 	private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedure.class);
 	
-	private boolean repeated;
 	private int completedCommands;
 	
 	public final int RUNNING = CREATED + 1;
@@ -45,7 +47,6 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		log.trace("RepeatedExecuteTaskProcedure(" + message + ")");
 		setRepeated(message.isRepeated());
 		setCompletedCommands(0);
-		setRepeated(message.isRepeated());
 	}
 	
 	/**
@@ -54,6 +55,8 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	@Override
   public void init() throws Exception {
 		log.info("init()");
+		setProcessID(getUniqueID());
+		sendResponse();
 		if( !isRepeated() ) {
 			log.fatal("[" + getTxID() + "] Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
 			throw new RuntimeException("Started a RepeatedExecuteTaskProcedure with command that isn't repeated.");
@@ -111,6 +114,19 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	 */
 	@Override
   public int handleInMessage(BaseMsgC message) {
+		log.trace("handleInMessage(" + message + ")");
+		switch( message.getId() ) {
+			case NukeMsgFactory.NUKE_STOP_REQ: {
+				NukeStopReqMsgC pNukeStopReq = new NukeStopReqMsgC(message);
+				handleMessage(pNukeStopReq);
+				break;
+			}
+			case NukeMsgFactory.NUKE_TERMINATE_REQ: {
+				NukeTerminateReqMsgC pNukeTerminateReq = new NukeTerminateReqMsgC(message);
+				handleMessage(pNukeTerminateReq);
+				break;
+			}
+		}
 	  return getState();
   }
 	
@@ -152,20 +168,6 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	  } while ( RUNNING == getState() && isRepeated() );
 	  return null;
   }
-	
-	/**
-	 * @return the repeated
-	 */
-	private boolean isRepeated() {
-		return repeated;
-	}
-
-	/**
-	 * @param repeated the repeated to set
-	 */
-	private void setRepeated(boolean repeated) {
-		this.repeated = repeated;
-	}
 
 	/**
 	 * @return the completedCommands

@@ -6,9 +6,12 @@ import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
-import io.github.scrier.opus.common.nuke.NukeExecuteIndMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
+import io.github.scrier.opus.common.nuke.NukeStopReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateRspMsgC;
 import io.github.scrier.opus.nuke.BaseActiveObjectMock;
 import io.github.scrier.opus.nuke.task.Context;
 import io.github.scrier.opus.nuke.task.NukeTasks;
@@ -27,19 +30,20 @@ import com.hazelcast.core.IMap;
 
 public class RepeatedExecuteTaskProcedureTest {
 
-private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTest.class);
+	private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTest.class);
 	
 	private static TestHelper helper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
 	private long identity = 8239421L;
-	private Context theContext = Context.INSTANCE;
+	private static Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
   private IMap theMap;
   private IMap settingsMap;
 	private NukeExecuteReqMsgC command;
 	private MessageServiceMock SendIF;
+	private long processID = 123754L;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -50,6 +54,7 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	public void setUp() throws Exception {
 		instance = helper.mockHazelcast();
 		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, processID);
 		theMap = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		settingsMap = helper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
 		Mockito.when(settingsMap.containsKey(any())).thenReturn(false);
@@ -71,6 +76,8 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		instance = null;
 		theBaseAOC = null;
 		command = null;
+		SendIF.clear();
+		SendIF = null;
 	}
 
 	@Test
@@ -85,13 +92,9 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	public void testInit() throws Exception {
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		int timeout = 5;
-		while( testObject.RUNNING != testObject.getState() && timeout-- > 0 ) {
-			Thread.sleep(10); // force taskswitch
-		}
-		assertEquals(testObject.RUNNING, testObject.getState());
-		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
+		SendIF.waitForMessages(2);
+		assertEquals(2, SendIF.getMessages().size());
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
 	}
 	
@@ -100,14 +103,9 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		int timeout = 5;
-		while( testObject.RUNNING != testObject.getState() && timeout-- > 0 ) {
-			Thread.sleep(10); // force taskswitch
-		}
-		assertEquals(testObject.RUNNING, testObject.getState());
-		assertEquals(0, testObject.getCompletedCommands());
-		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
+		SendIF.waitForMessages(2);
+		assertEquals(2, SendIF.getMessages().size());
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
 	}
 	
@@ -117,12 +115,13 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		int timeout = 3;
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
+		SendIF.clear();
 		while( testObject.RUNNING != testObject.getState() && timeout-- > 0 ) {
 			Thread.sleep(10); // force taskswitch
 		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, processID);
 		timeout = 15;
 		while( 1 != testObject.getCompletedCommands() && timeout-- > 0 ) {
 			Thread.sleep(200);
@@ -137,28 +136,59 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		int timeout = 5;
-		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
-			Thread.sleep(10); // force taskswitch
-		}
-		assertEquals(testObject.RUNNING, testObject.getState());
-		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
-		timeout = 15;
-		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
-			Thread.sleep(200);
-		}
-		assertEquals(testObject.RUNNING, testObject.getState());
-//		assertEquals(CommandState.WORKING, testObject.getCommand().getState());
-//		command.setState(CommandState.STOP);
-//		testObject.handleOnUpdated(command);
-		timeout = 15;
-		while( testObject.COMPLETED != testObject.getState() && timeout-- > 0 ) {
-			Thread.sleep(200);
-		}
-		assertEquals(testObject.COMPLETED, testObject.getState());
+//		SendIF.clear();
+//		int timeout = 5;
+//		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
+//			Thread.sleep(10); // force taskswitch
+//		}
+//		assertEquals(testObject.RUNNING, testObject.getState());
+//		assertEquals(1, SendIF.getMessages().size());
+//		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, processID);
+//		timeout = 15;
+//		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
+//			Thread.sleep(200);
+//		}
+		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.DONE, "");
+		log.info("");
+		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		log.info("");
+		SendIF.clear();
+		NukeStopReqMsgC pNukeStopReq = new NukeStopReqMsgC();
+		pNukeStopReq.setTxID(123456);
+		pNukeStopReq.setProcessID(testObject.getProcessID());
+		testObject.handleInMessage(pNukeStopReq);
+//		assertEquals(2, SendIF.getMessages().size());
+//		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(1), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_RSP);
+//		NukeStopRspMsgC check = new NukeStopRspMsgC(SendIF.getMessage(1));
+//		assertEquals(true, check.isSuccess());
+//		timeout = 15;
+//		while( testObject.COMPLETED != testObject.getState() && timeout-- > 0 ) {
+//			Thread.sleep(200);
+//		}
+		SendIF.waitForMessages(2);
+		for( BaseMsgC message : SendIF.getMessages() ) {
+			log.info(">>>>>>>>>>>>>>>>>>>>>>: " + message);
+		}
+		assertEquals(2, SendIF.getMessages().size());
+		int stopRsp = -1;
+		int processInd = -2;
+		if( NukeMsgFactory.NUKE_STOP_RSP == SendIF.getMessage(0).getId() ) {
+			stopRsp = 0;
+			processInd = 1;
+		} else {
+			stopRsp = 1;
+			processInd = 0;
+		}
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.ABORTED, processID);
+		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(stopRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_RSP);
+		NukeStopRspMsgC check = new NukeStopRspMsgC(SendIF.getMessage(stopRsp));
+		assertEquals(true, check.isSuccess());
+		log.info("");
+		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+		log.info("");
+//		assertEquals(testObject.COMPLETED, testObject.getState());
+//		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(2), CommandState.DONE, processID);
 	}
 	
 	@Test
@@ -166,29 +196,28 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		int timeout = 5;
-		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
-			Thread.sleep(10); // force taskswitch
-		}
-		assertEquals(testObject.RUNNING, testObject.getState());
-		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
-		timeout = 15;
-		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
-			Thread.sleep(200);
-		}
-		assertEquals(testObject.RUNNING, testObject.getState());
-		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
-//		command.setState(CommandState.TERMINATE);
-//		testObject.handleOnUpdated(command);
-		timeout = 15;
-		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
-			Thread.sleep(200);
-		}
-		assertEquals(testObject.ABORTED, testObject.getState());
+		SendIF.waitForMessages(2);
+		SendIF.clear();
+		NukeTerminateReqMsgC pNukeTerminateReq = new NukeTerminateReqMsgC();
+		pNukeTerminateReq.setTxID(123456);
+		pNukeTerminateReq.setProcessID(testObject.getProcessID());
+		testObject.handleInMessage(pNukeTerminateReq);
+		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.ABORTED, "");
+		assertEquals(testObject.ABORTED, testObject.getState());
+		int terminateRsp = -1;
+		int processInd = -2;
+		if( NukeMsgFactory.NUKE_TERMINATE_RSP == SendIF.getMessage(0).getId() ) {
+			terminateRsp = 0;
+			processInd = 1;
+		} else {
+			terminateRsp = 1;
+			processInd = 0;
+		}
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.ABORTED, processID);
+		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(terminateRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_RSP);
+		NukeTerminateRspMsgC check = new NukeTerminateRspMsgC(SendIF.getMessage(terminateRsp));
+		assertEquals(true, check.isSuccess());
 	}
 	
 	@Test
@@ -197,13 +226,14 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		command.setCommand("dir");
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
+		SendIF.clear();
 		int timeout = 15;
 		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
 			Thread.sleep(200);
 		}
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(2, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.WORKING, "");
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.ABORTED, processID);
 	}
 	
 	@Test
@@ -211,13 +241,14 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
+		SendIF.clear();
 		int timeout = 5;
 		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
 			Thread.sleep(10); // force taskswitch
 		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
 		testObject.setState(testObject.COMPLETED);
 		testObject.shutDown();
@@ -229,13 +260,14 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
+		SendIF.clear();
 		int timeout = 5;
 		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
 			Thread.sleep(10); // force taskswitch
 		}
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(1, SendIF.getMessages().size());
-		assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, "");
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
 		testObject.shutDown();
 		assertCommands(testObject, 0, 1, 1);
@@ -253,10 +285,7 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	@Test
 	public void testhandleOnEvicted() {
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
-		log.debug(">>> object has: " + testObject.getNukeInfo() );
-//		testObject.handleOnEvicted(command);
-		log.debug(">>> sending in: " + command);
-		assertEquals(testObject.ABORTED, testObject.getState());
+		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
 	}
@@ -274,8 +303,7 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	@Test
 	public void testhandleOnRemoved() {
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
-//		testObject.handleOnRemoved(testObject.getCommand().getKey());
-		assertEquals(testObject.ABORTED, testObject.getState());
+		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
 	}
@@ -284,7 +312,6 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 	public void testhandleOnRemovedFinished() {
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.setState(testObject.COMPLETED);
-//		testObject.handleOnRemoved(testObject.getCommand().getKey());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
@@ -302,19 +329,5 @@ private static Logger log = LogManager.getLogger(RepeatedExecuteTaskProcedureTes
 		assertEquals(expectedCompleted, testObject.getNukeInfo().getCompletedCommands());
 		assertEquals(expectedRequested, testObject.getNukeInfo().getRequestedCommands());
   }
-	
-	/**
-	 * Method to check the NukeExecuteInd Message
-	 * @param msg BaseMsg to check
-	 * @param expectedStatus expected status
-	 * @param containsResponse contains response
-	 */
-	private void assertNukeExecuteIndMsgC(BaseMsgC msg, CommandState expectedStatus, String containsResponse) {
-		assertEquals(NukeMsgFactory.FACTORY_ID, msg.getFactoryId());
-		assertEquals(NukeMsgFactory.NUKE_EXECUTE_IND, msg.getId());
-		NukeExecuteIndMsgC check = new NukeExecuteIndMsgC(msg);
-		assertEquals(expectedStatus, check.getStatus());
-		assertTrue(check.getResponse().contains(containsResponse));
-	}
 
 }

@@ -28,6 +28,10 @@ import io.github.scrier.opus.common.nuke.NukeExecuteIndMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteRspMsgC;
 import io.github.scrier.opus.common.nuke.NukeInfo;
+import io.github.scrier.opus.common.nuke.NukeStopReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateRspMsgC;
 import io.github.scrier.opus.nuke.process.ProcessHandler;
 
 public abstract class BaseTaskProcedure extends BaseNukeProcedure {
@@ -44,6 +48,7 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	private long source;
 	private long sagaID;
 	private long processID;
+	private boolean repeated;
 
 	public BaseTaskProcedure() {
 		log.trace("BaseTaskProcedure");
@@ -96,7 +101,9 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 				gobbler.setInputStream(getProcess().getInputStream());
 			}
 			gobbler.start();
+			log.info(getTxID() + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BEFORE");
 			int retCode = getProcess().waitFor();
+			log.info(getTxID() + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AFTER");
 			if( getProcess().isAlive() ) {
 				log.error("Process still alive, although ret code returned.");
 			}
@@ -224,8 +231,9 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
    * @param newState The state to change to.
    * @param extraInformation message with reasoning behind a state change.
    */
-  protected synchronized void sendCommandStateUpdate(CommandState newState, String extraInformation) {
+  protected void sendCommandStateUpdate(CommandState newState, String extraInformation) {
   	if( newState != getCurrentCommandState() ) {
+  		log.info(">>>>>>>>>>>>>>>>>>>>>>>> newstate: " + newState + ", currentState: " + getCurrentCommandState());
   		setCurrentCommandState(newState);
   		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(getSendIF());
   		pNukeExecuteInd.setSource(getIdentity());
@@ -234,6 +242,59 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
   		pNukeExecuteInd.setProcessID(getProcessID());
   		pNukeExecuteInd.setStatus(newState);
   		pNukeExecuteInd.send();
+  	}
+  }
+  
+  /**
+   * Method to handle the NukeStopReqMsgC message.
+   * @param message NukeStopReqMsgC instance.
+   */
+  protected void handleMessage(NukeStopReqMsgC message) {
+  	log.trace("handleMessage(" + message + ")");
+  	if( getProcessID() != message.getProcessID() ) {
+  		log.debug("NukeStopReqMsgC: " + message + ", not for us, expected: " + getProcessID() + " but was: " + message.getProcessID() + ".");
+  	} else {
+	  	NukeStopRspMsgC pNukeStopRsp = new NukeStopRspMsgC(getSendIF());
+	  	pNukeStopRsp.setSource(getIdentity());
+	  	pNukeStopRsp.setDestination(message.getSource());
+	  	pNukeStopRsp.setTxID(message.getTxID());
+	  	pNukeStopRsp.setSagaID(message.getSagaID());
+	  	pNukeStopRsp.setProcessID(getProcessID());
+	  	if( true != getProcess().isAlive() ) {
+	  		pNukeStopRsp.setStatus("Process with id: " + getProcessID() + " is not alive.");
+	  		pNukeStopRsp.setSuccess(false);
+	  	} else {
+	  		setRepeated(false);
+	  		pNukeStopRsp.setStatus("Stopped repeat feature and waiting for soft stop.");
+	  		pNukeStopRsp.setSuccess(true);
+	  	}
+	  	pNukeStopRsp.send();
+  	}
+  }
+  
+  /**
+   * Method to handle the NukeTerminateReqMsgC message
+   * @param message NukeTerminateReqMsgC instance.
+   */
+  protected void handleMessage(NukeTerminateReqMsgC message) {
+  	log.trace("handleMessage(" + message + ")");
+  	if( getProcessID() != message.getProcessID() ) {
+  		log.debug("NukeTerminateReqMsgC: " + message + ", not for us, expected: " + getProcessID() + " but was: " + message.getProcessID() + ".");
+  	} else {
+  		log.info("Received command to terminate execution from: " + message.getSource() + ".");
+  		NukeTerminateRspMsgC pNukeTerminateRsp = new NukeTerminateRspMsgC(getSendIF());
+  		pNukeTerminateRsp.setSource(getIdentity());
+  		pNukeTerminateRsp.setDestination(message.getSource());
+  		pNukeTerminateRsp.setTxID(message.getTxID());
+  		pNukeTerminateRsp.setSagaID(message.getSagaID());
+  		pNukeTerminateRsp.setSuccess(true);
+  		if( true != getProcess().isAlive() ) {
+  			pNukeTerminateRsp.setStatus("Process " + getProcessID() + " is not alive, nothing to do.");
+  		} else {
+  			terminateProcess();
+  			pNukeTerminateRsp.setStatus("Process " + getProcessID() + " has been given command to destroy process.");
+  		}
+  		pNukeTerminateRsp.send();
   	}
   }
 
@@ -308,17 +369,36 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
   }
   
 	/**
+	 * @return the repeated
+	 */
+	protected boolean isRepeated() {
+		return repeated;
+	}
+
+	/**
+	 * @param repeated the repeated to set
+	 */
+	protected void setRepeated(boolean repeated) {
+		this.repeated = repeated;
+	}
+  
+	/**
 	 * Method to send response to the requesting part.
 	 */
 	protected void sendResponse() {
 		log.trace("sendResponse()");
-		NukeExecuteRspMsgC pNukeExecuteRsp = new NukeExecuteRspMsgC(getSendIF());
-		pNukeExecuteRsp.setSource(getIdentity());
-		pNukeExecuteRsp.setDestination(getSource());
-		pNukeExecuteRsp.setTxID(getTxID());
-		pNukeExecuteRsp.setProcessID(getProcessID());
-		pNukeExecuteRsp.setSagaID(getSagaID());
-		pNukeExecuteRsp.send();
+		if( Constants.HC_UNDEFINED == getProcessID() ) {
+			log.fatal("Process id is undefined. Cannot continue.");
+			throw new RuntimeException("Process id in method BaseTaskProcedure.sendResponse is undefined. Cannot continue.");
+		} else {
+			NukeExecuteRspMsgC pNukeExecuteRsp = new NukeExecuteRspMsgC(getSendIF());
+			pNukeExecuteRsp.setSource(getIdentity());
+			pNukeExecuteRsp.setDestination(getSource());
+			pNukeExecuteRsp.setTxID(getTxID());
+			pNukeExecuteRsp.setProcessID(getProcessID());
+			pNukeExecuteRsp.setSagaID(getSagaID());
+			pNukeExecuteRsp.send();
+		}
 	}
 	
 }

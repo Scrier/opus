@@ -24,13 +24,12 @@ import org.apache.logging.log4j.Logger;
 import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
-import io.github.scrier.opus.common.node.NukeFactoryTest;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeExecuteRspMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
+import io.github.scrier.opus.common.nuke.NukeStopReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateReqMsgC;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
-import io.github.scrier.opus.nuke.task.Context;
 
 public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<String> {
 	
@@ -107,11 +106,13 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 		log.trace("handleInMessage(" + message + ")");
 		switch( message.getId() ) {
 			case NukeMsgFactory.NUKE_STOP_REQ: {
-				///TODO send to base task for common handling.
+				NukeStopReqMsgC pNukeStopReq = new NukeStopReqMsgC(message);
+				handleMessage(pNukeStopReq);
 				break;
 			}
 			case NukeMsgFactory.NUKE_TERMINATE_REQ: {
-				///TODO send to base task for common handling
+				NukeTerminateReqMsgC pNukeTerminateReq = new NukeTerminateReqMsgC(message);
+				handleMessage(pNukeTerminateReq);
 				break;
 			}
 		}
