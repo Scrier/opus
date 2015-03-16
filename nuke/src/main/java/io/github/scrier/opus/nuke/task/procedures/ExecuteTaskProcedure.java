@@ -49,6 +49,7 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 	@Override
   public void init() throws Exception {
 		log.trace("init()");
+		log.info("init to id: " + getIdentity() + ".");
 		setProcessID(getUniqueID());
 		sendResponse();
 	  getExecutor().submit(this);

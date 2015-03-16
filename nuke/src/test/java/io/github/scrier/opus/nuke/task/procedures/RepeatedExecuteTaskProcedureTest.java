@@ -2,6 +2,9 @@ package io.github.scrier.opus.nuke.task.procedures;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
+
+import java.util.concurrent.TimeUnit;
+
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.message.BaseMsgC;
@@ -40,6 +43,7 @@ public class RepeatedExecuteTaskProcedureTest {
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
   private IMap theMap;
+	@SuppressWarnings("rawtypes")
   private IMap settingsMap;
 	private NukeExecuteReqMsgC command;
 	private MessageServiceMock SendIF;
@@ -70,6 +74,9 @@ public class RepeatedExecuteTaskProcedureTest {
 
 	@After
 	public void tearDown() throws Exception {
+		theContext.getExecutor().shutdownNow();
+		log.info("Shutting down threads, waiting for terminateion.");
+		theContext.getExecutor().awaitTermination(10, TimeUnit.SECONDS);
 		theContext.shutDown();
 		command = null;
 		theMap = null;
@@ -144,18 +151,7 @@ public class RepeatedExecuteTaskProcedureTest {
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-//		SendIF.clear();
-//		int timeout = 5;
-//		while( testObject.ABORTED != testObject.getState() && timeout-- > 0 ) {
-//			Thread.sleep(10); // force taskswitch
-//		}
-//		assertEquals(testObject.RUNNING, testObject.getState());
-//		assertEquals(1, SendIF.getMessages().size());
-//		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.WORKING, processID);
-//		timeout = 15;
-//		while( 1 > testObject.getCompletedCommands() && timeout-- > 0 ) {
-//			Thread.sleep(200);
-//		}
+		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> id: " + testObject.getIdentity() + ".");
 		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());
 		log.info("");
@@ -166,14 +162,6 @@ public class RepeatedExecuteTaskProcedureTest {
 		pNukeStopReq.setTxID(123456);
 		pNukeStopReq.setProcessID(testObject.getProcessID());
 		testObject.handleInMessage(pNukeStopReq);
-//		assertEquals(2, SendIF.getMessages().size());
-//		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(1), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_RSP);
-//		NukeStopRspMsgC check = new NukeStopRspMsgC(SendIF.getMessage(1));
-//		assertEquals(true, check.isSuccess());
-//		timeout = 15;
-//		while( testObject.COMPLETED != testObject.getState() && timeout-- > 0 ) {
-//			Thread.sleep(200);
-//		}
 		SendIF.waitForMessages(2);
 		for( BaseMsgC message : SendIF.getMessages() ) {
 			log.info(">>>>>>>>>>>>>>>>>>>>>>: " + message);
@@ -195,8 +183,6 @@ public class RepeatedExecuteTaskProcedureTest {
 		log.info("");
 		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 		log.info("");
-//		assertEquals(testObject.COMPLETED, testObject.getState());
-//		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(2), CommandState.DONE, processID);
 		testObject.cleanUp();
 		testObject = null;
 	}

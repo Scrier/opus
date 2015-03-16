@@ -18,6 +18,7 @@ package io.github.scrier.opus.nuke.task;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
@@ -81,10 +82,16 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	public void cleanUp() {
 		log.trace("cleanUp()");
 		log.debug("Process: " + getProcess() + ", processHandler: " + getProcessHandler());
+		setRepeated(false);
 		if( null != getProcess() ) {
 			while( getProcess().isAlive() ) {
 				log.info("Terminating child process.");
 				getProcess().destroy();
+				try {
+	        log.info("With return code: " + getProcess().waitFor(100, TimeUnit.MILLISECONDS) + ".");
+        } catch (InterruptedException e) {
+	        log.fatal("Received InterruptedException from waitFor killing process.", e);
+        }
 			}
 		}
 	}
@@ -245,11 +252,10 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
    */
   protected synchronized void sendCommandStateUpdate(CommandState newState, String extraInformation) {
   	log.trace("sendCommandStateUpdate(" + newState + ", \"" + extraInformation + "\")");
-//  	if( id != extId ) {
-//  		log.debug("Received request to change state from unknown id: " + extId + ", expected " + id + ".");
-//  	} else 
   	if( newState != getCurrentCommandState() ) {
+  		log.info(getIdentity() + ": checks state " + newState + " towards " +  getCurrentCommandState() + ".");
   		setCurrentCommandState(newState);
+  		log.info(getIdentity() + ": changed state to " +  getCurrentCommandState() + ".");
   		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(getSendIF());
   		pNukeExecuteInd.setSource(getIdentity());
   		pNukeExecuteInd.setDestination(Constants.MSG_TO_ALL);
@@ -316,14 +322,14 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	/**
 	 * @return the currentCommandState
 	 */
-  private synchronized CommandState getCurrentCommandState() {
+  private CommandState getCurrentCommandState() {
 	  return currentCommandState;
   }
 
 	/**
 	 * @param currentCommandState the currentCommandState to set
 	 */
-  private synchronized void setCurrentCommandState(CommandState currentCommandState) {
+  private void setCurrentCommandState(CommandState currentCommandState) {
 	  this.currentCommandState = currentCommandState;
   }
 

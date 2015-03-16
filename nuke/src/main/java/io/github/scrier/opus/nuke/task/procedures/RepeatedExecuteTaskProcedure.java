@@ -54,7 +54,8 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 	 */
 	@Override
   public void init() throws Exception {
-		log.info("init()");
+		log.trace("init()");
+		log.info("init to id: " + getIdentity() + ".");
 		setProcessID(getUniqueID());
 		sendResponse();
 		if( !isRepeated() ) {

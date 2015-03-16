@@ -68,6 +68,15 @@ public enum Context {
 	}
 
 	public void shutDown() {
+		if( null != executor ) {
+			executor.shutdownNow();
+			log.info("Shutting down threads, waiting for terminateion.");
+			try {
+				executor.awaitTermination(10, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.fatal("Received InterruptedException in shutDown.", e);
+			}
+		}
 		initialized = false;
 		txID = 0;
 		executor = null;
@@ -175,7 +184,7 @@ public enum Context {
 		return getTask().removeEntry(data);
 	}
 	
-	protected ThreadPoolExecutor getExecutor() {
+	public ThreadPoolExecutor getExecutor() {
 		return executor;
 	}
 	
