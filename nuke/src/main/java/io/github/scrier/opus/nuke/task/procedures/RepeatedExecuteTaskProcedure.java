@@ -80,6 +80,7 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
 		  getNukeInfo().setActiveCommands(getNukeInfo().getActiveCommands() - 1);
 		  getNukeInfo().setCompletedCommands(getNukeInfo().getCompletedCommands() + 1);
 		}
+		cleanUp();
   }
 
 	/**

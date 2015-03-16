@@ -69,6 +69,7 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
 		  getNukeInfo().setActiveCommands(getNukeInfo().getActiveCommands() - 1);
 		  getNukeInfo().setCompletedCommands(getNukeInfo().getCompletedCommands() + 1);
 		}
+		cleanUp();
   }
 
 	/**

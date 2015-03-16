@@ -35,7 +35,7 @@ public class RepeatedExecuteTaskProcedureTest {
 	private static TestHelper helper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 8239421L;
+	private long identity = 8239422L;
 	private static Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
@@ -53,7 +53,7 @@ public class RepeatedExecuteTaskProcedureTest {
   @Before
 	public void setUp() throws Exception {
 		instance = helper.mockHazelcast();
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, ++identity);
 		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, processID);
 		theMap = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		settingsMap = helper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
@@ -86,6 +86,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -96,6 +98,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(2, SendIF.getMessages().size());
 		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -107,6 +111,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(2, SendIF.getMessages().size());
 		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -129,6 +135,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(1, testObject.getCompletedCommands());
 		assertEquals(testObject.RUNNING, testObject.getState());
 		assertEquals(1, SendIF.getMessages().size());
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -180,8 +188,8 @@ public class RepeatedExecuteTaskProcedureTest {
 			stopRsp = 1;
 			processInd = 0;
 		}
-		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.ABORTED, processID);
-		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(stopRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_RSP);
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.DONE, processID);
+		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(stopRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_RSP);
 		NukeStopRspMsgC check = new NukeStopRspMsgC(SendIF.getMessage(stopRsp));
 		assertEquals(true, check.isSuccess());
 		log.info("");
@@ -189,6 +197,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		log.info("");
 //		assertEquals(testObject.COMPLETED, testObject.getState());
 //		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(2), CommandState.DONE, processID);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -218,6 +228,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(terminateRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_RSP);
 		NukeTerminateRspMsgC check = new NukeTerminateRspMsgC(SendIF.getMessage(terminateRsp));
 		assertEquals(true, check.isSuccess());
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -234,6 +246,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.ABORTED, testObject.getState());
 		assertEquals(2, SendIF.getMessages().size());
 		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.ABORTED, processID);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -253,6 +267,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		testObject.setState(testObject.COMPLETED);
 		testObject.shutDown();
 		assertCommands(testObject, 0, 1, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test(expected=RuntimeException.class)
@@ -271,6 +287,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertCommands(testObject, 1, 0, 1);
 		testObject.shutDown();
 		assertCommands(testObject, 0, 1, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -280,6 +298,7 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject = null;
 	}
 	
 	@Test
@@ -288,6 +307,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -298,6 +319,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -306,6 +329,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -315,6 +340,8 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	/**

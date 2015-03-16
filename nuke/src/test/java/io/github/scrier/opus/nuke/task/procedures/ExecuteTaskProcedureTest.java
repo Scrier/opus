@@ -48,7 +48,7 @@ public class ExecuteTaskProcedureTest {
   @Before
 	public void setUp() throws Exception {
 		instance = helper.mockHazelcast();
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, --identity);
 		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, processID);
 		theMap = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
@@ -81,6 +81,8 @@ public class ExecuteTaskProcedureTest {
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -96,6 +98,8 @@ public class ExecuteTaskProcedureTest {
 		assertEquals(2, SendIF.getMessages().size());
 		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -108,6 +112,8 @@ public class ExecuteTaskProcedureTest {
 		assertEquals(2, SendIF.getMessages().size());
 		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(1), CommandState.WORKING, processID);
 		assertCommands(testObject, 1, 0, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -136,6 +142,8 @@ public class ExecuteTaskProcedureTest {
 			if( testObject.COMPLETED == testObject.getState() ) break; // wait for the task switching to occur.
 		}
 		assertEquals(testObject.COMPLETED, testObject.getState());
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -152,6 +160,8 @@ public class ExecuteTaskProcedureTest {
 		testObject.setState(testObject.COMPLETED);
 		testObject.shutDown();
 		assertCommands(testObject, 0, 1, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test(expected=RuntimeException.class)
@@ -169,6 +179,8 @@ public class ExecuteTaskProcedureTest {
 		assertCommands(testObject, 1, 0, 1);
 		testObject.shutDown();
 		assertCommands(testObject, 0, 1, 1);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -178,6 +190,8 @@ public class ExecuteTaskProcedureTest {
 		assertEquals(testObject.CREATED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -188,6 +202,8 @@ public class ExecuteTaskProcedureTest {
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	@Test
@@ -198,6 +214,8 @@ public class ExecuteTaskProcedureTest {
 		assertEquals(testObject.COMPLETED, testObject.getState());
 		assertEquals(command.getCommand(), testObject.getCommand());
 		assertCommands(testObject, 0, 0, 0);
+		testObject.cleanUp();
+		testObject = null;
 	}
 	
 	/**

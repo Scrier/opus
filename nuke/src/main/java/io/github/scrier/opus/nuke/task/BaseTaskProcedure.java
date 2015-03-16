@@ -18,6 +18,7 @@ package io.github.scrier.opus.nuke.task;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +50,8 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	private long sagaID;
 	private long processID;
 	private boolean repeated;
+//	static final AtomicLong NEXT_ID = new AtomicLong(0);
+//  protected final long id = NEXT_ID.getAndIncrement();
 
 	public BaseTaskProcedure() {
 		log.trace("BaseTaskProcedure");
@@ -73,6 +76,17 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 		setSource(message.getSource());
 		setSagaID(message.getSagaID());
 		setCurrentCommandState(CommandState.UNDEFINED);
+	}
+	
+	public void cleanUp() {
+		log.trace("cleanUp()");
+		log.debug("Process: " + getProcess() + ", processHandler: " + getProcessHandler());
+		if( null != getProcess() ) {
+			while( getProcess().isAlive() ) {
+				log.info("Terminating child process.");
+				getProcess().destroy();
+			}
+		}
 	}
 
 	/**
@@ -101,9 +115,7 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 				gobbler.setInputStream(getProcess().getInputStream());
 			}
 			gobbler.start();
-			log.info(getTxID() + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BEFORE");
 			int retCode = getProcess().waitFor();
-			log.info(getTxID() + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> AFTER");
 			if( getProcess().isAlive() ) {
 				log.error("Process still alive, although ret code returned.");
 			}
@@ -231,9 +243,12 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
    * @param newState The state to change to.
    * @param extraInformation message with reasoning behind a state change.
    */
-  protected void sendCommandStateUpdate(CommandState newState, String extraInformation) {
+  protected synchronized void sendCommandStateUpdate(CommandState newState, String extraInformation) {
+  	log.trace("sendCommandStateUpdate(" + newState + ", \"" + extraInformation + "\")");
+//  	if( id != extId ) {
+//  		log.debug("Received request to change state from unknown id: " + extId + ", expected " + id + ".");
+//  	} else 
   	if( newState != getCurrentCommandState() ) {
-  		log.info(">>>>>>>>>>>>>>>>>>>>>>>> newstate: " + newState + ", currentState: " + getCurrentCommandState());
   		setCurrentCommandState(newState);
   		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(getSendIF());
   		pNukeExecuteInd.setSource(getIdentity());
