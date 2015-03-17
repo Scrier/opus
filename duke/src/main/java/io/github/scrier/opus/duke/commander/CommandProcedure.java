@@ -44,26 +44,65 @@ public class CommandProcedure extends BaseDukeProcedure {
 	private long processID;
 	private long sagaID;
 
+	/**
+	 * Constructor
+	 * @param destination long with the id of the nuke to call.
+	 * @param command String with the command to execute.
+	 */
 	public CommandProcedure(long destination, String command) {
 		this(destination, command, false, null);
 	}
 	
+	/**
+	 * Constructor
+	 * @param destination long with the id of the nuke to call.
+	 * @param command String with the command to execute.
+	 * @param callback interface to callback the result of the handling.
+	 */
 	public CommandProcedure(long destination, String command, ICommandCallback callback) {
 		this(destination, command, false, callback);
 	}
 	
+	/**
+	 * Constructor
+	 * @param destination long with the id of the nuke to call.
+	 * @param command String with the command to execute.
+	 * @param repeated boolean if the command should be repeated or not.
+	 */
 	public CommandProcedure(long destination, String command, boolean repeated) {
 		this(destination, command, repeated, null);
 	}
 	
+	/**
+	 * Constructor
+	 * @param destination long with the id of the nuke to call.
+	 * @param command String with the command to execute.
+	 * @param repeated boolean if the command should be repeated or not.
+	 * @param callback interface to callback the result of the handling.
+	 */
 	public CommandProcedure(long destination, String command, boolean repeated, ICommandCallback callback) {
 		this(destination, command, "", repeated, callback);
 	}
 	
+	/**
+	 * Constructor
+	 * @param destination long with the id of the nuke to call.
+	 * @param command String with the command to execute.
+	 * @param folder String with the folder to execute the command from.
+	 * @param repeated boolean if the command should be repeated or not.
+	 */
 	public CommandProcedure(long destination, String command, String folder, boolean repeated) {
 		this(destination, command, folder, repeated, null);
 	}
 	
+	/**
+	 * Constructor
+	 * @param destination long with the id of the nuke to call.
+	 * @param command String with the command to execute.
+	 * @param folder String with the folder to execute the command from.
+	 * @param repeated boolean if the command should be repeated or not.
+	 * @param callback interface to callback the result of the handling.
+	 */
 	public CommandProcedure(long destination, String command, String folder, boolean repeated, ICommandCallback callback) {
 		log.trace("CommandProcedure(" + destination + ", \"" + command + "\", \"" + folder + "\", " + repeated + ", " + callback + ")");
 		setDestination(destination);

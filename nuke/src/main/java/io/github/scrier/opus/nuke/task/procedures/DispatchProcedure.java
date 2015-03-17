@@ -21,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeExecuteRspMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
 import io.github.scrier.opus.nuke.task.BaseNukeProcedure;
 
@@ -68,42 +67,6 @@ public class DispatchProcedure extends BaseNukeProcedure {
 			case NukeMsgFactory.NUKE_EXECUTE_REQ: {
 				NukeExecuteReqMsgC pNukeExecuteReq = new NukeExecuteReqMsgC(message);
 				handleMessage(pNukeExecuteReq);
-				break;
-			}
-			case NukeMsgFactory.NUKE_STOP_REQ: {
-				
-//				log.info("Received command to stop all executions.");
-//				setProceduresStopping(distributeExecuteUpdateCommands(CommandState.STOP));
-//				if( 0 < getProceduresStopping() ) {
-//  				log.info("Issued stop command to " + getProceduresStopping() + " procedures, waiting for done.");
-//  				setStopCommand(command);
-//				} else {
-//					log.info("All procedures stopped, updating command.");
-//					command.setState(CommandState.DONE);
-//					updateEntry(command);
-//				}
-				
-				break;
-			}
-			case NukeMsgFactory.NUKE_TERMINATE_REQ: {
-				
-//				log.info("Received command to terminate all executions.");
-//				setProceduresTerminating(distributeExecuteUpdateCommands(CommandState.TERMINATE));
-//				if( 0 < getProceduresTerminating() ) {
-//  				log.info("Issued terminate command to " + getProceduresTerminating() + " procedures, we hade " + getProceduresStopping() + " that failed stopping, waiting for done.");
-//  				setTerminateCommand(command);
-//				} else {
-//					log.info("All procedures terminated, updating command.");
-//					command.setState(CommandState.DONE);
-//					updateEntry(command);
-//				}
-//				if( null != getStopCommand() ) {
-//					log.info("Received terminate command before stopped, aborting stop command.");
-//					setProceduresStopping(0);
-//					getStopCommand().setState(CommandState.ABORTED);
-//					updateEntry(getStopCommand());
-//				}
-				
 				break;
 			}
 		}

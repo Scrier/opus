@@ -37,13 +37,22 @@ public class WaitingForNuke extends State {
 	
 	private int waitingForNukeTimeout;
 	
+	/**
+	 * Constructor
+	 * @param parent ClusterDistributorProcedure instance.
+	 */
 	public WaitingForNuke(ClusterDistributorProcedure parent) {
 	  this(parent, DEFAULT_WAITING_FOR_NUKE_TIMEOUT);
   }
 	
+	/**
+	 * Constructor
+	 * @param parent ClusterDistributorProcedure
+	 * @param waitingForNukeTimeout int with the timeout to wait for a timeout. 
+	 */
 	public WaitingForNuke(ClusterDistributorProcedure parent, int waitingForNukeTimeout) {
 	  super(parent);
-	  setWaitingForNukeTimeout(DEFAULT_WAITING_FOR_NUKE_TIMEOUT);
+	  setWaitingForNukeTimeout(waitingForNukeTimeout);
   }
 	
 	/**

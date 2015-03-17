@@ -45,22 +45,6 @@ public class Shared {
 		public static final String EXECUTE_GOBBLER_LEVEL = "execute-gobbler-level";
 	}
 	
-	/**
-	 * Reserved commands for the CommandState object.
-	 */
-	public static class Commands {
-		
-		public static class Execute {
-			public static final String STOP_EXECUTION = "shared-commands-stop-execution";
-			public static final String TERMINATE_EXECUTION = "shared-commands-terminate-execution";
-		}
-		
-		public static class Query {
-			public static final String STATUS = "shared-commands-query-status";
-		}
-		
-	}
-	
 	public static class Methods {
 		
 		/**

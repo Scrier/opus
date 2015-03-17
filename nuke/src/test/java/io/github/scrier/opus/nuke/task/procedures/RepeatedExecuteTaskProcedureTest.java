@@ -3,8 +3,6 @@ package io.github.scrier.opus.nuke.task.procedures;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 
-import java.util.concurrent.TimeUnit;
-
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.message.BaseMsgC;
@@ -74,9 +72,6 @@ public class RepeatedExecuteTaskProcedureTest {
 
 	@After
 	public void tearDown() throws Exception {
-		theContext.getExecutor().shutdownNow();
-		log.info("Shutting down threads, waiting for terminateion.");
-		theContext.getExecutor().awaitTermination(10, TimeUnit.SECONDS);
 		theContext.shutDown();
 		command = null;
 		theMap = null;
@@ -85,6 +80,7 @@ public class RepeatedExecuteTaskProcedureTest {
 		command = null;
 		SendIF.clear();
 		SendIF = null;
+		System.gc();
 	}
 
 	@Test
@@ -151,21 +147,14 @@ public class RepeatedExecuteTaskProcedureTest {
 		Mockito.when(theMap.containsKey(any())).thenReturn(true);
 		RepeatedExecuteTaskProcedure testObject = new RepeatedExecuteTaskProcedure(command);
 		testObject.init();
-		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> id: " + testObject.getIdentity() + ".");
 		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());
-		log.info("");
-		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		log.info("");
 		SendIF.clear();
 		NukeStopReqMsgC pNukeStopReq = new NukeStopReqMsgC();
 		pNukeStopReq.setTxID(123456);
 		pNukeStopReq.setProcessID(testObject.getProcessID());
 		testObject.handleInMessage(pNukeStopReq);
 		SendIF.waitForMessages(2);
-		for( BaseMsgC message : SendIF.getMessages() ) {
-			log.info(">>>>>>>>>>>>>>>>>>>>>>: " + message);
-		}
 		assertEquals(2, SendIF.getMessages().size());
 		int stopRsp = -1;
 		int processInd = -2;
@@ -180,9 +169,6 @@ public class RepeatedExecuteTaskProcedureTest {
 		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(stopRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_RSP);
 		NukeStopRspMsgC check = new NukeStopRspMsgC(SendIF.getMessage(stopRsp));
 		assertEquals(true, check.isSuccess());
-		log.info("");
-		log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-		log.info("");
 		testObject.cleanUp();
 		testObject = null;
 	}

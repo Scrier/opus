@@ -25,16 +25,11 @@ import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.data.DataListener;
-import io.github.scrier.opus.common.duke.DukeCommandReqMsgC;
-import io.github.scrier.opus.common.duke.DukeMsgFactory;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
-import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.nuke.task.procedures.DispatchProcedure;
-import io.github.scrier.opus.nuke.task.procedures.ExecuteTaskProcedure;
-import io.github.scrier.opus.nuke.task.procedures.RepeatedExecuteTaskProcedure;
 import io.github.scrier.opus.nuke.task.procedures.NukeProcedure;
 
 import com.hazelcast.core.HazelcastInstance;
@@ -239,39 +234,6 @@ public class NukeTasks extends DataListener {
 	  }
   }
 
-//	protected void handleInterrupted(BaseNukeProcedure procedure) {
-//		log.trace("handleInterrupted(" + procedure + ")");
-//	  if( null != getTerminateCommand() && procedure.isTerminated()) {
-//	  	if( 0 == getProceduresTerminating() ) {
-//	  		log.fatal("Received a terminating procedure " + procedure + " when we weren't expecting one.");
-//	  		throw new RuntimeException("Received a terminating procedure " + procedure + " when we weren't expecting one.");
-//	  	} else if ( 0 > decProceduresTerminating() ) {
-//	  		log.fatal("Decrease terminating procedure below 0 when removing " + procedure + ".");
-//	  		throw new RuntimeException("Decrease terminating procedure below 0 when removing " + procedure + ".");
-//	  	} else if ( 0 != getProceduresTerminating() )
-//	  		log.debug("Procedure " + procedure + " finished terminating execution, we have " + getProceduresTerminating() + " left.");
-//	  	else {
-//	  		log.info("Terminate is finished, sending done command.");
-//	  		getTerminateCommand().setState(CommandState.DONE);
-//	  		updateEntry(getTerminateCommand());
-//	  	}
-//	  } else if ( null != getStopCommand() ) {
-//	  	if( 0 == getProceduresStopping() ) {
-//	  		log.fatal("Received a terminating procedure " + procedure + " when we weren't expecting one.");
-//	  		throw new RuntimeException("Received a stopping procedure " + procedure + " when we weren't expecting one.");
-//	  	} else if ( 0 > decProceduresStopping() ) {
-//	  		log.fatal("Decrease stopping procedure below 0 when removing " + procedure + ".");
-//	  		throw new RuntimeException("Decrease stopping procedure below 0 when removing " + procedure + ".");
-//	  	} else if ( 0 != getProceduresStopping() )
-//	  		log.debug("Procedure " + procedure + " finished stopping execution, we have " + getProceduresStopping() + " left.");
-//	  	else {
-//	  		log.info("Terminate is finished, sending done command.");
-//	  		getStopCommand().setState(CommandState.DONE);
-//	  		updateEntry(getStopCommand());
-//	  	}
-//	  }
-//  }
-	
 	/**
 	 * {@inheritDoc}
 	 */
@@ -291,58 +253,6 @@ public class NukeTasks extends DataListener {
 		log.error("Map was evicted, removing all.");
 		removeAllProcedures();
   }
-	
-//	/**
-//	 * Method to handle commands.
-//	 * @param command NukeCommand to handle.
-//	 */
-//	private void handleCommand(NukeCommand command) {
-//		log.trace("handleCommand(" + command + ")");
-//	  switch( command.getState() ) {
-//	  	
-//	  	case QUERY: {
-//	  		if( getIdentity() != command.getComponent() ) {
-//	  			log.debug("NukeCommand " + command.getState() + " not for us, expected " + getIdentity() + " but was " + command.getComponent() +  ".");
-//	  		} else {
-//	  			registerProcedure(new QueryTaskProcedure(command));
-//	  		}
-//	  		break;
-//	  	}
-//	  	case ABORTED: 
-//	  	case DONE: 
-//	  	case UNDEFINED: 
-//	  	case WORKING: {
-//	  		log.error("Unhandled data: " + command.getState() + ", from NukeCommand: " + command + ".");
-//	  		break;
-//	  	}
-//	  	default: {
-//	  		throw new RuntimeException("Unimplemented state " + command.getState() + " from class NukeCommand in class NukeTasks.");
-//	  	}
-//	  }
-//	}
-	
-//	public int distributeExecuteUpdateCommands(CommandState state) {
-//		log.trace("distributeExecuteUpdateCommands(" + state + ")");
-//		List<BaseNukeProcedure> procs = getProcedures(ExecuteTaskProcedure.class, RepeatedExecuteTaskProcedure.class);
-//		log.debug("We have " + procs.size() + " procedures to update locally.");
-//		for( BaseNukeProcedure proc : procs ) {
-//			NukeCommand command = null;
-//			if( ExecuteTaskProcedure.class.getName() == proc.getClass().getName() ) {
-//				ExecuteTaskProcedure procEx = (ExecuteTaskProcedure)proc;
-//				command = procEx.getCommand();
-//			} else if ( RepeatedExecuteTaskProcedure.class.getName() == proc.getClass().getName() ) {
-//				RepeatedExecuteTaskProcedure procEx = (RepeatedExecuteTaskProcedure)proc;
-//				command = procEx.getCommand();
-//			} else {
-//				log.fatal("Received proc that did not match RepeatedExecuteTaskProcedure or ExecuteTaskProcedure.");
-//				throw new RuntimeException("Received proc that did not match RepeatedExecuteTaskProcedure or ExecuteTaskProcedure.");
-//			}
-//			command.setState(state);
-//			log.debug("Sending local command to " + proc.getTxID() + " to change state to " + state);
-//			proc.updateEntry(command);
-//		}
-//		return procs.size();
-//	}
 	
 	/**
 	 * Method to get a list of procedures of a specific class.

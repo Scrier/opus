@@ -253,9 +253,7 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
   protected synchronized void sendCommandStateUpdate(CommandState newState, String extraInformation) {
   	log.trace("sendCommandStateUpdate(" + newState + ", \"" + extraInformation + "\")");
   	if( newState != getCurrentCommandState() ) {
-  		log.info(getIdentity() + ": checks state " + newState + " towards " +  getCurrentCommandState() + ".");
   		setCurrentCommandState(newState);
-  		log.info(getIdentity() + ": changed state to " +  getCurrentCommandState() + ".");
   		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(getSendIF());
   		pNukeExecuteInd.setSource(getIdentity());
   		pNukeExecuteInd.setDestination(Constants.MSG_TO_ALL);

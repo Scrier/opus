@@ -2,9 +2,6 @@ package io.github.scrier.opus.nuke.task.procedures;
 
 import static org.mockito.Matchers.any;
 import static org.junit.Assert.*;
-
-import java.util.concurrent.TimeUnit;
-
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.nuke.CommandState;
@@ -15,8 +12,6 @@ import io.github.scrier.opus.nuke.task.Context;
 import io.github.scrier.opus.nuke.task.NukeTasks;
 
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,8 +22,6 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 
 public class ExecuteTaskProcedureTest {
-	
-	private static Logger log = LogManager.getLogger(ExecuteTaskProcedureTest.class);
 	
 	private static TestHelper helper = TestHelper.INSTANCE;
 
@@ -76,6 +69,7 @@ public class ExecuteTaskProcedureTest {
 		command = null;
 		SendIF.clear();
 		SendIF = null;
+		System.gc();
 	}
 
 	@Test
