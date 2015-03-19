@@ -39,6 +39,11 @@ public class Completed extends State {
 	}
 	
 	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+	}
+	
+	@Override
 	public void updated(BaseDataC data)  {
 		log.trace("updated(" + data + ")");
 	}  

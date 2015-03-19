@@ -27,8 +27,8 @@ import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
-import io.github.scrier.opus.common.nuke.NukeStopReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeTerminateReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllReqMsgC;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
 
 public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<String> {
@@ -107,13 +107,13 @@ public class ExecuteTaskProcedure extends BaseTaskProcedure implements Callable<
   public int handleInMessage(BaseMsgC message) {
 		log.trace("handleInMessage(" + message + ")");
 		switch( message.getId() ) {
-			case NukeMsgFactory.NUKE_STOP_REQ: {
-				NukeStopReqMsgC pNukeStopReq = new NukeStopReqMsgC(message);
+			case NukeMsgFactory.NUKE_STOP_ALL_REQ: {
+				NukeStopAllReqMsgC pNukeStopReq = new NukeStopAllReqMsgC(message);
 				handleMessage(pNukeStopReq);
 				break;
 			}
-			case NukeMsgFactory.NUKE_TERMINATE_REQ: {
-				NukeTerminateReqMsgC pNukeTerminateReq = new NukeTerminateReqMsgC(message);
+			case NukeMsgFactory.NUKE_TERMINATE_ALL_REQ: {
+				NukeTerminateAllReqMsgC pNukeTerminateReq = new NukeTerminateAllReqMsgC(message);
 				handleMessage(pNukeTerminateReq);
 				break;
 			}

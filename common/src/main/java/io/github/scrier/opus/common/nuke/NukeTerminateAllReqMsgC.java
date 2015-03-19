@@ -27,38 +27,33 @@ import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.message.SendIF;
 
-public class NukeStopReqMsgC extends BaseMsgC {
+public class NukeTerminateAllReqMsgC extends BaseMsgC {
 	
-	private static Logger log = LogManager.getLogger(NukeStopReqMsgC.class);
-	
-	private long processID;
+	private static Logger log = LogManager.getLogger(NukeTerminateAllReqMsgC.class);
 	
 	/**
 	 * Constructor
 	 */
-	public NukeStopReqMsgC() {
-		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_REQ);
-		log.trace("NukeStopReqMsgC()");
-		setProcessID(Constants.HC_UNDEFINED);
+	public NukeTerminateAllReqMsgC() {
+		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_ALL_REQ);
+		log.trace("NukeTerminateAllReqMsgC()");
 	}
 
 	/**
 	 * Constructor
 	 */
-	public NukeStopReqMsgC(SendIF sendIF) {
-		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_REQ, sendIF);
-		log.trace("NukeStopReqMsgC(" + sendIF + ")");
-		setProcessID(Constants.HC_UNDEFINED);
+	public NukeTerminateAllReqMsgC(SendIF sendIF) {
+		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_ALL_REQ, sendIF);
+		log.trace("NukeTerminateAllReqMsgC(" + sendIF + ")");
 	}
 	
 	/**
 	 * Copy constructor
 	 * @param obj2copy DukeCommand object
 	 */
-	public NukeStopReqMsgC(NukeStopReqMsgC obj2copy) {
+	public NukeTerminateAllReqMsgC(NukeTerminateAllReqMsgC obj2copy) {
 		super(obj2copy);
-		log.trace("NukeStopReqMsgC(" + obj2copy + ")");
-		setProcessID(obj2copy.getProcessID());
+		log.trace("NukeTerminateAllReqMsgC(" + obj2copy + ")");
 	}
 	
 	/**
@@ -66,14 +61,13 @@ public class NukeStopReqMsgC extends BaseMsgC {
 	 * @param input BaseNukeC object
 	 * @throws ClassCastException if provided with a mismatching class.
 	 */
-	public NukeStopReqMsgC(BaseMsgC input) throws ClassCastException {
+	public NukeTerminateAllReqMsgC(BaseMsgC input) throws ClassCastException {
 		super(input);
-		log.trace("NukeStopReqMsgC(" + input + ")");
-		if( input instanceof NukeStopReqMsgC ) {
-			NukeStopReqMsgC obj2copy = (NukeStopReqMsgC)input;
-			setProcessID(obj2copy.getProcessID());
+		log.trace("NukeTerminateAllReqMsgC(" + input + ")");
+		if( input instanceof NukeTerminateAllReqMsgC ) {
 		} else {
-			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeStopReqMsgC[" + NukeMsgFactory.NUKE_STOP_REQ + "], are you using correct class?");
+			// no parameters to work with.
+			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeTerminateAllReqMsgC[" + NukeMsgFactory.NUKE_TERMINATE_ALL_REQ + "], are you using correct class?");
 		}
 	}
 	
@@ -84,7 +78,6 @@ public class NukeStopReqMsgC extends BaseMsgC {
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")");
 		super.readData(in);
-		setProcessID(in.readLong());
 	}
 
 	/**
@@ -94,29 +87,14 @@ public class NukeStopReqMsgC extends BaseMsgC {
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
 		super.writeData(out);
-		out.writeLong(getProcessID());
 	}
 
-	/**
-	 * @return the processID
-	 */
-  public long getProcessID() {
-	  return processID;
-  }
-
-	/**
-	 * @param processID the processID to set
-	 */
-  public void setProcessID(long processID) {
-	  this.processID = processID;
-  }
-  
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public String toString() {
-		return "NukeStopReqMsgC{processID: " + getProcessID() + "} - " + super.toString();
+		return "NukeTerminateAllReqMsgC - " + super.toString();
 	}
 
 }

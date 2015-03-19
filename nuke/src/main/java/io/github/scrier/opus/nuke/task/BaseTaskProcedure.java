@@ -30,10 +30,10 @@ import io.github.scrier.opus.common.nuke.NukeExecuteIndMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteRspMsgC;
 import io.github.scrier.opus.common.nuke.NukeInfo;
-import io.github.scrier.opus.common.nuke.NukeStopReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeStopRspMsgC;
-import io.github.scrier.opus.common.nuke.NukeTerminateReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeTerminateRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopAllRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllRspMsgC;
 import io.github.scrier.opus.nuke.process.ProcessHandler;
 
 public abstract class BaseTaskProcedure extends BaseNukeProcedure {
@@ -268,12 +268,12 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
    * Method to handle the NukeStopReqMsgC message.
    * @param message NukeStopReqMsgC instance.
    */
-  protected void handleMessage(NukeStopReqMsgC message) {
+  protected void handleMessage(NukeStopAllReqMsgC message) {
   	log.trace("handleMessage(" + message + ")");
   	if( getProcessID() != message.getProcessID() ) {
   		log.debug("NukeStopReqMsgC: " + message + ", not for us, expected: " + getProcessID() + " but was: " + message.getProcessID() + ".");
   	} else {
-	  	NukeStopRspMsgC pNukeStopRsp = new NukeStopRspMsgC(getSendIF());
+	  	NukeStopAllRspMsgC pNukeStopRsp = new NukeStopAllRspMsgC(getSendIF());
 	  	pNukeStopRsp.setSource(getIdentity());
 	  	pNukeStopRsp.setDestination(message.getSource());
 	  	pNukeStopRsp.setTxID(message.getTxID());
@@ -295,13 +295,13 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
    * Method to handle the NukeTerminateReqMsgC message
    * @param message NukeTerminateReqMsgC instance.
    */
-  protected void handleMessage(NukeTerminateReqMsgC message) {
+  protected void handleMessage(NukeTerminateAllReqMsgC message) {
   	log.trace("handleMessage(" + message + ")");
   	if( getProcessID() != message.getProcessID() ) {
   		log.debug("NukeTerminateReqMsgC: " + message + ", not for us, expected: " + getProcessID() + " but was: " + message.getProcessID() + ".");
   	} else {
   		log.info("Received command to terminate execution from: " + message.getSource() + ".");
-  		NukeTerminateRspMsgC pNukeTerminateRsp = new NukeTerminateRspMsgC(getSendIF());
+  		NukeTerminateAllRspMsgC pNukeTerminateRsp = new NukeTerminateAllRspMsgC(getSendIF());
   		pNukeTerminateRsp.setSource(getIdentity());
   		pNukeTerminateRsp.setDestination(message.getSource());
   		pNukeTerminateRsp.setTxID(message.getTxID());

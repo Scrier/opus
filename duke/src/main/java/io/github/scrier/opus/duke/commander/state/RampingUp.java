@@ -64,6 +64,15 @@ public class RampingUp extends State {
 		log.info("Starting rampup phase with " + getUserIncrease() + " every " + getIntervalSeconds() + " seconds.");
 		startTimeout(getIntervalSeconds(), getTimerID());
 	}
+	
+	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+		if( isTimeoutActive(getTimerID()) ) {
+			log.info("Terminating timer with id: " + getTimerID() + ".");
+			terminateTimeout(getTimerID());
+		}
+	}
 
 	/**
 	 * RampingUp handling on update methods.

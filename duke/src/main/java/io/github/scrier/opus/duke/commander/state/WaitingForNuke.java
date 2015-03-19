@@ -66,6 +66,18 @@ public class WaitingForNuke extends State {
 	}
 	
 	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+		if( isTimeoutActive(getTimerID()) ) {
+			log.info("Terminating timer with id: " + getTimerID() + ".");
+			terminateTimeout(getTimerID());
+		}
+	}
+	
+	/**
 	 * WaitingForNuke handling on update methods.
 	 * @param data BaseNukeC
 	 */

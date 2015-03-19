@@ -67,10 +67,21 @@ public class Terminating extends State implements ICommandCallback {
 		List<INukeInfo> nukes = theContext.getNukes();
 		log.info("Sending terminate command to " + nukes.size() + " nukes will terminate this applicatio in " + getTerminateTimeout() + " seconds.");
 		for( INukeInfo info : nukes ) {
-			registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.TERMINATE_EXECUTION, this));
-			getActiveNukeCommands().add(info.getNukeID());
+			// Send messages to nukes to terminate.
 		}
 		startTimeout(getTerminateTimeout(), getTimerID());
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+		if( isTimeoutActive(getTimerID()) ) {
+			log.info("Terminating timer with id: " + getTimerID() + ".");
+			terminateTimeout(getTimerID());
+		}
 	}
 	
 	/**

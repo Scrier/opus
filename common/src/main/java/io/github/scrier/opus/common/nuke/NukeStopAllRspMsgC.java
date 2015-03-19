@@ -27,21 +27,19 @@ import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.message.SendIF;
 
-public class NukeTerminateRspMsgC extends BaseMsgC {
+public class NukeStopAllRspMsgC extends BaseMsgC {
 	
-	private static Logger log = LogManager.getLogger(NukeTerminateRspMsgC.class);
+	private static Logger log = LogManager.getLogger(NukeStopAllRspMsgC.class);
 	
-	private long processID;
 	private boolean success;
 	private String status;
 	
 	/**
 	 * Constructor
 	 */
-	public NukeTerminateRspMsgC() {
-		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_RSP);
-		log.trace("NukeTerminateRspMsgC()");
-		setProcessID(Constants.HC_UNDEFINED);
+	public NukeStopAllRspMsgC() {
+		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_ALL_RSP);
+		log.trace("NukeStopAllRspMsgC()");
 		setSuccess(false);
 		setStatus("");
 	}
@@ -49,10 +47,9 @@ public class NukeTerminateRspMsgC extends BaseMsgC {
 	/**
 	 * Constructor
 	 */
-	public NukeTerminateRspMsgC(SendIF sendIF) {
-		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_RSP, sendIF);
-		log.trace("NukeTerminateRspMsgC(" + sendIF + ")");
-		setProcessID(Constants.HC_UNDEFINED);
+	public NukeStopAllRspMsgC(SendIF sendIF) {
+		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_ALL_RSP, sendIF);
+		log.trace("NukeStopAllRspMsgC(" + sendIF + ")");
 		setSuccess(false);
 		setStatus("");
 	}
@@ -61,10 +58,9 @@ public class NukeTerminateRspMsgC extends BaseMsgC {
 	 * Copy constructor
 	 * @param obj2copy DukeCommand object
 	 */
-	public NukeTerminateRspMsgC(NukeTerminateRspMsgC obj2copy) {
+	public NukeStopAllRspMsgC(NukeStopAllRspMsgC obj2copy) {
 		super(obj2copy);
-		log.trace("NukeTerminateRspMsgC(" + obj2copy + ")");
-		setProcessID(obj2copy.getProcessID());
+		log.trace("NukeStopAllRspMsgC(" + obj2copy + ")");
 		setSuccess(obj2copy.isSuccess());
 		setStatus(obj2copy.getStatus());
 	}
@@ -74,16 +70,15 @@ public class NukeTerminateRspMsgC extends BaseMsgC {
 	 * @param input BaseNukeC object
 	 * @throws ClassCastException if provided with a mismatching class.
 	 */
-	public NukeTerminateRspMsgC(BaseMsgC input) throws ClassCastException {
+	public NukeStopAllRspMsgC(BaseMsgC input) throws ClassCastException {
 		super(input);
-		log.trace("NukeTerminateRspMsgC(" + input + ")");
-		if( input instanceof NukeTerminateRspMsgC ) {
-			NukeTerminateRspMsgC obj2copy = (NukeTerminateRspMsgC)input;
-			setProcessID(obj2copy.getProcessID());
+		log.trace("NukeStopAllRspMsgC(" + input + ")");
+		if( input instanceof NukeStopAllRspMsgC ) {
+			NukeStopAllRspMsgC obj2copy = (NukeStopAllRspMsgC)input;
 			setSuccess(obj2copy.isSuccess());
 			setStatus(obj2copy.getStatus());
 		} else {
-			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeTerminateRspMsgC[" + NukeMsgFactory.NUKE_TERMINATE_RSP + "], are you using correct class?");
+			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeStopAllRspMsgC[" + NukeMsgFactory.NUKE_STOP_ALL_RSP + "], are you using correct class?");
 		}
 	}
 	
@@ -94,7 +89,6 @@ public class NukeTerminateRspMsgC extends BaseMsgC {
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")");
 		super.readData(in);
-		setProcessID(in.readLong());
 		setSuccess(in.readBoolean());
 		setStatus(in.readUTF());
 	}
@@ -106,25 +100,10 @@ public class NukeTerminateRspMsgC extends BaseMsgC {
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
 		super.writeData(out);
-		out.writeLong(getProcessID());
 		out.writeBoolean(isSuccess());
 		out.writeUTF(getStatus());
 	}
 
-	/**
-	 * @return the processID
-	 */
-  public long getProcessID() {
-	  return processID;
-  }
-
-	/**
-	 * @param processID the processID to set
-	 */
-  public void setProcessID(long processID) {
-	  this.processID = processID;
-  }
-  
 	/**
 	 * @return the success
 	 */
@@ -158,8 +137,7 @@ public class NukeTerminateRspMsgC extends BaseMsgC {
 	 */
 	@Override
 	public String toString() {
-		String retValue = "NukeTerminateRspMsgC{processID: " + getProcessID();
-		retValue += ", success: " + isSuccess();
+		String retValue = "NukeStopAllRspMsgC{success: " + isSuccess();
 		retValue += ", status: " + getStatus() + "} - " + super.toString();
 		return retValue;
 	}

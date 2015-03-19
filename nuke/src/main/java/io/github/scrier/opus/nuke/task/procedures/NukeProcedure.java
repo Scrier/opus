@@ -110,7 +110,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 	@Override
 	public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
-		if( key == getNukeInfo().getKey() ) {
+		if( key == getNukeInfo() .getKey() ) {
 			setState(ABORTED);
 		}
 		return getState();

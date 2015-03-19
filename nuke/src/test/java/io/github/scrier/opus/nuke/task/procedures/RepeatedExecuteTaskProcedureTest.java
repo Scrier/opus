@@ -9,10 +9,10 @@ import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
-import io.github.scrier.opus.common.nuke.NukeStopReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeStopRspMsgC;
-import io.github.scrier.opus.common.nuke.NukeTerminateReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeTerminateRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopAllRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllRspMsgC;
 import io.github.scrier.opus.nuke.BaseActiveObjectMock;
 import io.github.scrier.opus.nuke.task.Context;
 import io.github.scrier.opus.nuke.task.NukeTasks;
@@ -150,7 +150,7 @@ public class RepeatedExecuteTaskProcedureTest {
 		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());
 		SendIF.clear();
-		NukeStopReqMsgC pNukeStopReq = new NukeStopReqMsgC();
+		NukeStopAllReqMsgC pNukeStopReq = new NukeStopAllReqMsgC();
 		pNukeStopReq.setTxID(123456);
 		pNukeStopReq.setProcessID(testObject.getProcessID());
 		testObject.handleInMessage(pNukeStopReq);
@@ -158,7 +158,7 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(2, SendIF.getMessages().size());
 		int stopRsp = -1;
 		int processInd = -2;
-		if( NukeMsgFactory.NUKE_STOP_RSP == SendIF.getMessage(0).getId() ) {
+		if( NukeMsgFactory.NUKE_STOP_ALL_RSP == SendIF.getMessage(0).getId() ) {
 			stopRsp = 0;
 			processInd = 1;
 		} else {
@@ -166,8 +166,8 @@ public class RepeatedExecuteTaskProcedureTest {
 			processInd = 0;
 		}
 		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.DONE, processID);
-		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(stopRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_RSP);
-		NukeStopRspMsgC check = new NukeStopRspMsgC(SendIF.getMessage(stopRsp));
+		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(stopRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_ALL_RSP);
+		NukeStopAllRspMsgC check = new NukeStopAllRspMsgC(SendIF.getMessage(stopRsp));
 		assertEquals(true, check.isSuccess());
 		testObject.cleanUp();
 		testObject = null;
@@ -180,7 +180,7 @@ public class RepeatedExecuteTaskProcedureTest {
 		testObject.init();
 		SendIF.waitForMessages(2);
 		SendIF.clear();
-		NukeTerminateReqMsgC pNukeTerminateReq = new NukeTerminateReqMsgC();
+		NukeTerminateAllReqMsgC pNukeTerminateReq = new NukeTerminateAllReqMsgC();
 		pNukeTerminateReq.setTxID(123456);
 		pNukeTerminateReq.setProcessID(testObject.getProcessID());
 		testObject.handleInMessage(pNukeTerminateReq);
@@ -189,7 +189,7 @@ public class RepeatedExecuteTaskProcedureTest {
 		assertEquals(testObject.ABORTED, testObject.getState());
 		int terminateRsp = -1;
 		int processInd = -2;
-		if( NukeMsgFactory.NUKE_TERMINATE_RSP == SendIF.getMessage(0).getId() ) {
+		if( NukeMsgFactory.NUKE_TERMINATE_ALL_RSP == SendIF.getMessage(0).getId() ) {
 			terminateRsp = 0;
 			processInd = 1;
 		} else {
@@ -197,8 +197,8 @@ public class RepeatedExecuteTaskProcedureTest {
 			processInd = 0;
 		}
 		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.ABORTED, processID);
-		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(terminateRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_RSP);
-		NukeTerminateRspMsgC check = new NukeTerminateRspMsgC(SendIF.getMessage(terminateRsp));
+		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(terminateRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_ALL_RSP);
+		NukeTerminateAllRspMsgC check = new NukeTerminateAllRspMsgC(SendIF.getMessage(terminateRsp));
 		assertEquals(true, check.isSuccess());
 		testObject.cleanUp();
 		testObject = null;

@@ -59,7 +59,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	private String command;			///< Command to issue to the nodes.
 	private String folder;			///< What folder each node should execute the command from
 	
-	private long timerID;			///< id for the timer tick callback
 	private long terminateID;		///< id for the terminate tick callback.
 
 	private State[] states;		///< State array holding logic for each state.
@@ -78,7 +77,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		setShutDownOnce(true);
 		setCommand("");
 		setFolder("");
-		setTimerID(Constants.HC_UNDEFINED);
 		setTerminateID(Constants.HC_UNDEFINED);
 		setStates(new State[TERMINATING + 1]);
 	}
@@ -104,7 +102,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			setRepeated(Boolean.parseBoolean(getSetting(Shared.Settings.EXECUTE_REPEATED)));
 			setCommand(getSetting(Shared.Settings.EXECUTE_COMMAND));
 			setFolder(getSetting(Shared.Settings.EXECUTE_FOLDER));
-			setTimerID(getUniqueID());
 			setTerminateID(getUniqueID());
 			states[ABORTED] = new Aborted(this);
 			states[CREATED] = new Created(this);
@@ -192,7 +189,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 			states[getState()].removed(key);
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
-				new Completed(this).removed(key);
 			} else {
 				log.error("Received out of bound exception in state: " + getState() + ".", e);
 			}
@@ -232,9 +228,21 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		} else if( RAMPING_DOWN == previousState ) {
 			theContext.setClientState(DukeState.DONE);
 		}
+		log.info("Shutting down state: " + previousState + ".");
 		try {
-			log.debug("states[" + states[getState()].getClass().getSimpleName() + "].init();");
-			states[getState()].init();
+			log.debug("states[" + states[previousState].getClass().getSimpleName() + "].shutDown();");
+			states[previousState].shutDown();
+		} catch ( ArrayIndexOutOfBoundsException e ) {
+			if( COMPLETED == getState() ) {
+				new Completed(this).shutDown();
+			} else {
+				log.error("Received out of bound exception in state: " + getState() + ".", e);
+			}
+		}
+		log.info("Initializing state: " + newState + ".");
+		try {
+			log.debug("states[" + states[newState].getClass().getSimpleName() + "].init();");
+			states[newState].init();
 		} catch ( ArrayIndexOutOfBoundsException e ) {
 			if( COMPLETED == getState() ) {
 				new Completed(this).init();
@@ -382,20 +390,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 */
 	private void setFolder(String folder) {
 		this.folder = folder;
-	}
-
-	/**
-	 * @return the timerID
-	 */
-	public long getTimerID() {
-		return timerID;
-	}
-
-	/**
-	 * @param timerID the timerID to set
-	 */
-	private void setTimerID(long timerID) {
-		this.timerID = timerID;
 	}
 
 	/**

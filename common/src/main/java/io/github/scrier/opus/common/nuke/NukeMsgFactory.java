@@ -32,10 +32,10 @@ public class NukeMsgFactory implements DataSerializableFactory {
 	public static final int NUKE_EXECUTE_REQ =   Constants.NUKE_MSG_START + 1;
 	public static final int NUKE_EXECUTE_RSP =   Constants.NUKE_MSG_START + 2;
 	public static final int NUKE_EXECUTE_IND =   Constants.NUKE_MSG_START + 3;
-	public static final int NUKE_STOP_REQ =      Constants.NUKE_MSG_START + 4;
-	public static final int NUKE_STOP_RSP =      Constants.NUKE_MSG_START + 5;
-	public static final int NUKE_TERMINATE_REQ = Constants.NUKE_MSG_START + 6;
-	public static final int NUKE_TERMINATE_RSP = Constants.NUKE_MSG_START + 7;
+	public static final int NUKE_STOP_ALL_REQ =      Constants.NUKE_MSG_START + 4;
+	public static final int NUKE_STOP_ALL_RSP =      Constants.NUKE_MSG_START + 5;
+	public static final int NUKE_TERMINATE_ALL_REQ = Constants.NUKE_MSG_START + 6;
+	public static final int NUKE_TERMINATE_ALL_RSP = Constants.NUKE_MSG_START + 7;
 	
 	/**
 	 * Constructor
@@ -58,13 +58,17 @@ public class NukeMsgFactory implements DataSerializableFactory {
 			case NUKE_EXECUTE_IND:
 				retValue = new NukeExecuteIndMsgC();
 				break;
-			case NUKE_STOP_REQ:
+			case NUKE_STOP_ALL_REQ:
+				retValue = new NukeStopAllReqMsgC();
 				break;
-			case NUKE_STOP_RSP:
+			case NUKE_STOP_ALL_RSP:
+				retValue = new NukeStopAllRspMsgC();
 				break;
-			case NUKE_TERMINATE_REQ:
+			case NUKE_TERMINATE_ALL_REQ:
+				retValue = new NukeTerminateAllReqMsgC();
 				break;
-			case NUKE_TERMINATE_RSP:
+			case NUKE_TERMINATE_ALL_RSP:
+				retValue = new NukeTerminateAllRspMsgC();
 				break;
 		}
 		return retValue;
