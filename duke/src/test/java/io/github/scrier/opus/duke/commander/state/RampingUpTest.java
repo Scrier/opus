@@ -75,7 +75,6 @@ public class RampingUpTest {
 		assertEquals(distributor.getPeakDelaySeconds(), testObject.getPeakDelaySeconds());
 		assertEquals(distributor.getState(), testObject.getState());
 		assertEquals(distributor.getTerminateID(), testObject.getTerminateID());
-		assertEquals(distributor.getTimerID(), testObject.getTimerID());
 		assertEquals(distributor.getUserIncrease(), testObject.getUserIncrease());
 	}
 	

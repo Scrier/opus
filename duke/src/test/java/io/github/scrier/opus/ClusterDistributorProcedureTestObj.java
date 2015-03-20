@@ -9,6 +9,8 @@ public class ClusterDistributorProcedureTestObj extends ClusterDistributorProced
 	public int TimeoutCalls;
 	public boolean nukesReady;
 	public boolean timeoutActive;
+	public int NewState;
+	public int PreviousState;
 
 	public ClusterDistributorProcedureTestObj() {
 		getStates()[ABORTED] = new StateImpl(this);
@@ -24,9 +26,19 @@ public class ClusterDistributorProcedureTestObj extends ClusterDistributorProced
 		reset();
 	}
 	
+	
+	
 	public void reset() {
 		this.TimeoutTime = 0;
 		this.TimeoutTimerID = 0L;
+		this.NewState = -1;
+		this.PreviousState = -1;
+	}
+	
+	@Override
+	public void onStateChanged(int newState, int previousState) {
+		NewState = newState;
+		PreviousState = previousState;
 	}
 	
 	@Override

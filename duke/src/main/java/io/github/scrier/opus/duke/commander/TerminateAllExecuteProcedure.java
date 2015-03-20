@@ -22,14 +22,14 @@ import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
-import io.github.scrier.opus.common.nuke.NukeStopAllReqMsgC;
-import io.github.scrier.opus.common.nuke.NukeStopAllRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllRspMsgC;
 
-public class StopAllExecuteProcedure extends BaseDukeProcedure {
+public class TerminateAllExecuteProcedure extends BaseDukeProcedure {
 	
-	private static Logger log = LogManager.getLogger(StopAllExecuteProcedure.class);
+	private static Logger log = LogManager.getLogger(TerminateAllExecuteProcedure.class);
 	
-	public final int WAITING_FOR_STOP_RSP = CREATED + 1;
+	public final int WAITING_FOR_TERMINATE_RSP = CREATED + 1;
 
 	private ICommandCallback callback;
 	private long nukeID;
@@ -40,8 +40,8 @@ public class StopAllExecuteProcedure extends BaseDukeProcedure {
 	 * @param id long with the id of the nuke.
 	 * @param callback callback interface with result of the execution.
 	 */
-	public StopAllExecuteProcedure(long id, ICommandCallback callback) {
-		log.trace("StopAllExecuteProcedure(" + id + ", " + callback + ")");
+	public TerminateAllExecuteProcedure(long id, ICommandCallback callback) {
+		log.trace("TerminateAllExecuteProcedure(" + id + ", " + callback + ")");
 		setNukeID(id);
 		setCallback(callback);
 	}
@@ -50,12 +50,12 @@ public class StopAllExecuteProcedure extends BaseDukeProcedure {
   public void init() throws Exception {
 	  log.trace("init()");
 	  log.info("[" + getTxID() + "] Sending stop command to nuke with id: " + getNukeID() + ".");
-	  NukeStopAllReqMsgC pNukeStopAllReq = new NukeStopAllReqMsgC(getSendIF());
-	  pNukeStopAllReq.setSource(getIdentity());
-	  pNukeStopAllReq.setDestination(getNukeID());
-	  pNukeStopAllReq.setTxID(getTxID());
-	  pNukeStopAllReq.send();
-	  setState(WAITING_FOR_STOP_RSP);
+	  NukeTerminateAllReqMsgC pNukeTerminateAllReq = new NukeTerminateAllReqMsgC(getSendIF());
+	  pNukeTerminateAllReq.setSource(getIdentity());
+	  pNukeTerminateAllReq.setDestination(getNukeID());
+	  pNukeTerminateAllReq.setTxID(getTxID());
+	  pNukeTerminateAllReq.send();
+	  setState(WAITING_FOR_TERMINATE_RSP);
   }
 
 	@Override
@@ -88,9 +88,9 @@ public class StopAllExecuteProcedure extends BaseDukeProcedure {
 		assert Constants.HC_UNDEFINED != message.getSource() : "Source should not be undefined: " + message.getSource() + ".";
 		assert Constants.HC_UNDEFINED != message.getDestination() : "Destination should not be undefined: " + message.getDestination() + ".";
 		switch( message.getId() ) {
-			case NukeMsgFactory.NUKE_STOP_ALL_RSP: {
-				NukeStopAllRspMsgC pNukeStopAllRsp = new NukeStopAllRspMsgC(message);
-				handleMessage(pNukeStopAllRsp);
+			case NukeMsgFactory.NUKE_TERMINATE_ALL_RSP: {
+				NukeTerminateAllRspMsgC pNukeTerminateAllRsp = new NukeTerminateAllRspMsgC(message);
+				handleMessage(pNukeTerminateAllRsp);
 				break;
 			}
 			default: {
@@ -144,14 +144,14 @@ public class StopAllExecuteProcedure extends BaseDukeProcedure {
   }
   
   /**
-   * Method to handle the NukeStopAllRspMsgC message.
+   * Method to handle the NukeTerminateAllRspMsgC message.
    * @param message
    */
-  protected void handleMessage(NukeStopAllRspMsgC message) {
+  protected void handleMessage(NukeTerminateAllRspMsgC message) {
   	log.trace("handleMessage(" + message + ")"); 
   	if( getTxID() == message.getTxID() ) {
-  		if( WAITING_FOR_STOP_RSP != getState() ) {
-  			setResult("Received NukeStopAllRspMsgC in wrong state, expected: " + WAITING_FOR_STOP_RSP + ", but was: " + getState() + ".");
+  		if( WAITING_FOR_TERMINATE_RSP != getState() ) {
+  			setResult("Received NukeTerminateAllRspMsgC in wrong state, expected: " + WAITING_FOR_TERMINATE_RSP + ", but was: " + getState() + ".");
   			log.error(getResult());
   			setState(ABORTED);
   		} else if ( true != message.isSuccess() ) {

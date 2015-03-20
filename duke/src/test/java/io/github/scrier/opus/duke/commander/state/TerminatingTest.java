@@ -20,13 +20,14 @@ import org.junit.Test;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 
-public class TeminatingTest {
+public class TerminatingTest {
 
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
 	private long identity = 82495154L;
 	private long sagaID = 834764L;
+	private long timerID = 834764123L;
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
@@ -43,6 +44,7 @@ public class TeminatingTest {
 		instance = theHelper.mockHazelcast();
 		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
 		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, timerID);
 		theMap = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
@@ -103,6 +105,8 @@ public class TeminatingTest {
 	public void testEvicted() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
+		assertEquals(testObject.TERMINATING, distributor.getState());
+		assertEquals(testObject.TERMINATING, testObject.getState());
 		testObject.evicted(new BaseDataC(1, 2));
 		assertEquals(distributor.TERMINATING, testObject.getState());
 	}

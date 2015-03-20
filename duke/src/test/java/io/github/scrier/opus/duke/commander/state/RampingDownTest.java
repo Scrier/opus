@@ -57,7 +57,6 @@ public class RampingDownTest {
 	public void testConstructor() {
 		RampingDown testObject = new RampingDown(distributor);
 		assertEquals(-1, testObject.getOldUsers());
-		assertTrue(testObject.isDoOnce());
 		assertEquals(0, testObject.getActiveNukeCommands().size());
 		assertEquals(5, testObject.getRampDownUpdateSeconds());
 		assertEquals("RampingDown", testObject.getClassName());
@@ -195,7 +194,6 @@ public class RampingDownTest {
 		testObject.setState(testObject.RAMPING_DOWN);
 		theContext.addNuke(1L, new NukeInfoMock(5, NukeState.RUNNING));
 		testObject.setOldUsers(1);
-		testObject.setDoOnce(false);
 		testObject.timeout(testObject.getTimerID());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 	}
@@ -206,7 +204,6 @@ public class RampingDownTest {
 		testObject.setState(testObject.RAMPING_DOWN);
 		theContext.addNuke(1L, new NukeInfoMock(5, NukeState.RUNNING));
 		testObject.setOldUsers(0);
-		testObject.setDoOnce(false);
 		testObject.timeout(testObject.getTimerID());
 		assertEquals(testObject.COMPLETED, testObject.getState());
 	}
@@ -218,7 +215,6 @@ public class RampingDownTest {
 		theContext.addNuke(1L, new NukeInfoMock(5, NukeState.RUNNING));
 		testObject.setOldUsers(5);
 		testObject.getActiveNukeCommands().add(1L);
-		testObject.setDoOnce(false);
 		testObject.timeout(testObject.getTimerID());
 		assertEquals(testObject.RAMPING_DOWN, testObject.getState());
 		assertEquals(distributor.TimeoutTime, testObject.getRampDownUpdateSeconds());

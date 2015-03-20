@@ -220,7 +220,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	 */
 	@Override
 	public void onStateChanged(int newState, int previousState) {
-		log.trace("onStateChanged(" + newState + ")");
+		log.trace("onStateChanged(" + newState + ", " + previousState + ")");
 		if( RAMPING_UP == newState ) {
 			theContext.setClientState(DukeState.RUNNING);
 		} else if ( ABORTED == newState ) {

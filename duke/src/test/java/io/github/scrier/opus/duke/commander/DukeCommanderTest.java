@@ -491,32 +491,6 @@ public class DukeCommanderTest {
   }
   
   @Test
-  public void testDukeCommandReqStopCommandDistributors() throws Exception {
-  	DukeCommander testObject = new DukeCommander(instance);
-		theContext.init(testObject, theBaseAOC);
-		ClusterDistributorProcedure clusterDist = new ClusterDistributorProcedure();
-		testObject.getProcedures().add(clusterDist);
-		clusterDist.init();
-		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
-		input.setSource(otherIdentity);
-		input.setDestination(identity);
-		input.setTxID(2525);
-		input.setDukeCommand(DukeCommandEnum.STOP);
-		testObject.handleInMessage(input);
-		assertEquals(1, MessageMock.getMessages().size());
-		BaseMsgC baseMsg = MessageMock.getMessage(0);
-		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
-		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
-		assertEquals(otherIdentity, baseMsg.getDestination());
-		assertEquals(identity, baseMsg.getSource());
-		assertEquals(0, theBaseAOC.ShutDownCalls);
-		assertEquals(2525, baseMsg.getTxID());
-		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
-		assertTrue(response.getResponse().contains("Command to terminate has been sent to the nukes"));
-		assertEquals(clusterDist.TERMINATING, clusterDist.getState());
-  }
-  
-  @Test
   public void testDukeCommandReqStatusCommandDistributors() throws Exception {
   	DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);

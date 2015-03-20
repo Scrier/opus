@@ -66,7 +66,6 @@ public class ClusterDistributorProcedureTest {
 		assertEquals(true, testObject.isShutDownOnce());
 		assertEquals("", testObject.getCommand());
 		assertEquals("", testObject.getFolder());
-		assertEquals(Constants.HC_UNDEFINED, testObject.getTimerID());
 		assertEquals(Constants.HC_UNDEFINED, testObject.getTerminateID());
 	}
 

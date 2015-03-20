@@ -153,7 +153,6 @@ public enum TestHelper {
 		invokeSingleArg(ClusterDistributorProcedure.class, "setShutDownOnce", boolean.class, retValue, randomGenerator.nextBoolean());
 		invokeSingleArg(ClusterDistributorProcedure.class, "setCommand", String.class, retValue, String.format("%f", randomGenerator.nextFloat()));
 		invokeSingleArg(ClusterDistributorProcedure.class, "setFolder", String.class, retValue, String.format("%f", randomGenerator.nextFloat()));
-		invokeSingleArg(ClusterDistributorProcedure.class, "setTimerID", long.class, retValue, getNextPositiveLong());
 		invokeSingleArg(ClusterDistributorProcedure.class, "setTerminateID", long.class, retValue, getNextPositiveLong());
 		return retValue;
 	}
