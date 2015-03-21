@@ -24,7 +24,7 @@ public class WaitingForNukeTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 82495154L;
+	private long identity = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")

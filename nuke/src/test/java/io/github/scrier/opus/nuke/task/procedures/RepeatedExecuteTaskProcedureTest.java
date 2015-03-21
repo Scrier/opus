@@ -152,7 +152,6 @@ public class RepeatedExecuteTaskProcedureTest {
 		SendIF.clear();
 		NukeStopAllReqMsgC pNukeStopReq = new NukeStopAllReqMsgC();
 		pNukeStopReq.setTxID(123456);
-		pNukeStopReq.setProcessID(testObject.getProcessID());
 		testObject.handleInMessage(pNukeStopReq);
 		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());
@@ -182,7 +181,6 @@ public class RepeatedExecuteTaskProcedureTest {
 		SendIF.clear();
 		NukeTerminateAllReqMsgC pNukeTerminateReq = new NukeTerminateAllReqMsgC();
 		pNukeTerminateReq.setTxID(123456);
-		pNukeTerminateReq.setProcessID(testObject.getProcessID());
 		testObject.handleInMessage(pNukeTerminateReq);
 		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());

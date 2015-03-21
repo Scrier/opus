@@ -29,6 +29,7 @@ import io.github.scrier.opus.duke.commander.CommandProcedure;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.ICommandCallback;
 import io.github.scrier.opus.duke.commander.INukeInfo;
+import io.github.scrier.opus.duke.commander.TerminateAllExecuteProcedure;
 
 /**
  * State handling for Ramping Down transactions.
@@ -67,7 +68,9 @@ public class Terminating extends State implements ICommandCallback {
 		List<INukeInfo> nukes = theContext.getNukes();
 		log.info("Sending terminate command to " + nukes.size() + " nukes will terminate this applicatio in " + getTerminateTimeout() + " seconds.");
 		for( INukeInfo info : nukes ) {
-			// Send messages to nukes to terminate.
+			log.info("Sending Terminate command to nuke with id: " + info.getNukeID() + ".");
+			registerProcedure(new TerminateAllExecuteProcedure(info.getNukeID(), this));
+			getActiveNukeCommands().add(info.getNukeID());
 		}
 		startTimeout(getTerminateTimeout(), getTimerID());
 	}

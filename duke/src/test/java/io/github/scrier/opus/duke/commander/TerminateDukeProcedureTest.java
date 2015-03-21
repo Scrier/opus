@@ -43,8 +43,8 @@ public class TerminateDukeProcedureTest {
 	
 	private static TestHelper theHelper;
 	
-	private final long identity = 8242L;
-	private final long idOtherDuke = 84235166L;
+	private final long identity = theHelper.getNextLong();
+	private final long idOtherDuke = theHelper.getNextLong();
 	
 	private HazelcastInstance instance;
 	private Context theContext = Context.INSTANCE;

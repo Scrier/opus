@@ -21,7 +21,7 @@ public class NukeProcedureTest {
 	
 	private static TestHelper theHelper;
 	
-	private long identity = 489234L;
+	private long identity = theHelper.getNextLong();
 	
 	private HazelcastInstance instance;
 	private Context theContext = Context.INSTANCE;

@@ -25,8 +25,8 @@ public class ClusterDistributorProcedureTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 8239421L;
-	private long component = 7283724L;
+	private long identity = theHelper.getNextLong();
+	private long component = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")

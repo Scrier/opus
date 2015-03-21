@@ -25,9 +25,9 @@ public class TerminatingTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 82495154L;
-	private long sagaID = 834764L;
-	private long timerID = 834764123L;
+	private long identity = theHelper.getNextLong();
+	private long sagaID = theHelper.getNextLong();
+	private long timerID = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")

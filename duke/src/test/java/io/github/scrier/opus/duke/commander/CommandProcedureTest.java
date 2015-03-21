@@ -26,9 +26,9 @@ public class CommandProcedureTest {
 	static TestHelper theHelper = TestHelper.INSTANCE;
 	
 	HazelcastInstance instance;
-	long identity = 8239421L;
-	long sagaID = 892348L;
-	long component = 7283724L;
+	long identity = theHelper.getNextLong();
+	long sagaID = theHelper.getNextLong();
+	long component = theHelper.getNextLong();
 	Context theContext = Context.INSTANCE;
 	BaseActiveObjectMock theBaseAOC;
 	private MessageServiceMock SendIF = new MessageServiceMock();

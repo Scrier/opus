@@ -33,9 +33,9 @@ public class RampingUpTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 82345L;
-	private long sagaID = 111122L;
-	private long component = 23581L;
+	private long identity = theHelper.getNextLong();
+	private long sagaID = theHelper.getNextLong();
+	private long component = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")

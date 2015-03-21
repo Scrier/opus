@@ -26,8 +26,8 @@ public class StateTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 824951L;
-	private long sagaID = 847L;
+	private long identity = theHelper.getNextLong();
+	private long sagaID = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")

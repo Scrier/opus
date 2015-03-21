@@ -1,6 +1,9 @@
 package io.github.scrier.opus.duke.commander.state;
 
 import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+
 import io.github.scrier.opus.ClusterDistributorProcedureTestObj;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
@@ -25,7 +28,8 @@ public class RampingDownTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 82495154L;
+	private long identity = theHelper.getNextLong();
+	private long timerID = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
@@ -41,6 +45,7 @@ public class RampingDownTest {
 	public void setUp() throws Exception {
 		instance = theHelper.mockHazelcast();
 		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, timerID);
 		theMap = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
@@ -126,6 +131,8 @@ public class RampingDownTest {
 	public void testTimeoutTimeoutOK() {
 		RampingDown testObject = new RampingDown(distributor);
 		testObject.setState(testObject.RAMPING_DOWN);
+		testObject.setOldUsers(2);
+		testObject.getActiveNukeCommands().add(theHelper.getNextLong());
 		distributor.nukesReady = true;
 		testObject.timeout(testObject.getTimerID());
 		assertEquals(testObject.RAMPING_DOWN, testObject.getState());

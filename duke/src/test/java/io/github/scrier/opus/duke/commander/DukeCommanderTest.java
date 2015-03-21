@@ -40,11 +40,11 @@ public class DukeCommanderTest {
 	
 	private static Logger log = LogManager.getLogger(DukeCommanderTest.class);
 	
-	static TestHelper helper = TestHelper.INSTANCE;
+	static TestHelper theHelper = TestHelper.INSTANCE;
 	
-	long identity = 972591621L;
-	long otherIdentity = 9785345L;
-	long sagaID = 83873L;
+	long identity = theHelper.getNextLong();
+	long otherIdentity = theHelper.getNextLong();
+	long sagaID = theHelper.getNextLong();
 	HazelcastInstance instance;
 	BaseActiveObjectMock theBaseAOC;
 	Context theContext = Context.INSTANCE;
@@ -55,7 +55,7 @@ public class DukeCommanderTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		helper.setLogLevel(Level.TRACE);
+		theHelper.setLogLevel(Level.TRACE);
 	}
 
 	@AfterClass
@@ -64,12 +64,12 @@ public class DukeCommanderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		instance = helper.mockHazelcast();
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
-		map = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, 11L);
-		settings = helper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
+		instance = theHelper.mockHazelcast();
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
+		map = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, 11L);
+		settings = theHelper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_MINIMUM_NODES)).thenReturn("1");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_MAX_USERS)).thenReturn("2");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_INTERVAL)).thenReturn("3");
