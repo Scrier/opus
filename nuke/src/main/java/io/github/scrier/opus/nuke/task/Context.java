@@ -19,9 +19,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.SendIF;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,6 +68,15 @@ public enum Context {
 	}
 
 	public void shutDown() {
+		if( null != executor ) {
+			executor.shutdownNow();
+			log.info("Shutting down threads, waiting for terminateion.");
+			try {
+				executor.awaitTermination(10, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.fatal("Received InterruptedException in shutDown.", e);
+			}
+		}
 		initialized = false;
 		txID = 0;
 		executor = null;
@@ -90,6 +101,14 @@ public enum Context {
 	 */
 	private void setInstance(HazelcastInstance instance) {
 		this.instance = instance;
+	}
+	
+	/**
+	 * Method to get a cluster unique id key for use.
+	 * @return long
+	 */
+	public long getUniqueID() {
+		return getInstance().getIdGenerator(Shared.Hazelcast.COMMON_UNIQUE_ID).newId();
 	}
 
 	/**
@@ -165,8 +184,12 @@ public enum Context {
 		return getTask().removeEntry(data);
 	}
 	
-	protected ThreadPoolExecutor getExecutor() {
+	public ThreadPoolExecutor getExecutor() {
 		return executor;
+	}
+	
+	public SendIF getSendIF() {
+		return parent.getSendIF();
 	}
 	
 }

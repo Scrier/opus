@@ -15,6 +15,8 @@
  */
 package io.github.scrier.opus.common.message;
 
+import io.github.scrier.opus.common.Constants;
+
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
@@ -30,7 +32,7 @@ public class BaseMsgC implements IdentifiedDataSerializable {
 
 	private long source;
 	private long destination;
-	private int sagaID;
+	private long sagaID;
 	private int txID;
 	private int factoryID;
 	private int messageID;
@@ -53,8 +55,8 @@ public class BaseMsgC implements IdentifiedDataSerializable {
 	 */
 	public BaseMsgC(int factoryID, int messageID, SendIF sendIF) {
 		log.trace("BaseMsgC(" + factoryID + ", " + messageID + ", " + sendIF + ")");
-		this.source = -1L;
-		this.destination = -1L;
+		this.source = Constants.HC_UNDEFINED;
+		this.destination = Constants.HC_UNDEFINED;
 		this.sagaID = -1;
 		this.txID = -1;
 		this.factoryID = factoryID;
@@ -84,7 +86,7 @@ public class BaseMsgC implements IdentifiedDataSerializable {
 	public void readData(ObjectDataInput in) throws IOException {
 		this.source = in.readLong();
 		this.destination = in.readLong();
-		this.sagaID = in.readInt();
+		this.sagaID = in.readLong();
 		this.txID = in.readInt();
 	}
 
@@ -95,7 +97,7 @@ public class BaseMsgC implements IdentifiedDataSerializable {
 	public void writeData(ObjectDataOutput out) throws IOException {
 		out.writeLong(this.source);
 		out.writeLong(this.destination);
-		out.writeInt(this.sagaID);
+		out.writeLong(this.sagaID);
 		out.writeInt(this.txID);
 	}
 
@@ -146,14 +148,14 @@ public class BaseMsgC implements IdentifiedDataSerializable {
 	/**
 	 * @return the sagaID
 	 */
-	public int getSagaID() {
+	public long getSagaID() {
 		return sagaID;
 	}
 
 	/**
 	 * @param sagaID the sagaID to set
 	 */
-	public void setSagaID(int sagaID) {
+	public void setSagaID(long sagaID) {
 		this.sagaID = sagaID;
 	}
 

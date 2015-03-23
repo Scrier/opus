@@ -34,11 +34,15 @@ public abstract class BaseDukeProcedure extends BaseProcedureC {
 	public BaseDukeProcedure() {
 		log.trace("BaseProcedure()");
 		this.theContext = Context.INSTANCE;
-		super.setTxID(theContext.getNextTxID());;
+		super.setTxID(theContext.getNextTxID());
 	}
 
 	public long getUniqueID() {
 		return theContext.getUniqueID();
+	}
+	
+	public long getNextSagaID() {
+		return theContext.getNextSagaID();
 	}
 
 	public void addEntry(BaseDataC data) {

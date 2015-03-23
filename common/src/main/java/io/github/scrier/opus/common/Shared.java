@@ -24,6 +24,7 @@ public class Shared {
 
 		public static final String COMMON_MAP_UNIQUE_ID = "hazelcast-map-unique-id";
 		public static final String COMMON_UNIQUE_ID = "hazelcast-unique-id";
+		public static final String COMMON_SAGA_ID = "hazelcast-saga-id";
 	}
 	
 	public static class Settings {
@@ -42,22 +43,6 @@ public class Shared {
 		public static final String EXECUTE_COMMAND = "execute-command";
 		public static final String EXECUTE_GOBBLER_DIR = "execute-gobbler-dir";
 		public static final String EXECUTE_GOBBLER_LEVEL = "execute-gobbler-level";
-	}
-	
-	/**
-	 * Reserved commands for the CommandState object.
-	 */
-	public static class Commands {
-		
-		public static class Execute {
-			public static final String STOP_EXECUTION = "shared-commands-stop-execution";
-			public static final String TERMINATE_EXECUTION = "shared-commands-terminate-execution";
-		}
-		
-		public static class Query {
-			public static final String STATUS = "shared-commands-query-status";
-		}
-		
 	}
 	
 	public static class Methods {

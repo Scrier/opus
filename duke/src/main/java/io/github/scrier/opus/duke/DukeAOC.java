@@ -21,6 +21,7 @@ import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.duke.DukeMsgFactory;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
+import io.github.scrier.opus.common.nuke.NukeMsgFactory;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.DukeCommander;
 import io.github.scrier.opus.duke.io.XmlSettings;
@@ -60,7 +61,12 @@ public class DukeAOC extends BaseActiveObject {
 		commander = new DukeCommander(getInstance());
 		Context.INSTANCE.init(commander, this);
 		if( true != registerOnFactory(DukeMsgFactory.FACTORY_ID) ) {
-			log.fatal("Unable to register on factoru message. " + DukeMsgFactory.FACTORY_ID + ", cannot continue.");
+			log.fatal("Unable to register on factory message. " + DukeMsgFactory.FACTORY_ID + ", cannot continue.");
+			shutDown();
+			return;
+		}
+		if( true != registerOnFactory(NukeMsgFactory.FACTORY_ID) ) {
+			log.fatal("Unable to register on factory message. " + NukeMsgFactory.FACTORY_ID + ", cannot continue.");
 			shutDown();
 			return;
 		}
@@ -85,6 +91,9 @@ public class DukeAOC extends BaseActiveObject {
 		log.trace("shutDown()");
 		if( true != unRegisterOnFactory(DukeMsgFactory.FACTORY_ID) ) {
 			log.fatal("Unable to remove registration for factory id: " + DukeMsgFactory.FACTORY_ID + ".");
+		}
+		if( true != unRegisterOnFactory(NukeMsgFactory.FACTORY_ID) ) {
+			log.fatal("Unable to remove registration for factory id: " + NukeMsgFactory.FACTORY_ID + ".");
 		}
 		commander.shutDown();
 		Context.INSTANCE.shutDown();

@@ -15,7 +15,7 @@
  */
 package io.github.scrier.opus.common.duke;
 
-import io.github.scrier.opus.common.data.Constants;
+import io.github.scrier.opus.common.Constants;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

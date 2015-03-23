@@ -22,7 +22,7 @@ import java.io.IOException;
 import io.github.scrier.opus.common.ObjectDataInputMock;
 import io.github.scrier.opus.common.ObjectDataOutputMock;
 import io.github.scrier.opus.common.TestHelper;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -40,8 +40,8 @@ public class NukeInfoTest {
 	@Test
 	public void testDefaultConstructor() {
 		NukeInfo testObject = new NukeInfo();
-		assertEquals(NukeFactory.FACTORY_ID, testObject.getFactoryId());
-		assertEquals(NukeFactory.NUKE_INFO, testObject.getId());
+		assertEquals(NukeDataFactory.FACTORY_ID, testObject.getFactoryId());
+		assertEquals(NukeDataFactory.NUKE_INFO, testObject.getId());
 		assertEquals(0L, testObject.getNukeID());
 		assertEquals(0, testObject.getNumberOfThreads());
 		assertEquals(0, testObject.getRequestedThreads());

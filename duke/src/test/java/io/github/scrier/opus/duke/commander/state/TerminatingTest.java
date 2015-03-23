@@ -20,12 +20,14 @@ import org.junit.Test;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 
-public class TeminatingTest {
+public class TerminatingTest {
 
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 82495154L;
+	private long identity = theHelper.getNextLong();
+	private long sagaID = theHelper.getNextLong();
+	private long timerID = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
@@ -41,6 +43,8 @@ public class TeminatingTest {
 	public void setUp() throws Exception {
 		instance = theHelper.mockHazelcast();
 		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, timerID);
 		theMap = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
@@ -101,6 +105,8 @@ public class TeminatingTest {
 	public void testEvicted() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
+		assertEquals(testObject.TERMINATING, distributor.getState());
+		assertEquals(testObject.TERMINATING, testObject.getState());
 		testObject.evicted(new BaseDataC(1, 2));
 		assertEquals(distributor.TERMINATING, testObject.getState());
 	}
@@ -147,7 +153,7 @@ public class TeminatingTest {
 	public void testFinishedWrongState() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
-		testObject.finished(1L, testObject.ABORTED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.ABORTED, "haha", "hoho");
 		fail("Should throw exception.");
 	}
 	
@@ -155,7 +161,7 @@ public class TeminatingTest {
 	public void testFinishedTerminating() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
-		testObject.finished(1L, testObject.TERMINATING, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.TERMINATING, "haha", "hoho");
 		assertEquals(testObject.TERMINATING, testObject.getState());
 	}
 	
@@ -163,7 +169,7 @@ public class TeminatingTest {
 	public void testFinishedUnknownID() {
 		Terminating testObject = new Terminating(distributor);
 		testObject.setState(testObject.TERMINATING);
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		fail("Should throw exception.");
 	}
 	
@@ -173,7 +179,7 @@ public class TeminatingTest {
 		testObject.setState(testObject.TERMINATING);
 		testObject.getActiveNukeCommands().add(1L);
 		distributor.timeoutActive = true;
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		assertEquals(0, distributor.TimeoutCalls);
 		assertEquals(testObject.COMPLETED, testObject.getState());
 	}
@@ -185,7 +191,7 @@ public class TeminatingTest {
 		testObject.getActiveNukeCommands().add(1L);
 		testObject.getActiveNukeCommands().add(2L);
 		distributor.timeoutActive = true;
-		testObject.finished(1L, testObject.COMPLETED, "haha", "hoho");
+		testObject.finished(1L, 2L, testObject.COMPLETED, "haha", "hoho");
 		assertEquals(0, distributor.TimeoutCalls);
 		assertEquals(testObject.TERMINATING, testObject.getState());
 	}

@@ -26,7 +26,8 @@ public class StateTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 824951L;
+	private long identity = theHelper.getNextLong();
+	private long sagaID = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
@@ -42,6 +43,7 @@ public class StateTest {
 	public void setUp() throws Exception {
 		instance = theHelper.mockHazelcast();
 		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
 		theMap = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
 		theBaseAOC = new BaseActiveObjectMock(instance);
 		theBaseAOC.preInit();
@@ -63,7 +65,6 @@ public class StateTest {
 		assertEquals(distributor.getPeakDelaySeconds(), testObject.getPeakDelaySeconds());
 		assertEquals(distributor.getState(), testObject.getState());
 		assertEquals(distributor.getTerminateID(), testObject.getTerminateID());
-		assertEquals(distributor.getTimerID(), testObject.getTimerID());
 		assertEquals(distributor.getUserIncrease(), testObject.getUserIncrease());
 		assertEquals(distributor.getState(), testObject.getState());
 		assertEquals(distributor.isRepeated(), testObject.isRepeated());
@@ -105,7 +106,7 @@ public class StateTest {
 	@Test
 	public void testTimeout() {
 		State testObject = new StateImpl(distributor);
-		testObject.timeout(distributor.getTimerID());
+		testObject.timeout(testObject.getTimerID());
 		assertEquals(testObject.ABORTED, testObject.getState());
 	}
 	
@@ -128,7 +129,7 @@ public class StateTest {
 	@Test
 	public void testRegister() {
 		State testObject = new StateImpl(distributor);
-		testObject.registerProcedure(new CommandProcedure(1234L, "this is command", CommandState.EXECUTE));
+		testObject.registerProcedure(new CommandProcedure(1234L, "this is command"));
 		assertFalse(theContext.getCommander().getProceduresToAdd(CommandProcedure.class).isEmpty());
 	}
 

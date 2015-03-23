@@ -20,6 +20,7 @@ import com.hazelcast.core.HazelcastInstance;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
+import io.github.scrier.opus.common.nuke.NukeMsgFactory;
 import io.github.scrier.opus.nuke.task.Context;
 import io.github.scrier.opus.nuke.task.NukeTasks;
 
@@ -37,8 +38,14 @@ public class NukeAOC extends BaseActiveObject {
 	 */
 	@Override
 	public void init() {
+		log.trace("init()");
 		Context.INSTANCE.init(nukeTasks, this);
-    nukeTasks.init();  
+		if( true != registerOnFactory(NukeMsgFactory.FACTORY_ID) ) {
+			log.fatal("Unable to register on factoru message. " + NukeMsgFactory.FACTORY_ID + ", cannot continue.");
+			shutDown();
+			return;
+		}
+    nukeTasks.init();
 	}
 
 	/**
@@ -47,7 +54,14 @@ public class NukeAOC extends BaseActiveObject {
 	@Override
 	public void shutDown() {
 		Context.INSTANCE.shutDown();
+		if( true != unRegisterOnFactory(NukeMsgFactory.FACTORY_ID) ) {
+			log.fatal("Unable to remove registration for factory id: " + NukeMsgFactory.FACTORY_ID + ".");
+		}
 		nukeTasks.shutDown();
+		Context.INSTANCE.shutDown();
+		getInstance().getLifecycleService().shutdown();
+		log.info("System exit.");
+		System.exit(0);
 	}
 
 	@Override

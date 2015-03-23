@@ -1,5 +1,5 @@
 /**
- * Licensed under the Apache License, Version 2.0 (the "License");
+8 * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
@@ -29,6 +29,7 @@ import io.github.scrier.opus.duke.commander.CommandProcedure;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.ICommandCallback;
 import io.github.scrier.opus.duke.commander.INukeInfo;
+import io.github.scrier.opus.duke.commander.TerminateAllExecuteProcedure;
 
 /**
  * State handling for Ramping Down transactions.
@@ -67,10 +68,23 @@ public class Terminating extends State implements ICommandCallback {
 		List<INukeInfo> nukes = theContext.getNukes();
 		log.info("Sending terminate command to " + nukes.size() + " nukes will terminate this applicatio in " + getTerminateTimeout() + " seconds.");
 		for( INukeInfo info : nukes ) {
-			registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.TERMINATE_EXECUTION, CommandState.EXECUTE, this));
+			log.info("Sending Terminate command to nuke with id: " + info.getNukeID() + ".");
+			registerProcedure(new TerminateAllExecuteProcedure(info.getNukeID(), this));
 			getActiveNukeCommands().add(info.getNukeID());
 		}
 		startTimeout(getTerminateTimeout(), getTimerID());
+	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+		if( isTimeoutActive(getTimerID()) ) {
+			log.info("Terminating timer with id: " + getTimerID() + ".");
+			terminateTimeout(getTimerID());
+		}
 	}
 	
 	/**
@@ -126,10 +140,10 @@ public class Terminating extends State implements ICommandCallback {
 	 * {@inheritDoc}
 	 */
 	@Override
-  public void finished(long nukeID, int state, String query, String result) {
-		log.trace("finished(" + nukeID + ", " + state + ", " + query + ", " + result + ")");
+  public void finished(long nukeID, long processID, int state, String query, String result) {
+		log.trace("finished(" + nukeID + ", " + processID + ", " + state + ", " + query + ", " + result + ")");
 		if( COMPLETED == state ) {
-			log.info("Stop Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
+			log.info("Terminate Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
 			if( getActiveNukeCommands().contains(nukeID) ) {
 				getActiveNukeCommands().remove(nukeID);
 				if( true == getActiveNukeCommands().isEmpty() ) {

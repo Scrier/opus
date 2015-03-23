@@ -15,6 +15,8 @@
  */
 package io.github.scrier.opus.common.data;
 
+import io.github.scrier.opus.common.Constants;
+
 import java.io.IOException;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +37,7 @@ public class BaseDataC implements IdentifiedDataSerializable {
 	
 	public BaseDataC(int factoryID, int messageID) {
 		log.trace("BaseDataC(" + factoryID + ", " + messageID + ")");
-		setKey(-1L);
+		setKey(Constants.HC_UNDEFINED);
 		setFactoryID(factoryID);
 		setMessageID(messageID);
 	}

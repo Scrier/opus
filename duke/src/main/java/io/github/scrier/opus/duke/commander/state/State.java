@@ -40,6 +40,7 @@ public abstract class State {
 	public final int COMPLETED;
 	
 	private ClusterDistributorProcedure parent;
+	private long timerID;
 	
 	public State(ClusterDistributorProcedure parent) {
 		ABORTED = parent.ABORTED;
@@ -51,6 +52,7 @@ public abstract class State {
 		TERMINATING = parent.TERMINATING;
 		COMPLETED = parent.COMPLETED;
 		setParent(parent);
+		setTimerID(parent.getUniqueID());
 	}
 	
 	/**
@@ -59,6 +61,15 @@ public abstract class State {
 	public void init() {
 		log.trace("init()");
 		log.error("Default init state setting aborted from state: " + getState() + "."); 
+		setState(ABORTED); 
+	}
+	
+	/**
+	 * Base handling on shutDown methods.
+	 */
+	public void shutDown() {
+		log.trace("shutDown()");
+		log.error("Default shutDown state setting aborted from state: " + getState() + "."); 
 		setState(ABORTED); 
 	}
 	
@@ -136,11 +147,11 @@ public abstract class State {
 	}
 	
 	/**
-	 * Propagated method from parent
-	 * @return long with the timer id.
+	 * Method to terminate the timeout for a given id.
+	 * @param timerID long
 	 */
-	protected long getTimerID() {
-		return parent.getTimerID();
+	protected void terminateTimeout(long timerID) {
+		parent.terminateTimeout(timerID);
 	}
 	
 	/**
@@ -229,5 +240,19 @@ public abstract class State {
 	private void setParent(ClusterDistributorProcedure parent) {
 		this.parent = parent;
 	}
+
+	/**
+	 * @param timerID the timerID to set
+	 */
+  public void setTimerID(long timerID) {
+	  this.timerID = timerID;
+  }
+  
+	/**
+	 * @return the timerID
+	 */
+  public long getTimerID() {
+	  return timerID;
+  }
 	
 }

@@ -13,14 +13,37 @@
  * 
  * @author Andreas Joelsson (andreas.joelsson@gmail.com)
  */
-package io.github.scrier.opus.common.data;
+package io.github.scrier.opus.common;
 
-public class Constants {
+import java.util.ArrayList;
+import java.util.List;
+
+import io.github.scrier.opus.common.message.BaseMsgC;
+import io.github.scrier.opus.common.message.SendIF;
+
+public class SendIFMock implements SendIF {
 	
-	public static final int INTERVAL = 500;
+	private List<BaseMsgC> messages;
 	
-	public static final int DUKE_DATA_START = INTERVAL * 0;
-	public static final int NUKE_DATA_START = INTERVAL * 1;
-	public static final int DUKE_MSG_START  = INTERVAL * 2;
+	public SendIFMock() {
+		messages = new ArrayList<BaseMsgC>();
+	}
+	
+	public void clear() {
+		messages.clear();
+	}
+	
+	public int getSize() {
+		return messages.size();
+	}
+	
+	public BaseMsgC getItem(int index) {
+		return messages.get(index);
+	}
+
+	@Override
+  public void publishMessage(BaseMsgC message) {
+	  messages.add(message);
+  }
 
 }

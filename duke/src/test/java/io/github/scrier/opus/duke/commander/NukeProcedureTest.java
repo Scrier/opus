@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import io.github.scrier.opus.TestHelper;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
-import io.github.scrier.opus.common.nuke.NukeCommand;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -22,7 +21,7 @@ public class NukeProcedureTest {
 	
 	private static TestHelper theHelper;
 	
-	private long identity = 489234L;
+	private long identity = theHelper.getNextLong();
 	
 	private HazelcastInstance instance;
 	private Context theContext = Context.INSTANCE;
@@ -120,12 +119,4 @@ public class NukeProcedureTest {
 		fail("Should throw exception above,");
 	}
 	
-	@Test
-	public void testOnUpdateCommand() throws Exception {
-		NukeProcedure testObject = new NukeProcedure(info);
-		testObject.init();
-		testObject.handleOnUpdated(new NukeCommand());
-		assertEquals(testObject.INITIALIZING, testObject.getState());
-	}
-
 }

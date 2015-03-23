@@ -15,6 +15,8 @@
  */
 package io.github.scrier.opus.duke.commander;
 
+import io.github.scrier.opus.common.Constants;
+
 public class ProcedureWaitImpl implements IProcedureWait {
 	
 	public long Identity;
@@ -25,7 +27,7 @@ public class ProcedureWaitImpl implements IProcedureWait {
 	}
 	
 	public void resetProcedure() {
-		this.Identity = -1L;
+		this.Identity = Constants.HC_UNDEFINED;
 		this.State = -1;
 	}
 

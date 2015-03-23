@@ -178,6 +178,14 @@ public enum Context {
   	}
   	return getUniqueGenerator().newId();
   }
+  
+  /**
+   * Method to get a unique ID for sagas told by the system
+   * @return long
+   */
+	public long getNextSagaID() {
+		return getBaseAoC().getNextSagaID();
+	}
 
 	/**
 	 * @param txID the txID to set

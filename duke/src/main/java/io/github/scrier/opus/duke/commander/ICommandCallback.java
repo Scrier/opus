@@ -20,10 +20,11 @@ public interface ICommandCallback {
 	/**
 	 * Method called when the procedure is terminated.
 	 * @param nukeID the id of the nuke that has completed the command.
+	 * @param processID the process id assigned to the task.
 	 * @param state the state when terminated.
 	 * @param query String with the query performed.
 	 * @param result String with the result of the Query.
 	 */
-	public void finished(long nukeID, int state, String query, String result);
+	public void finished(long nukeID, long processID, int state, String query, String result);
 	
 }

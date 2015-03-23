@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.*;
 import io.github.scrier.opus.common.duke.*;
@@ -181,7 +182,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	}
 
 	@Override
-	public void preEntry() {
+	public synchronized void preEntry() {
 		log.trace("preEntry()");
 		initializeProcedures();
 		toRemove.clear();
@@ -214,13 +215,12 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	public void entryAdded(Long component, BaseDataC data) {
 		log.trace("entryAdded(" + component + ", " + data + ")");
 		switch (data.getId()) {
-			case NukeFactory.NUKE_INFO: {
+			case NukeDataFactory.NUKE_INFO: {
 				log.info("Adding new NukeProcedure for NukeInfo: " + data + ".");
 				registerProcedure(new NukeProcedure(new NukeInfo(data)));
 				break;
 			}
-			case DukeDataFactory.FACTORY_ID:
-			case NukeFactory.NUKE_COMMAND: {
+			case DukeDataFactory.FACTORY_ID: {
 				// do nothing
 				break;
 			}
@@ -297,7 +297,9 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	    throws InvalidOperationException {
 		log.trace("handleInMessage(" + message + ")");
 		preEntry();
-		if ( theContext.getIdentity() == message.getDestination() ) {
+		if ( theContext.getIdentity() == message.getDestination() ||
+			 ( Constants.MSG_TO_ALL == message.getDestination() && 
+				 theContext.getIdentity() != message.getSource() ) ) {
 			if ( DukeMsgFactory.DUKE_COMMAND_REQ == message.getId()) {
 				DukeCommandReqMsgC pDukeCommandReq = new DukeCommandReqMsgC(message);
 				handleMessage(pDukeCommandReq);
@@ -485,7 +487,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 		log.trace("initializeAsSingleDuke()");
 		for (BaseDataC nuke : getEntries()) {
 			log.debug("Instance is: " + nuke + ".");
-			if (NukeFactory.NUKE_INFO == nuke.getId()) {
+			if (NukeDataFactory.NUKE_INFO == nuke.getId()) {
 				log.info("Adding new NukeProcedure for NukeInfo: " + nuke + ".");
 				registerProcedure(new NukeProcedure(new NukeInfo(nuke)));
 			}

@@ -21,14 +21,13 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.data.BaseDataC;
-import io.github.scrier.opus.common.nuke.CommandState;
+import io.github.scrier.opus.common.nuke.NukeStopAllReqMsgC;
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
-import io.github.scrier.opus.duke.commander.CommandProcedure;
 import io.github.scrier.opus.duke.commander.Context;
 import io.github.scrier.opus.duke.commander.ICommandCallback;
 import io.github.scrier.opus.duke.commander.INukeInfo;
+import io.github.scrier.opus.duke.commander.StopAllExecuteProcedure;
 
 /**
  * State handling for Ramping Down transactions.
@@ -46,7 +45,6 @@ public class RampingDown extends State implements ICommandCallback {
 	private static int RAMPDOWN_UPDATE_SECONDS = 5;
 
 	private int oldUsers;
-	private boolean doOnce;
 	private List<Long> activeNukeCommands;
 	private int rampDownUpdateSeconds;	///< Update interval for calculating rampdown
 
@@ -59,7 +57,6 @@ public class RampingDown extends State implements ICommandCallback {
 	public RampingDown(ClusterDistributorProcedure parent, int rampDownSeconds) {
 		super(parent);
 		setOldUsers(-1);
-		setDoOnce(true);
 		setActiveNukeCommands(new ArrayList<Long>());
 		setRampDownUpdateSeconds(rampDownSeconds);
 	}
@@ -70,7 +67,26 @@ public class RampingDown extends State implements ICommandCallback {
 	@Override
 	public void init() {
 		log.trace("init()");
-		handleTimerTick();
+		setOldUsers(getMaxUsers());
+		List<INukeInfo> nukes = theContext.getNukes();
+		log.info("Sending stop command to " + nukes.size() + " nukes.");
+		for( INukeInfo info : nukes ) {
+			log.info("Sending stop command to nuke with id: " + info.getNukeID() + ".");
+			registerProcedure(new StopAllExecuteProcedure(info.getNukeID(), this));
+			getActiveNukeCommands().add(info.getNukeID());
+		}
+		if( false == isTimeoutActive(getTimerID()) ) {
+			startTimeout(getRampDownUpdateSeconds(), getTimerID());
+		}
+	}
+	
+	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+		if( isTimeoutActive(getTimerID()) ) {
+			log.info("Terminating timer with id: " + getTimerID() + ".");
+			terminateTimeout(getTimerID());
+		}
 	}
 
 	/**
@@ -126,8 +142,8 @@ public class RampingDown extends State implements ICommandCallback {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void finished(long nukeID, int state, String query, String result) {
-		log.trace("finished(" + nukeID + ", " + state + ", " + query + ", " + result + ")");
+	public void finished(long nukeID, long processID, int state, String query, String result) {
+		log.trace("finished(" + nukeID + ", " + processID + ", " + state + ", " + query + ", " + result + ")");
 		if( COMPLETED == state ) {
 			log.info("Stop Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
 			if( getActiveNukeCommands().contains(nukeID) ) {
@@ -154,19 +170,6 @@ public class RampingDown extends State implements ICommandCallback {
 	 */
 	private void handleTimerTick() {
 		log.trace("handleTimerTick()");
-		if( true == isDoOnce() ) {
-			setOldUsers(getMaxUsers());
-			List<INukeInfo> nukes = theContext.getNukes();
-			log.info("Sending stop command to " + nukes.size() + " nukes.");
-			for( INukeInfo info : nukes ) {
-				registerProcedure(new CommandProcedure(info.getNukeID(), Shared.Commands.Execute.STOP_EXECUTION, CommandState.EXECUTE, this));
-				getActiveNukeCommands().add(info.getNukeID());
-			}
-			if( false == isTimeoutActive(getTimerID()) ) {
-				startTimeout(getRampDownUpdateSeconds(), getTimerID());
-			}
-			setDoOnce(false);
-		} else {
 			int activeUsers = getDistributedNumberOfUsers();
 			if( activeUsers != getOldUsers() ) {
 				log.info("Ramping down from " + getOldUsers() + " to " + activeUsers + ".");
@@ -181,7 +184,6 @@ public class RampingDown extends State implements ICommandCallback {
 				log.info("We have " + activeUsers + " active and waiting for " + getActiveNukeCommands().size() + " stop commands.");
 				startTimeout(getRampDownUpdateSeconds(), getTimerID());
 			}
-		}
 	}
 
 	/**
@@ -209,20 +211,6 @@ public class RampingDown extends State implements ICommandCallback {
 	 */
 	public void setOldUsers(int oldUsers) {
 		this.oldUsers = oldUsers;
-	}
-
-	/**
-	 * @return the doOnce
-	 */
-	public boolean isDoOnce() {
-		return doOnce;
-	}
-
-	/**
-	 * @param doOnce the doOnce to set
-	 */
-	public void setDoOnce(boolean doOnce) {
-		this.doOnce = doOnce;
 	}
 
 	/**

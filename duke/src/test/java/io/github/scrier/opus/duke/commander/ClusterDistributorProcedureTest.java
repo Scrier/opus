@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.scrier.opus.TestHelper;
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -24,8 +25,8 @@ public class ClusterDistributorProcedureTest {
 	private static TestHelper theHelper = TestHelper.INSTANCE;
 
 	private HazelcastInstance instance;
-	private long identity = 8239421L;
-	private long component = 7283724L;
+	private long identity = theHelper.getNextLong();
+	private long component = theHelper.getNextLong();
 	private Context theContext = Context.INSTANCE;
 	private BaseActiveObjectMock theBaseAOC;
 	@SuppressWarnings("rawtypes")
@@ -65,8 +66,7 @@ public class ClusterDistributorProcedureTest {
 		assertEquals(true, testObject.isShutDownOnce());
 		assertEquals("", testObject.getCommand());
 		assertEquals("", testObject.getFolder());
-		assertEquals(-1L, testObject.getTimerID());
-		assertEquals(-1L, testObject.getTerminateID());
+		assertEquals(Constants.HC_UNDEFINED, testObject.getTerminateID());
 	}
 
 }

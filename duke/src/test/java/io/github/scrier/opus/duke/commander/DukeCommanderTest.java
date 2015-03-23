@@ -18,8 +18,7 @@ import io.github.scrier.opus.common.duke.DukeMsgFactory;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.CommandState;
-import io.github.scrier.opus.common.nuke.NukeCommand;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -41,10 +40,11 @@ public class DukeCommanderTest {
 	
 	private static Logger log = LogManager.getLogger(DukeCommanderTest.class);
 	
-	static TestHelper helper = TestHelper.INSTANCE;
+	static TestHelper theHelper = TestHelper.INSTANCE;
 	
-	long identity = 972591621L;
-	long otherIdentity = 9785345L;
+	long identity = theHelper.getNextLong();
+	long otherIdentity = theHelper.getNextLong();
+	long sagaID = theHelper.getNextLong();
 	HazelcastInstance instance;
 	BaseActiveObjectMock theBaseAOC;
 	Context theContext = Context.INSTANCE;
@@ -55,7 +55,7 @@ public class DukeCommanderTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		helper.setLogLevel(Level.TRACE);
+		theHelper.setLogLevel(Level.TRACE);
 	}
 
 	@AfterClass
@@ -64,11 +64,12 @@ public class DukeCommanderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		instance = helper.mockHazelcast();
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
-		map = helper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
-		helper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, 11L);
-		settings = helper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
+		instance = theHelper.mockHazelcast();
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_MAP_UNIQUE_ID, identity);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_SAGA_ID, sagaID);
+		map = theHelper.mockMap(instance, Shared.Hazelcast.BASE_NUKE_MAP);
+		theHelper.mockIdGen(instance, Shared.Hazelcast.COMMON_UNIQUE_ID, 11L);
+		settings = theHelper.mockMap(instance, Shared.Hazelcast.SETTINGS_MAP);
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_MINIMUM_NODES)).thenReturn("1");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_MAX_USERS)).thenReturn("2");
 		Mockito.when(settings.get(Shared.Settings.EXECUTE_INTERVAL)).thenReturn("3");
@@ -117,7 +118,7 @@ public class DukeCommanderTest {
 		NukeInfo info = new NukeInfo();
 		info.setState(NukeState.RUNNING);
 		l.add(info);
-		l.add(new NukeCommand());
+		l.add(new NukeInfo());
 		Mockito.when(map.values()).thenReturn(l);
 		testObject.init();
 		assertFalse(testObject.getProcedures().isEmpty());
@@ -219,16 +220,6 @@ public class DukeCommanderTest {
   }
   
   @Test
-  public void testEntryAddedNukeCommand() {
-  	DukeCommander testObject = new DukeCommander(instance);
-		theContext.init(testObject, theBaseAOC);
-		testObject.preEntry();
-		testObject.entryAdded(identity, new NukeCommand());
-		testObject.postEntry();
-		assertTrue(testObject.getProceduresToAdd().isEmpty());
-  }
-  
-  @Test
   public void testEntryAddedUnknown() {
   	DukeCommander testObject = new DukeCommander(instance);
 		theContext.init(testObject, theBaseAOC);
@@ -250,7 +241,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertFalse(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnEvicted());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnEvicted().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnEvicted().getId());
   }
   
   @Test
@@ -265,7 +256,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnEvicted());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnEvicted().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnEvicted().getId());
   }
   
   @Test
@@ -280,7 +271,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnEvicted());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnEvicted().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnEvicted().getId());
   }
   
   @Test
@@ -338,7 +329,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertFalse(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnUpdated());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnUpdated().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnUpdated().getId());
   }
   
   @Test
@@ -353,7 +344,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnUpdated());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnUpdated().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnUpdated().getId());
   }
   
   @Test
@@ -368,7 +359,7 @@ public class DukeCommanderTest {
 		testObject.postEntry();
 		assertTrue(testObject.getProcedures().isEmpty());
 		assertNotNull(procedure.getOnUpdated());
-		assertEquals(NukeFactory.NUKE_INFO, procedure.getOnUpdated().getId());
+		assertEquals(NukeDataFactory.NUKE_INFO, procedure.getOnUpdated().getId());
   }
   
   @Test
@@ -402,7 +393,7 @@ public class DukeCommanderTest {
 		testObject.getProcedures().add(procedure3);
 		testObject.getProcedures().add(procedure4);
 		testObject.getProcedures().add(new ClusterDistributorProcedure());
-		testObject.getProcedures().add(new CommandProcedure(12345L, "this is command", CommandState.QUERY));
+		testObject.getProcedures().add(new CommandProcedure(12345L, "this is command"));
 		testObject.getProcedures().add(new NukeProcedure(new NukeInfo()));
 		testObject.getProceduresToRemove().add(procedure5);
 		List<BaseDukeProcedure> check = testObject.getProcedures(BaseProcedureMock.class);
@@ -497,32 +488,6 @@ public class DukeCommanderTest {
 		assertEquals(2525, baseMsg.getTxID());
 		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
 		assertTrue(response.getResponse().contains("We hade more than one ClusterDistributor"));
-  }
-  
-  @Test
-  public void testDukeCommandReqStopCommandDistributors() throws Exception {
-  	DukeCommander testObject = new DukeCommander(instance);
-		theContext.init(testObject, theBaseAOC);
-		ClusterDistributorProcedure clusterDist = new ClusterDistributorProcedure();
-		testObject.getProcedures().add(clusterDist);
-		clusterDist.init();
-		DukeCommandReqMsgC input = new DukeCommandReqMsgC();
-		input.setSource(otherIdentity);
-		input.setDestination(identity);
-		input.setTxID(2525);
-		input.setDukeCommand(DukeCommandEnum.STOP);
-		testObject.handleInMessage(input);
-		assertEquals(1, MessageMock.getMessages().size());
-		BaseMsgC baseMsg = MessageMock.getMessage(0);
-		assertEquals(DukeMsgFactory.FACTORY_ID, baseMsg.getFactoryId());
-		assertEquals(DukeMsgFactory.DUKE_COMMAND_RSP, baseMsg.getId());
-		assertEquals(otherIdentity, baseMsg.getDestination());
-		assertEquals(identity, baseMsg.getSource());
-		assertEquals(0, theBaseAOC.ShutDownCalls);
-		assertEquals(2525, baseMsg.getTxID());
-		DukeCommandRspMsgC response = new DukeCommandRspMsgC(baseMsg);
-		assertTrue(response.getResponse().contains("Command to terminate has been sent to the nukes"));
-		assertEquals(clusterDist.TERMINATING, clusterDist.getState());
   }
   
   @Test

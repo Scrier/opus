@@ -32,7 +32,7 @@ import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
  */
 public class PeakDelay extends State {
 
-	private final Logger log = LogManager.getLogger("io.github.scrier.opus.duke.commander.ClusterDistributorProcedure.PeakDelay");
+	private final Logger log = LogManager.getLogger(PeakDelay.class);
 	
 	public PeakDelay(ClusterDistributorProcedure parent) {
 	  super(parent);
@@ -47,6 +47,15 @@ public class PeakDelay extends State {
 		log.info("We have reached peak and we stay idle for " + Shared.Methods.formatTime(getPeakDelaySeconds()) + " before ramping down.");
 		startTimeout(getPeakDelaySeconds(), getTimerID());
 	}
+	
+	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+		if( isTimeoutActive(getTimerID()) ) {
+			log.info("Terminating timer with id: " + getTimerID() + ".");
+			terminateTimeout(getTimerID());
+		}
+	}
 
 	/**
 	 * PeakDelay handling on update methods.
@@ -56,7 +65,7 @@ public class PeakDelay extends State {
 	public void updated(BaseDataC data)  {
 		log.trace("updated(" + data + ")");
 		assertState();
-	}  
+	}
 
 	/**
 	 * PeakDelay handling on evicted methods.
