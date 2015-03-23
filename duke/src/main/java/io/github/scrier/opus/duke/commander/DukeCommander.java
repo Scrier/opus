@@ -182,7 +182,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	}
 
 	@Override
-	public void preEntry() {
+	public synchronized void preEntry() {
 		log.trace("preEntry()");
 		initializeProcedures();
 		toRemove.clear();
