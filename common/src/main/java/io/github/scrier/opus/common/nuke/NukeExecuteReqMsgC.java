@@ -40,9 +40,9 @@ public class NukeExecuteReqMsgC extends BaseMsgC {
 	public NukeExecuteReqMsgC() {
 		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_EXECUTE_REQ);
 		log.trace("NukeExecuteReqMsgC()");
-		setCommand("");
-		setFolder("");
-		setRepeated(false);
+		this.command = "";
+		this.folder = "";
+		this.repeated = false;
 	}
 
 	/**
@@ -51,9 +51,9 @@ public class NukeExecuteReqMsgC extends BaseMsgC {
 	public NukeExecuteReqMsgC(SendIF sendIF) {
 		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_EXECUTE_REQ, sendIF);
 		log.trace("NukeExecuteReqMsgC(" + sendIF + ")");
-		setCommand("");
-		setFolder("");
-		setRepeated(false);
+		this.command = "";
+		this.folder = "";
+		this.repeated = false;
 	}
 	
 	/**
@@ -63,9 +63,9 @@ public class NukeExecuteReqMsgC extends BaseMsgC {
 	public NukeExecuteReqMsgC(NukeExecuteReqMsgC obj2copy) {
 		super(obj2copy);
 		log.trace("NukeExecuteReqMsgC(" + obj2copy + ")");
-		setCommand(obj2copy.getCommand());
-		setFolder(obj2copy.getFolder());
-		setRepeated(obj2copy.isRepeated());
+		this.command = obj2copy.command;
+		this.folder = obj2copy.folder;
+		this.repeated = obj2copy.repeated;
 	}
 	
 	/**
@@ -78,9 +78,9 @@ public class NukeExecuteReqMsgC extends BaseMsgC {
 		log.trace("NukeExecuteReqMsgC(" + input + ")");
 		if( input instanceof NukeExecuteReqMsgC ) {
 			NukeExecuteReqMsgC obj2copy = (NukeExecuteReqMsgC)input;
-			setCommand(obj2copy.getCommand());
-			setFolder(obj2copy.getFolder());
-			setRepeated(obj2copy.isRepeated());
+			this.command = obj2copy.command;
+			this.folder = obj2copy.folder;
+			this.repeated = obj2copy.repeated;
 		} else {
 			throw new ClassCastException("Data with id " + input.getId() + " is not an instanceof NukeExecuteReqMsgC[" + NukeMsgFactory.NUKE_EXECUTE_REQ + "], are you using correct class?");
 		}
@@ -93,9 +93,9 @@ public class NukeExecuteReqMsgC extends BaseMsgC {
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")");
 		super.readData(in);
-		setCommand(in.readUTF());
-		setFolder(in.readUTF());
-		setRepeated(in.readBoolean());
+		this.command = in.readUTF();
+		this.folder = in.readUTF();
+		this.repeated = in.readBoolean();
 	}
 
 	/**
@@ -105,9 +105,9 @@ public class NukeExecuteReqMsgC extends BaseMsgC {
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
 		super.writeData(out);
-		out.writeUTF(getCommand());
-		out.writeUTF(getFolder());
-		out.writeBoolean(isRepeated());
+		out.writeUTF(this.command);
+		out.writeUTF(this.folder);
+		out.writeBoolean(this.repeated);
 	}
 
 	/**

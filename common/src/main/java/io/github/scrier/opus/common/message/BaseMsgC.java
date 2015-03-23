@@ -86,7 +86,7 @@ public class BaseMsgC implements IdentifiedDataSerializable {
 	public void readData(ObjectDataInput in) throws IOException {
 		this.source = in.readLong();
 		this.destination = in.readLong();
-		this.sagaID = in.readInt();
+		this.sagaID = in.readLong();
 		this.txID = in.readInt();
 	}
 
