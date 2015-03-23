@@ -150,24 +150,10 @@ public class RepeatedExecuteTaskProcedureTest {
 		SendIF.waitForMessages(2);
 		assertEquals(2, SendIF.getMessages().size());
 		SendIF.clear();
-		NukeStopAllReqMsgC pNukeStopReq = new NukeStopAllReqMsgC();
-		pNukeStopReq.setTxID(123456);
-		testObject.handleInMessage(pNukeStopReq);
-		SendIF.waitForMessages(2);
-		assertEquals(2, SendIF.getMessages().size());
-		int stopRsp = -1;
-		int processInd = -2;
-		if( NukeMsgFactory.NUKE_STOP_ALL_RSP == SendIF.getMessage(0).getId() ) {
-			stopRsp = 0;
-			processInd = 1;
-		} else {
-			stopRsp = 1;
-			processInd = 0;
-		}
-		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.DONE, processID);
-		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(stopRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_ALL_RSP);
-		NukeStopAllRspMsgC check = new NukeStopAllRspMsgC(SendIF.getMessage(stopRsp));
-		assertEquals(true, check.isSuccess());
+		testObject.stopProcess();
+		SendIF.waitForMessages(1);
+		assertEquals(1, SendIF.getMessages().size());
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.DONE, processID);
 		testObject.cleanUp();
 		testObject = null;
 	}
@@ -179,25 +165,11 @@ public class RepeatedExecuteTaskProcedureTest {
 		testObject.init();
 		SendIF.waitForMessages(2);
 		SendIF.clear();
-		NukeTerminateAllReqMsgC pNukeTerminateReq = new NukeTerminateAllReqMsgC();
-		pNukeTerminateReq.setTxID(123456);
-		testObject.handleInMessage(pNukeTerminateReq);
-		SendIF.waitForMessages(2);
-		assertEquals(2, SendIF.getMessages().size());
+		testObject.terminateProcess();
+		SendIF.waitForMessages(1);
+		assertEquals(1, SendIF.getMessages().size());
 		assertEquals(testObject.ABORTED, testObject.getState());
-		int terminateRsp = -1;
-		int processInd = -2;
-		if( NukeMsgFactory.NUKE_TERMINATE_ALL_RSP == SendIF.getMessage(0).getId() ) {
-			terminateRsp = 0;
-			processInd = 1;
-		} else {
-			terminateRsp = 1;
-			processInd = 0;
-		}
-		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(processInd), CommandState.ABORTED, processID);
-		CommonCheck.assertCorrectBaseMessage(SendIF.getMessage(terminateRsp), NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_ALL_RSP);
-		NukeTerminateAllRspMsgC check = new NukeTerminateAllRspMsgC(SendIF.getMessage(terminateRsp));
-		assertEquals(true, check.isSuccess());
+		CommonCheck.assertNukeExecuteIndMsgC(SendIF.getMessage(0), CommandState.ABORTED, processID);
 		testObject.cleanUp();
 		testObject = null;
 	}

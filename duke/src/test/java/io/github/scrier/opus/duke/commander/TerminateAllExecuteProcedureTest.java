@@ -23,7 +23,7 @@ import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
-import io.github.scrier.opus.common.nuke.NukeStopAllRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllRspMsgC;
 
 import org.apache.logging.log4j.Level;
 import org.junit.Before;
@@ -33,7 +33,7 @@ import org.junit.Test;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 
-public class StopAllExecuteProcedureTest {
+public class TerminateAllExecuteProcedureTest {
 
 private static TestHelper theHelper;
 	
@@ -70,7 +70,7 @@ private static TestHelper theHelper;
 	
 	@Test
 	public void testConstructor() {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
 		assertEquals(identity, testObject.getIdentity());
 		assertEquals(nukeId, testObject.getNukeID());
 		assertEquals(testObject.CREATED, testObject.getState());
@@ -86,12 +86,12 @@ private static TestHelper theHelper;
 	
 	@Test
 	public void testInit() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
 		testObject.init();
-		assertEquals(testObject.WAITING_FOR_STOP_RSP, testObject.getState());
+		assertEquals(testObject.WAITING_FOR_TERMINATE_RSP, testObject.getState());
 		assertEquals(1, SendIF.getMessages().size());
 		BaseMsgC msg = SendIF.getMessage(0);
-		CommonCheck.assertCorrectBaseMessage(msg, NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_STOP_ALL_REQ);
+		CommonCheck.assertCorrectBaseMessage(msg, NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_ALL_REQ);
 		assertEquals(testObject.getIdentity(), msg.getSource());
 		assertEquals(testObject.getNukeID(), msg.getDestination());
 		assertEquals(testObject.getTxID(), msg.getTxID());
@@ -99,7 +99,7 @@ private static TestHelper theHelper;
 	
 	@Test
 	public void testShutDown() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
 		testObject.shutDown();
 		assertEquals(nukeId, callback.NukeID);
 		assertEquals(Constants.HC_UNDEFINED, callback.ProcessID);
@@ -110,75 +110,75 @@ private static TestHelper theHelper;
 	
 	@Test
 	public void testNukeStopAllRspWrongTxID() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
-		NukeStopAllRspMsgC pNukeStopAllRsp = new NukeStopAllRspMsgC();
-		pNukeStopAllRsp.setSource(nukeId);
-		pNukeStopAllRsp.setDestination(identity);
-		pNukeStopAllRsp.setTxID(expectedTxID + 1);
-		pNukeStopAllRsp.setSuccess(true);
-		pNukeStopAllRsp.setStatus("Status from nuke");
-		testObject.handleInMessage(pNukeStopAllRsp);
-		assertEquals(testObject.WAITING_FOR_STOP_RSP, testObject.getState());
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
+		NukeTerminateAllRspMsgC pNukeTerminateAllRsp = new NukeTerminateAllRspMsgC();
+		pNukeTerminateAllRsp.setSource(nukeId);
+		pNukeTerminateAllRsp.setDestination(identity);
+		pNukeTerminateAllRsp.setTxID(expectedTxID + 1);
+		pNukeTerminateAllRsp.setSuccess(true);
+		pNukeTerminateAllRsp.setStatus("Status from nuke");
+		testObject.handleInMessage(pNukeTerminateAllRsp);
+		assertEquals(testObject.WAITING_FOR_TERMINATE_RSP, testObject.getState());
 	}
 	
 	@Test
 	public void testNukeStopAllRspWrongState() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		NukeStopAllRspMsgC pNukeStopAllRsp = new NukeStopAllRspMsgC();
-		pNukeStopAllRsp.setSource(nukeId);
-		pNukeStopAllRsp.setDestination(identity);
-		pNukeStopAllRsp.setTxID(expectedTxID);
-		pNukeStopAllRsp.setSuccess(true);
-		pNukeStopAllRsp.setStatus("Status from nuke");
-		testObject.handleInMessage(pNukeStopAllRsp);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		NukeTerminateAllRspMsgC pNukeTerminateAllRsp = new NukeTerminateAllRspMsgC();
+		pNukeTerminateAllRsp.setSource(nukeId);
+		pNukeTerminateAllRsp.setDestination(identity);
+		pNukeTerminateAllRsp.setTxID(expectedTxID);
+		pNukeTerminateAllRsp.setSuccess(true);
+		pNukeTerminateAllRsp.setStatus("Status from nuke");
+		testObject.handleInMessage(pNukeTerminateAllRsp);
 		assertEquals(testObject.ABORTED, testObject.getState());
 	}
 	
 	@Test
 	public void testNukeStopAllRspWrongNoSuccess() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
-		NukeStopAllRspMsgC pNukeStopAllRsp = new NukeStopAllRspMsgC();
-		pNukeStopAllRsp.setSource(nukeId);
-		pNukeStopAllRsp.setDestination(identity);
-		pNukeStopAllRsp.setTxID(expectedTxID);
-		pNukeStopAllRsp.setSuccess(false);
-		pNukeStopAllRsp.setStatus("Status from nuke");
-		testObject.handleInMessage(pNukeStopAllRsp);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
+		NukeTerminateAllRspMsgC pNukeTerminateAllRsp = new NukeTerminateAllRspMsgC();
+		pNukeTerminateAllRsp.setSource(nukeId);
+		pNukeTerminateAllRsp.setDestination(identity);
+		pNukeTerminateAllRsp.setTxID(expectedTxID);
+		pNukeTerminateAllRsp.setSuccess(false);
+		pNukeTerminateAllRsp.setStatus("Status from nuke");
+		testObject.handleInMessage(pNukeTerminateAllRsp);
 		assertEquals(testObject.ABORTED, testObject.getState());
 	}
 	
 	@Test
 	public void testNukeStopAllRspWrongOK() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
-		NukeStopAllRspMsgC pNukeStopAllRsp = new NukeStopAllRspMsgC();
-		pNukeStopAllRsp.setSource(nukeId);
-		pNukeStopAllRsp.setDestination(identity);
-		pNukeStopAllRsp.setTxID(expectedTxID);
-		pNukeStopAllRsp.setSuccess(true);
-		pNukeStopAllRsp.setStatus("Status from nuke");
-		testObject.handleInMessage(pNukeStopAllRsp);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
+		NukeTerminateAllRspMsgC pNukeTerminateAllRsp = new NukeTerminateAllRspMsgC();
+		pNukeTerminateAllRsp.setSource(nukeId);
+		pNukeTerminateAllRsp.setDestination(identity);
+		pNukeTerminateAllRsp.setTxID(expectedTxID);
+		pNukeTerminateAllRsp.setSuccess(true);
+		pNukeTerminateAllRsp.setStatus("Status from nuke");
+		testObject.handleInMessage(pNukeTerminateAllRsp);
 		assertEquals(testObject.COMPLETED, testObject.getState());
 	}
 	
 	@Test
 	public void testHandleInMessageUnknowMessage() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
 		BaseMsgC pBaseMsg = new BaseMsgC(-1, -1);
 		pBaseMsg.setSource(nukeId);
 		pBaseMsg.setDestination(identity);
 		pBaseMsg.setTxID(expectedTxID);
 		testObject.handleInMessage(pBaseMsg);
-		assertEquals(testObject.WAITING_FOR_STOP_RSP, testObject.getState());
+		assertEquals(testObject.WAITING_FOR_TERMINATE_RSP, testObject.getState());
 	}
 	
 	@Test(expected=AssertionError.class)
 	public void testHandleInMessageUndefinedSource() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
 		BaseMsgC pBaseMsg = new BaseMsgC(-1, -1);
 		pBaseMsg.setSource(Constants.HC_UNDEFINED);
 		pBaseMsg.setDestination(identity);
@@ -189,8 +189,8 @@ private static TestHelper theHelper;
 	
 	@Test(expected=AssertionError.class)
 	public void testHandleInMessageUndefinedDestination() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
 		BaseMsgC pBaseMsg = new BaseMsgC(-1, -1);
 		pBaseMsg.setSource(nukeId);
 		pBaseMsg.setDestination(Constants.HC_UNDEFINED);
@@ -201,26 +201,26 @@ private static TestHelper theHelper;
 	
 	@Test
 	public void testhandleOnUpdated() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
 		testObject.handleOnUpdated(new BaseDataMockC());
-		assertEquals(testObject.WAITING_FOR_STOP_RSP, testObject.getState());
+		assertEquals(testObject.WAITING_FOR_TERMINATE_RSP, testObject.getState());
 	}
 	
 	@Test
 	public void testhandleOnEvicted() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
 		testObject.handleOnEvicted(new BaseDataMockC());
-		assertEquals(testObject.WAITING_FOR_STOP_RSP, testObject.getState());
+		assertEquals(testObject.WAITING_FOR_TERMINATE_RSP, testObject.getState());
 	}
 	
 	@Test
 	public void testhandleOnRemoved() throws Exception {
-		StopAllExecuteProcedure testObject = new StopAllExecuteProcedure(nukeId, callback);
-		testObject.setState(testObject.WAITING_FOR_STOP_RSP);
+		TerminateAllExecuteProcedure testObject = new TerminateAllExecuteProcedure(nukeId, callback);
+		testObject.setState(testObject.WAITING_FOR_TERMINATE_RSP);
 		testObject.handleOnRemoved(theHelper.getNextLong());
-		assertEquals(testObject.WAITING_FOR_STOP_RSP, testObject.getState());
+		assertEquals(testObject.WAITING_FOR_TERMINATE_RSP, testObject.getState());
 	}
 
 }

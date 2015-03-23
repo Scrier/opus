@@ -39,6 +39,8 @@ import io.github.scrier.opus.nuke.process.ProcessHandler;
 public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 
 	private static Logger log = LogManager.getLogger(BaseTaskProcedure.class);
+	
+	private final int terminateTimeout = 10; 
 
 	private ProcessHandler processHandler;
 	private Process process;
@@ -179,13 +181,6 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	protected ThreadPoolExecutor getExecutor() {
 		return getContext().getExecutor();
 	}
-	
-	protected void terminateProcess() {
-		log.trace("terminateProcess()");
-		if( null != getProcess() ) {
-			getProcess().destroy();
-		}
-	}
 
 	/**
 	 * Method to access the information for this node.
@@ -265,48 +260,89 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
   }
   
   /**
-   * Method to handle the NukeStopReqMsgC message.
-   * @param message NukeStopReqMsgC instance.
+   * Method to stop a process execution.
+   * @return boolean
    */
-  protected void handleMessage(NukeStopAllReqMsgC message) {
-  	log.trace("handleMessage(" + message + ")");
-  	NukeStopAllRspMsgC pNukeStopRsp = new NukeStopAllRspMsgC(getSendIF());
-  	pNukeStopRsp.setSource(getIdentity());
-  	pNukeStopRsp.setDestination(message.getSource());
-  	pNukeStopRsp.setTxID(message.getTxID());
-  	pNukeStopRsp.setSagaID(message.getSagaID());
+  public boolean stopProcess() {
+  	log.trace("stopProcess()");
+  	boolean retValue = true;
   	if( true != getProcess().isAlive() ) {
-  		pNukeStopRsp.setStatus("Process with id: " + getProcessID() + " is not alive.");
-  		pNukeStopRsp.setSuccess(false);
+  		retValue = false;
+  		setErrorMessage("Process with id: " + getProcessID() + " is not alive.");
   	} else {
-  		setRepeated(false);
-  		pNukeStopRsp.setStatus("Stopped repeat feature and waiting for soft stop.");
-  		pNukeStopRsp.setSuccess(true);
-  	}
-  	pNukeStopRsp.send();
+			setRepeated(false);
+		}
+  	return retValue;
   }
   
-  /**
-   * Method to handle the NukeTerminateReqMsgC message
-   * @param message NukeTerminateReqMsgC instance.
-   */
-  protected void handleMessage(NukeTerminateAllReqMsgC message) {
-  	log.trace("handleMessage(" + message + ")");
-  	log.info("Received command to terminate execution from: " + message.getSource() + ".");
-  	NukeTerminateAllRspMsgC pNukeTerminateRsp = new NukeTerminateAllRspMsgC(getSendIF());
-  	pNukeTerminateRsp.setSource(getIdentity());
-  	pNukeTerminateRsp.setDestination(message.getSource());
-  	pNukeTerminateRsp.setTxID(message.getTxID());
-  	pNukeTerminateRsp.setSagaID(message.getSagaID());
-  	pNukeTerminateRsp.setSuccess(true);
-  	if( true != getProcess().isAlive() ) {
-  		pNukeTerminateRsp.setStatus("Process " + getProcessID() + " is not alive, nothing to do.");
-  	} else {
-  		terminateProcess();
-  		pNukeTerminateRsp.setStatus("Process " + getProcessID() + " has been given command to destroy process.");
-  	}
-  	pNukeTerminateRsp.send();
-  }
+	/**
+	 * Method to terminate the process.
+	 */
+	public boolean terminateProcess() {
+		log.trace("terminateProcess()");
+		boolean retValue = true;
+		if( null == getProcess() ) {
+			retValue = false;
+			setErrorMessage("No process exists to terminate.");
+		} else if ( true != getProcess().isAlive() ) {
+			retValue = false;
+			setErrorMessage("Process is already terminated.");
+		} else {
+			getProcess().destroy();
+			try {
+	      retValue = getProcess().waitFor(terminateTimeout, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+	      log.fatal("Received InterruptedException when waiting for termination.", e);
+	      setErrorMessage("Received InterruptedException when waiting for termination.");
+	      retValue = false;
+      }
+		}
+		return retValue;
+	}
+  
+//  /**
+//   * Method to handle the NukeStopReqMsgC message.
+//   * @param message NukeStopReqMsgC instance.
+//   */
+//  protected void handleMessage(NukeStopAllReqMsgC message) {
+//  	log.trace("handleMessage(" + message + ")");
+//  	NukeStopAllRspMsgC pNukeStopRsp = new NukeStopAllRspMsgC(getSendIF());
+//  	pNukeStopRsp.setSource(getIdentity());
+//  	pNukeStopRsp.setDestination(message.getSource());
+//  	pNukeStopRsp.setTxID(message.getTxID());
+//  	pNukeStopRsp.setSagaID(message.getSagaID());
+//  	if( true != getProcess().isAlive() ) {
+//  		pNukeStopRsp.setStatus("Process with id: " + getProcessID() + " is not alive.");
+//  		pNukeStopRsp.setSuccess(false);
+//  	} else {
+//  		setRepeated(false);
+//  		pNukeStopRsp.setStatus("Stopped repeat feature and waiting for soft stop.");
+//  		pNukeStopRsp.setSuccess(true);
+//  	}
+//  	pNukeStopRsp.send();
+//  }
+//  
+//  /**
+//   * Method to handle the NukeTerminateReqMsgC message
+//   * @param message NukeTerminateReqMsgC instance.
+//   */
+//  protected void handleMessage(NukeTerminateAllReqMsgC message) {
+//  	log.trace("handleMessage(" + message + ")");
+//  	log.info("Received command to terminate execution from: " + message.getSource() + ".");
+//  	NukeTerminateAllRspMsgC pNukeTerminateRsp = new NukeTerminateAllRspMsgC(getSendIF());
+//  	pNukeTerminateRsp.setSource(getIdentity());
+//  	pNukeTerminateRsp.setDestination(message.getSource());
+//  	pNukeTerminateRsp.setTxID(message.getTxID());
+//  	pNukeTerminateRsp.setSagaID(message.getSagaID());
+//  	pNukeTerminateRsp.setSuccess(true);
+//  	if( true != getProcess().isAlive() ) {
+//  		pNukeTerminateRsp.setStatus("Process " + getProcessID() + " is not alive, nothing to do.");
+//  	} else {
+//  		terminateProcess();
+//  		pNukeTerminateRsp.setStatus("Process " + getProcessID() + " has been given command to destroy process.");
+//  	}
+//  	pNukeTerminateRsp.send();
+//  }
 
 	/**
 	 * @return the currentCommandState

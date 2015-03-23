@@ -15,14 +15,23 @@
  */
 package io.github.scrier.opus.nuke.task.procedures;
 
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+
+import com.hazelcast.partition.client.GetPartitionsRequest;
 
 import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.message.BaseMsgC;
 import io.github.scrier.opus.common.nuke.NukeExecuteReqMsgC;
 import io.github.scrier.opus.common.nuke.NukeMsgFactory;
+import io.github.scrier.opus.common.nuke.NukeStopAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeStopAllRspMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllReqMsgC;
+import io.github.scrier.opus.common.nuke.NukeTerminateAllRspMsgC;
 import io.github.scrier.opus.nuke.task.BaseNukeProcedure;
+import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
 
 public class DispatchProcedure extends BaseNukeProcedure {
 	
@@ -69,6 +78,16 @@ public class DispatchProcedure extends BaseNukeProcedure {
 				handleMessage(pNukeExecuteReq);
 				break;
 			}
+			case NukeMsgFactory.NUKE_STOP_ALL_REQ: {
+				NukeStopAllReqMsgC pNukeStopAllReq = new NukeStopAllReqMsgC(message);
+				handleMessage(pNukeStopAllReq);
+				break;
+			}
+			case NukeMsgFactory.NUKE_TERMINATE_ALL_REQ: {
+				NukeTerminateAllReqMsgC pNukeTerminateAllReq = new NukeTerminateAllReqMsgC(message);
+				handleMessage(pNukeTerminateAllReq);
+				break;
+			}
 		}
 	  return getState();
   }
@@ -85,4 +104,75 @@ public class DispatchProcedure extends BaseNukeProcedure {
 			registerProcedure(new ExecuteTaskProcedure(msg));
 		}
 	}
+	
+	/**
+	 * Method to handle the NukeStopAllReqMsgC message.
+	 * @param msg NukeStopAllReqMsgC instance.
+	 */
+	protected void handleMessage(NukeStopAllReqMsgC msg) {
+		log.trace("handleMessage(" + msg + ")");
+		List<BaseNukeProcedure> executeTasks = getContext().getTask().getProcedures(ExecuteTaskProcedure.class, RepeatedExecuteTaskProcedure.class);
+		String error = "";
+		int success = 0;
+		log.info("Received message to stop all tasks, stopping " + executeTasks.size() + " procedures.");
+		for( BaseNukeProcedure baseProc : executeTasks ) {
+			BaseTaskProcedure procedure = (BaseTaskProcedure)baseProc;
+			log.debug("Stopping procedure " + procedure + ".");
+			if( true == procedure.stopProcess() ) {
+				success++;
+			} else if ( error.isEmpty() ) {
+				error += procedure.getErrorMessage();
+			} else {
+				error += ", " + procedure.getErrorMessage();
+			}
+		}
+		String message = "Stopping " + executeTasks.size() + " procedures with " + (executeTasks.size() - success) + " errors.";
+		if( true != error.isEmpty() ) {
+			message += " Errors: " + error;
+		}
+		log.info("Sending response for the stop all request.");
+		NukeStopAllRspMsgC pNukeStopAllRsp = new NukeStopAllRspMsgC(getSendIF());
+		pNukeStopAllRsp.setSource(getIdentity());
+		pNukeStopAllRsp.setDestination(msg.getSource());
+		pNukeStopAllRsp.setTxID(msg.getTxID());
+		pNukeStopAllRsp.setSuccess(!error.isEmpty());
+		pNukeStopAllRsp.setStatus(message);
+		pNukeStopAllRsp.send();
+	}
+	
+	/**
+	 * Method to handle the NukeTerminateAllReqMsgC message.
+	 * @param msg NukeTerminateAllReqMsgC instance.
+	 */
+	protected void handleMessage(NukeTerminateAllReqMsgC msg) {
+		log.trace("handleMessage(" + msg + ")");
+		List<BaseNukeProcedure> executeTasks = getContext().getTask().getProcedures(ExecuteTaskProcedure.class, RepeatedExecuteTaskProcedure.class);
+		String error = "";
+		int success = 0;
+		log.info("Received message to terminate all tasks, terminating " + executeTasks.size() + " procedures.");
+		for( BaseNukeProcedure baseProc : executeTasks ) {
+			BaseTaskProcedure procedure = (BaseTaskProcedure)baseProc;
+			log.debug("Terminating procedure " + procedure + ".");
+			if( true == procedure.terminateProcess() ) {
+				success++;
+			} else if ( error.isEmpty() ) {
+				error += procedure.getErrorMessage();
+			} else {
+				error += ", " + procedure.getErrorMessage();
+			}
+		}
+		String message = "Terminating " + executeTasks.size() + " procedures with " + (executeTasks.size() - success) + " errors.";
+		if( true != error.isEmpty() ) {
+			message += " Errors: " + error;
+		}
+		log.info("Sending response for the terminate all request.");
+		NukeTerminateAllRspMsgC pNukeTerminateAllRsp = new NukeTerminateAllRspMsgC(getSendIF());
+		pNukeTerminateAllRsp.setSource(getIdentity());
+		pNukeTerminateAllRsp.setDestination(msg.getSource());
+		pNukeTerminateAllRsp.setTxID(msg.getTxID());
+		pNukeTerminateAllRsp.setSuccess(!error.isEmpty());
+		pNukeTerminateAllRsp.setStatus(message);
+		pNukeTerminateAllRsp.send();
+	}
+	
 }

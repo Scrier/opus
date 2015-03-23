@@ -118,16 +118,16 @@ public class RepeatedExecuteTaskProcedure extends BaseTaskProcedure implements C
   public int handleInMessage(BaseMsgC message) {
 		log.trace("handleInMessage(" + message + ")");
 		switch( message.getId() ) {
-			case NukeMsgFactory.NUKE_STOP_ALL_REQ: {
-				NukeStopAllReqMsgC pNukeStopReq = new NukeStopAllReqMsgC(message);
-				handleMessage(pNukeStopReq);
-				break;
-			}
-			case NukeMsgFactory.NUKE_TERMINATE_ALL_REQ: {
-				NukeTerminateAllReqMsgC pNukeTerminateReq = new NukeTerminateAllReqMsgC(message);
-				handleMessage(pNukeTerminateReq);
-				break;
-			}
+//			case NukeMsgFactory.NUKE_STOP_ALL_REQ: {
+//				NukeStopAllReqMsgC pNukeStopReq = new NukeStopAllReqMsgC(message);
+//				handleMessage(pNukeStopReq);
+//				break;
+//			}
+//			case NukeMsgFactory.NUKE_TERMINATE_ALL_REQ: {
+//				NukeTerminateAllReqMsgC pNukeTerminateReq = new NukeTerminateAllReqMsgC(message);
+//				handleMessage(pNukeTerminateReq);
+//				break;
+//			}
 		}
 	  return getState();
   }
