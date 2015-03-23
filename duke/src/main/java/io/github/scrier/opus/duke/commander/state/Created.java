@@ -15,6 +15,9 @@
  */
 package io.github.scrier.opus.duke.commander.state;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
 
 /**
@@ -23,9 +26,16 @@ import io.github.scrier.opus.duke.commander.ClusterDistributorProcedure;
  * {@code * -> ABORTED}
  */
 public class Created extends State {
+	
+	private static Logger log = LogManager.getLogger(Created.class);
 
 	public Created(ClusterDistributorProcedure parent) {
 	  super(parent);
   }
+	
+	@Override
+	public void shutDown() {
+		log.trace("shutDown()");
+	}
 
 }
