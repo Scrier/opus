@@ -53,8 +53,6 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 	private long sagaID;
 	private long processID;
 	private boolean repeated;
-//	static final AtomicLong NEXT_ID = new AtomicLong(0);
-//  protected final long id = NEXT_ID.getAndIncrement();
 
 	public BaseTaskProcedure() {
 		log.trace("BaseTaskProcedure");
@@ -440,7 +438,7 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
 			NukeExecuteRspMsgC pNukeExecuteRsp = new NukeExecuteRspMsgC(getSendIF());
 			pNukeExecuteRsp.setSource(getIdentity());
 			pNukeExecuteRsp.setDestination(getSource());
-			pNukeExecuteRsp.setTxID(getTxID());
+			pNukeExecuteRsp.setTxID(getMsgTxID());
 			pNukeExecuteRsp.setProcessID(getProcessID());
 			pNukeExecuteRsp.setSagaID(getSagaID());
 			pNukeExecuteRsp.send();

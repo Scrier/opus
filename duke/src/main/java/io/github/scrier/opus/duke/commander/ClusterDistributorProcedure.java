@@ -228,7 +228,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 		} else if( RAMPING_DOWN == previousState ) {
 			theContext.setClientState(DukeState.DONE);
 		}
-		log.info("Shutting down state: " + previousState + ".");
 		try {
 			log.debug("states[" + states[previousState].getClass().getSimpleName() + "].shutDown();");
 			states[previousState].shutDown();
@@ -239,7 +238,6 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 				log.error("Received out of bound exception in state: " + getState() + ".", e);
 			}
 		}
-		log.info("Initializing state: " + newState + ".");
 		try {
 			log.debug("states[" + states[newState].getClass().getSimpleName() + "].init();");
 			states[newState].init();

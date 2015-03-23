@@ -193,13 +193,13 @@ public class CommandProcedure extends BaseDukeProcedure {
 		log.trace("handleInMessage(" + message + ")");
 	  switch( message.getId() ) {
 	  	case NukeMsgFactory.NUKE_EXECUTE_RSP: {
-	  		log.debug("Received NUKE_EXECUTE_RSP message.");
+	  		log.debug("[" + getTxID() + "] Received NUKE_EXECUTE_RSP message.");
 	  		NukeExecuteRspMsgC pNukeExecuteRsp = new NukeExecuteRspMsgC(message);
 	  		handleMessage(pNukeExecuteRsp);
 	  		break;
 	  	}
 	  	case NukeMsgFactory.NUKE_EXECUTE_IND: {
-	  		log.debug("Received NUKE_EXECUTE_IND message.");
+	  		log.debug("[" + getTxID() + "] Received NUKE_EXECUTE_IND message.");
 	  		NukeExecuteIndMsgC pNukeExecuteInd = new NukeExecuteIndMsgC(message);
 	  		handleMessage(pNukeExecuteInd);
 	  		break;
@@ -312,12 +312,14 @@ public class CommandProcedure extends BaseDukeProcedure {
    */
   protected void handleMessage(NukeExecuteRspMsgC message) {
   	log.trace(" handleMessage(" + message + ")");
-  	if( getTxID() == message.getTxID() ) {
+  	if( getTxID() != message.getTxID() ) {
+  		log.debug("[" + getTxID() + "] Wrong txid. expected: " + getTxID() + ", but was: " + message.getTxID() + ".");
+  	} else {
   		if( INITIALIZING != getState() ) {
-  			log.error("Received NukeExecuteRspMsgC in wrong state: " + getState() + ", expected: " + INITIALIZING + ".");
+  			log.error("[" + getTxID() + "] Received NukeExecuteRspMsgC in wrong state: " + getState() + ", expected: " + INITIALIZING + ".");
   			setState(ABORTED);
   		} else {
-	  		log.info("Received: " + message);
+	  		log.debug("[" + getTxID() + "] Received: " + message + ", updating processID to: " + message.getProcessID() + ".");
 	  		setProcessID(message.getProcessID());
 	  		setState(WORKING);
   		}
@@ -332,22 +334,22 @@ public class CommandProcedure extends BaseDukeProcedure {
   	log.trace(" handleMessage(" + message + ")");
   	if( getDestination() == message.getSource() ) {
   		if( getProcessID() != message.getProcessID() ) {
-  			log.debug("Message not for us, expected: " + getProcessID() + ", received: " + message.getProcessID() + ".");
+  			log.debug("[" + getTxID() + "] Message not for us, expected: " + getProcessID() + ", received: " + message.getProcessID() + ".");
   		} else {
-  			log.info("Received: " + message);
+  			log.debug("[" + getTxID() + "] Received: " + message);
   			if( WORKING != getState() ) {
-  				log.error("Received NukeExecuteIndMsgC when not in state WORKING.");
+  				log.error("[" + getTxID() + "] Received NukeExecuteIndMsgC when not in state WORKING.");
   				setState(ABORTED);
   			} else {
-  				log.info("[" + getTxID() + "] Changed status to: " + message.getStatus() + ".");
+  				log.debug("[" + getTxID() + "] Changed status to: " + message.getStatus() + ".");
   				switch( message.getStatus() ) {
   					case ABORTED: {
-  						log.info("Task reports aborted state.");
+  						log.error("[" + getTxID() + "] Task reports aborted state.");
   						setState(ABORTED);
   						break;
   					}
   					case DONE: {
-  						log.info("Task reports done state.");
+  						log.debug("[" + getTxID() + "] Task reports done state.");
   						setState(COMPLETED);
   						break;
   					}

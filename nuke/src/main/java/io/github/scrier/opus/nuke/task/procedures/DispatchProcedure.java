@@ -135,7 +135,7 @@ public class DispatchProcedure extends BaseNukeProcedure {
 		pNukeStopAllRsp.setSource(getIdentity());
 		pNukeStopAllRsp.setDestination(msg.getSource());
 		pNukeStopAllRsp.setTxID(msg.getTxID());
-		pNukeStopAllRsp.setSuccess(!error.isEmpty());
+		pNukeStopAllRsp.setSuccess(executeTasks.size() == success);
 		pNukeStopAllRsp.setStatus(message);
 		pNukeStopAllRsp.send();
 	}
@@ -170,7 +170,7 @@ public class DispatchProcedure extends BaseNukeProcedure {
 		pNukeTerminateAllRsp.setSource(getIdentity());
 		pNukeTerminateAllRsp.setDestination(msg.getSource());
 		pNukeTerminateAllRsp.setTxID(msg.getTxID());
-		pNukeTerminateAllRsp.setSuccess(!error.isEmpty());
+		pNukeTerminateAllRsp.setSuccess(executeTasks.size() == success);
 		pNukeTerminateAllRsp.setStatus(message);
 		pNukeTerminateAllRsp.send();
 	}
