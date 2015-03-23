@@ -25,15 +25,15 @@ public class CommandProcedureTest {
 	
 	static TestHelper theHelper = TestHelper.INSTANCE;
 	
-	HazelcastInstance instance;
-	long identity = theHelper.getNextLong();
-	long sagaID = theHelper.getNextLong();
-	long component = theHelper.getNextLong();
-	Context theContext = Context.INSTANCE;
-	BaseActiveObjectMock theBaseAOC;
+	private HazelcastInstance instance;
+	private long identity = theHelper.getNextLong();
+	private long sagaID = theHelper.getNextLong();
+	private long component = theHelper.getNextLong();
+	private Context theContext = Context.INSTANCE;
+	private BaseActiveObjectMock theBaseAOC;
 	private MessageServiceMock SendIF = new MessageServiceMock();
 	@SuppressWarnings("rawtypes")
-  IMap theMap;
+	private IMap theMap;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
