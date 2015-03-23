@@ -49,7 +49,7 @@ public class TerminateAllExecuteProcedure extends BaseDukeProcedure {
 	@Override
   public void init() throws Exception {
 	  log.trace("init()");
-	  log.info("[" + getTxID() + "] Sending stop command to nuke with id: " + getNukeID() + ".");
+	  log.info("[" + getTxID() + "] Sending terminate command to nuke with id: " + getNukeID() + ".");
 	  NukeTerminateAllReqMsgC pNukeTerminateAllReq = new NukeTerminateAllReqMsgC(getSendIF());
 	  pNukeTerminateAllReq.setSource(getIdentity());
 	  pNukeTerminateAllReq.setDestination(getNukeID());
@@ -95,7 +95,7 @@ public class TerminateAllExecuteProcedure extends BaseDukeProcedure {
 			}
 			default: {
 				// do nothing
-				log.debug("Received default path for message with id: " + message.getId() + ".");
+				log.debug("Default switch for message with id: " + message.getId() + ".");
 			}
 		}
 		return getState();
@@ -152,14 +152,14 @@ public class TerminateAllExecuteProcedure extends BaseDukeProcedure {
   	if( getTxID() == message.getTxID() ) {
   		if( WAITING_FOR_TERMINATE_RSP != getState() ) {
   			setResult("Received NukeTerminateAllRspMsgC in wrong state, expected: " + WAITING_FOR_TERMINATE_RSP + ", but was: " + getState() + ".");
-  			log.error(getResult());
+  			log.error("[" + getTxID() + "] " + getResult());
   			setState(ABORTED);
   		} else if ( true != message.isSuccess() ) {
   			setResult(message.getStatus());
-  			log.error("Stop all failed with status: \"" + getResult() + "\".");
+  			log.error("[" + getTxID() + "] Terminate all failed with status: \"" + getResult() + "\".");
   			setState(ABORTED);
   		} else {
-  			log.info("Stop command have successfully been finished to node " + message.getSource() + ".");
+  			log.info("[" + getTxID() + "] Terminate command have successfully been finished to node " + message.getSource() + ".");
   			setResult(message.getStatus());
   			setState(COMPLETED);
   		}

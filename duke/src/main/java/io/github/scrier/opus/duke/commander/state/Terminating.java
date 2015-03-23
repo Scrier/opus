@@ -143,7 +143,7 @@ public class Terminating extends State implements ICommandCallback {
   public void finished(long nukeID, long processID, int state, String query, String result) {
 		log.trace("finished(" + nukeID + ", " + processID + ", " + state + ", " + query + ", " + result + ")");
 		if( COMPLETED == state ) {
-			log.info("Stop Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
+			log.info("Terminate Execution command received ok from node " + nukeID + " still " + (getActiveNukeCommands().size() - 1) + " remaining.");
 			if( getActiveNukeCommands().contains(nukeID) ) {
 				getActiveNukeCommands().remove(nukeID);
 				if( true == getActiveNukeCommands().isEmpty() ) {
