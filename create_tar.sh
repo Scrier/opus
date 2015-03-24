@@ -1,6 +1,6 @@
 #!/bin/bash
 
-system=opus-load
+system=${system-opus}
 if [ -z "$1" ]; then
   version=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
 else
