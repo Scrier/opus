@@ -1,4 +1,4 @@
-Name:	            opus	
+Name:	            opus-load	
 #Version:          0.1.0
 Version:          %{version}
 Release:	        1%{?dist}
