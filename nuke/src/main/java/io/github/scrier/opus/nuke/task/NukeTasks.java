@@ -189,7 +189,7 @@ public class NukeTasks extends DataListener {
 	/**
 	 * Method to handle incoming messages for the procedures.
 	 * @param message BaseMsgC with the incoming message.
-	 * @throws InvalidOperationException 
+	 * @throws InvalidOperationException thrown if Context isnt initialized properly.
 	 */
 	public void handleInMessage(BaseMsgC message) throws InvalidOperationException {
 		log.trace("handleInMessage(" + message + ")");

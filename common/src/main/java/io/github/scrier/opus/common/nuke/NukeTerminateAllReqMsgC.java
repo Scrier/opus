@@ -41,6 +41,7 @@ public class NukeTerminateAllReqMsgC extends BaseMsgC {
 
 	/**
 	 * Constructor
+	 * @param sendIF the SendIF to use for distribution
 	 */
 	public NukeTerminateAllReqMsgC(SendIF sendIF) {
 		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_TERMINATE_ALL_REQ, sendIF);

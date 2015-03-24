@@ -57,8 +57,9 @@ public class TerminateDukeProcedure extends BaseDukeProcedure implements ITimeOu
 
 	/**
 	 * Constructor
-	 * @param identity
-	 * @param callback
+	 * @param identity the identity of the conflicting duke.
+	 * @param callback interface to do callback to when done.
+	 * @param otherDuke DukeInfo with the information about the other duke.
 	 */
 	public TerminateDukeProcedure(long identity, IProcedureWait callback, DukeInfo otherDuke) {
 		log.trace("TerminateDukeProcedure(" + identity + ", " + callback + ", " +  otherDuke + ")");

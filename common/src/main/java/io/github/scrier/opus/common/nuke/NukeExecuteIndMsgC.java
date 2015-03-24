@@ -46,6 +46,7 @@ public class NukeExecuteIndMsgC extends BaseMsgC {
 
 	/**
 	 * Constructor
+	 * @param sendIF the SendIF to use for distribution
 	 */
 	public NukeExecuteIndMsgC(SendIF sendIF) {
 		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_EXECUTE_IND, sendIF);
@@ -112,7 +113,7 @@ public class NukeExecuteIndMsgC extends BaseMsgC {
 	}
 
 	/**
-	 * @param response the status to set
+	 * @param status the status to set
 	 */
 	public void setStatus(CommandState status) {
 		this.status = status;

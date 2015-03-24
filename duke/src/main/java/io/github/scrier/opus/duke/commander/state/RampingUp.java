@@ -44,11 +44,17 @@ public class RampingUp extends State {
 	
 	/**
 	 * Constructor
+	 * @param parent the ClusterDistributorProcedure
 	 */
 	public RampingUp(ClusterDistributorProcedure parent) {
 	  this(parent, DEFAULT_INTERVAL_SECONDS);
   }
 	
+	/**
+	 * Constructor
+	 * @param parent  the ClusterDistributorProcedure
+	 * @param intervalSeconds the interval to increase users on.
+	 */
 	public RampingUp(ClusterDistributorProcedure parent, int intervalSeconds) {
 	  super(parent);
 	  setIntervalSeconds(intervalSeconds);

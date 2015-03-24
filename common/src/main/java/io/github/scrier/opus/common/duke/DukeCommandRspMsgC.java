@@ -45,6 +45,7 @@ public class DukeCommandRspMsgC extends BaseMsgC {
 
 	/**
 	 * Constructor
+	 * @param sendIF the SendIF to use for distribution
 	 */
 	public DukeCommandRspMsgC(SendIF sendIF) {
 		super(DukeMsgFactory.FACTORY_ID, DukeMsgFactory.DUKE_COMMAND_RSP, sendIF);

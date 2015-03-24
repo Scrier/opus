@@ -406,7 +406,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	
 	/**
 	 * Method used for testing.
-	 * @return
+	 * @param states The State array to set.
 	 */
 	public void setStates(State[] states) {
 		this.states = states;
@@ -414,7 +414,7 @@ public class ClusterDistributorProcedure extends BaseDukeProcedure implements IT
 	
 	/**
 	 * Method used for testing.
-	 * @return
+	 * @return State array
 	 */
 	protected State[] getStates() {
 		return states;

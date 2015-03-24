@@ -145,7 +145,7 @@ public class StopAllExecuteProcedure extends BaseDukeProcedure {
   
   /**
    * Method to handle the NukeStopAllRspMsgC message.
-   * @param message
+   * @param message NukeStopAllRspMsgC to handle.
    */
   protected void handleMessage(NukeStopAllRspMsgC message) {
   	log.trace("handleMessage(" + message + ")"); 
