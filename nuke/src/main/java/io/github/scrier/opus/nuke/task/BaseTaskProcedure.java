@@ -275,6 +275,7 @@ public abstract class BaseTaskProcedure extends BaseNukeProcedure {
   
 	/**
 	 * Method to terminate the process.
+	 * @return boolean
 	 */
 	public boolean terminateProcess() {
 		log.trace("terminateProcess()");

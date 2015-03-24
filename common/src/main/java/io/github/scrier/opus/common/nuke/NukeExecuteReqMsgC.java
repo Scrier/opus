@@ -47,6 +47,7 @@ public class NukeExecuteReqMsgC extends BaseMsgC {
 
 	/**
 	 * Constructor
+	 * @param sendIF the SendIF to use for distribution
 	 */
 	public NukeExecuteReqMsgC(SendIF sendIF) {
 		super(NukeMsgFactory.FACTORY_ID, NukeMsgFactory.NUKE_EXECUTE_REQ, sendIF);

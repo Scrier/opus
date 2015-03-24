@@ -291,10 +291,10 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	 * 
 	 * @param message
 	 *          BaseMsgC with the incoming message.
-	 * @throws InvalidOperationException
+	 * @throws InvalidOperationException thrown if the context isn't initialized.
+	 * @throws ClassCastException thrown if an invalid messages is entered.
 	 */
-	public void handleInMessage(BaseMsgC message)
-	    throws InvalidOperationException {
+	public void handleInMessage(BaseMsgC message) throws ClassCastException, InvalidOperationException {
 		log.trace("handleInMessage(" + message + ")");
 		preEntry();
 		if ( theContext.getIdentity() == message.getDestination() ||
@@ -459,9 +459,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 
 	/**
 	 * Method to check if another duke is running from the new duke.
-	 * 
 	 * @return DukeInfo
-	 * @throws InvalidOperationException
 	 */
 	public DukeInfo isAnotherDukeRunning() {
 		DukeInfo retValue = null;
@@ -538,7 +536,7 @@ public class DukeCommander extends DataListener implements IProcedureWait {
 	 * 
 	 * @param message
 	 *          DukeCommandReqMsgC instance.
-	 * @throws InvalidOperationException
+	 * @throws InvalidOperationException Thrown if Context isnt initialized properly.
 	 */
 	protected void handleMessage(DukeCommandReqMsgC message)
 	    throws InvalidOperationException {
