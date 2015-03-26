@@ -13,7 +13,8 @@
 # Run Duke, a opus client.
 #
 
-opusConfig=/etc/opus/opus.conf
+name=opus
+opusConfig=/etc/$name/opus.conf
 
 if [ -f $opusConfig ]; then
   . $opusConfig
@@ -23,11 +24,11 @@ serviceNameLo="duke"                                            # service name w
 serviceName="Duke"                                              # service name
 serviceUser=${OPUS_SERVICE_USER:-opus}                          # OS user name for the service
 serviceGroup=${OPUS_SERVICE_GROUP:-opus}                        # OS group name for the service
-serviceConfigDir="/etc/opus"                                    # Service config directory
+serviceConfigDir="/etc/$name"                                    # Service config directory
 debugEditor=${OPUS_EDITOR:-vim}                       					# Opus editor used for editing config files
-applDir="/usr/share/java/opus"                                  # home directory of the service application
+applDir="/usr/share/java/$name"                                  # home directory of the service application
 serviceUserHome=${OPUS_SERVICE_USER_HOME:-/home/$serviceUser}   # home directory of the service user
-serviceLogFile="/var/log/opus/$serviceNameLo.log"               # log file for StdOut/StdErr
+serviceLogFile="/var/log/$name/$serviceNameLo.log"               # log file for StdOut/StdErr
 maxShutdownTime=15                                              # maximum number of seconds to wait for the daemon to terminate normally
 log4j2file=${DUKE_LOG4J2_CONFIG:-$serviceConfigDir/log4j2duke.xml}       # where log4j2 xml configuration file resides.
 pidFile="$applDir/$serviceNameLo.pid"                           # name of PID file (PID = process ID number)
