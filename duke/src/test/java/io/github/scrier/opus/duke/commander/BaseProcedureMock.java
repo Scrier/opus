@@ -1,17 +1,21 @@
 package io.github.scrier.opus.duke.commander;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.Constants;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
 
 public class BaseProcedureMock extends BaseDukeProcedure {
 	
 	private boolean initCalled;
 	private boolean shutDownCalled;
-	private BaseNukeC onUpdated;
+	private BaseDataC onUpdated;
 	private int onUpdateReturn;
-	private BaseNukeC onEvicted;
+	private BaseDataC onEvicted;
 	private int onEvictedReturn;
 	private long onRemoved;
 	private int onRemovedReturn;
+	private BaseMsgC handleInMessage;
+	private int handleInMessageReturn;
 	
 	BaseProcedureMock() {
 		setInitCalled(false);
@@ -20,8 +24,10 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 		setOnUpdateReturn(CREATED);
 		setOnEvicted(null);
 		setOnEvictedReturn(CREATED);
-		setOnRemoved(-1L);
+		setOnRemoved(Constants.HC_UNDEFINED);
 		setOnRemovedReturn(CREATED);
+		setHandleInMessage(null);
+		setHandleInMessageReturn(CREATED);
 	}
 
 	@Override
@@ -35,13 +41,13 @@ public class BaseProcedureMock extends BaseDukeProcedure {
   }
 
 	@Override
-  public int handleOnUpdated(BaseNukeC data) {
+  public int handleOnUpdated(BaseDataC data) {
 	  setOnUpdated(data);
 	  return getOnUpdateReturn();
   }
 
 	@Override
-  public int handleOnEvicted(BaseNukeC data) {
+  public int handleOnEvicted(BaseDataC data) {
 		setOnEvicted(data);
 		return getOnEvictedReturn();
   }
@@ -50,6 +56,12 @@ public class BaseProcedureMock extends BaseDukeProcedure {
   public int handleOnRemoved(Long key) {
 		setOnRemoved(key);
 		return getOnRemovedReturn();
+  }
+	
+	@Override
+  public int handleInMessage(BaseMsgC message) {
+	  setHandleInMessage(message);
+	  return getHandleInMessageReturn();
   }
 
 	/**
@@ -83,14 +95,14 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	/**
 	 * @return the onUpdated
 	 */
-	public BaseNukeC getOnUpdated() {
+	public BaseDataC getOnUpdated() {
 		return onUpdated;
 	}
 
 	/**
 	 * @param onUpdated the onUpdated to set
 	 */
-	public void setOnUpdated(BaseNukeC onUpdated) {
+	public void setOnUpdated(BaseDataC onUpdated) {
 		this.onUpdated = onUpdated;
 	}
 
@@ -111,14 +123,14 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	/**
 	 * @return the onEvicted
 	 */
-	public BaseNukeC getOnEvicted() {
+	public BaseDataC getOnEvicted() {
 		return onEvicted;
 	}
 
 	/**
 	 * @param onEvicted the onEvicted to set
 	 */
-	public void setOnEvicted(BaseNukeC onEvicted) {
+	public void setOnEvicted(BaseDataC onEvicted) {
 		this.onEvicted = onEvicted;
 	}
 
@@ -163,5 +175,33 @@ public class BaseProcedureMock extends BaseDukeProcedure {
 	public void setOnRemovedReturn(int onRemovedReturn) {
 		this.onRemovedReturn = onRemovedReturn;
 	}
+
+	/**
+	 * @return the handleInMessage
+	 */
+  public BaseMsgC getHandleInMessage() {
+	  return handleInMessage;
+  }
+
+	/**
+	 * @param handleInMessage the handleInMessage to set
+	 */
+  public void setHandleInMessage(BaseMsgC handleInMessage) {
+	  this.handleInMessage = handleInMessage;
+  }
+
+	/**
+	 * @return the handleInMessageReturn
+	 */
+  public int getHandleInMessageReturn() {
+	  return handleInMessageReturn;
+  }
+
+	/**
+	 * @param handleInMessageReturn the handleInMessageReturn to set
+	 */
+  public void setHandleInMessageReturn(int handleInMessageReturn) {
+	  this.handleInMessageReturn = handleInMessageReturn;
+  }
 
 }

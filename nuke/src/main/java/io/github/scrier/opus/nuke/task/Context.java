@@ -1,12 +1,29 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
 package io.github.scrier.opus.nuke.task;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.aoc.BaseActiveObject;
-import io.github.scrier.opus.common.aoc.BaseNukeC;
+import io.github.scrier.opus.common.data.BaseDataC;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.SendIF;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +68,15 @@ public enum Context {
 	}
 
 	public void shutDown() {
+		if( null != executor ) {
+			executor.shutdownNow();
+			log.info("Shutting down threads, waiting for terminateion.");
+			try {
+				executor.awaitTermination(10, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				log.fatal("Received InterruptedException in shutDown.", e);
+			}
+		}
 		initialized = false;
 		txID = 0;
 		executor = null;
@@ -75,6 +101,14 @@ public enum Context {
 	 */
 	private void setInstance(HazelcastInstance instance) {
 		this.instance = instance;
+	}
+	
+	/**
+	 * Method to get a cluster unique id key for use.
+	 * @return long
+	 */
+	public long getUniqueID() {
+		return getInstance().getIdGenerator(Shared.Hazelcast.COMMON_UNIQUE_ID).newId();
 	}
 
 	/**
@@ -138,20 +172,24 @@ public enum Context {
 	  this.task = task;
   }
   
-	public void addEntry(BaseNukeC data) {
+	public void addEntry(BaseDataC data) {
 		getTask().addEntry(data);
 	}
 	
-	public boolean updateEntry(BaseNukeC data) {
+	public boolean updateEntry(BaseDataC data) {
 		return getTask().updateEntry(data);
 	}
 	
-	public boolean removeEntry(BaseNukeC data) {
+	public boolean removeEntry(BaseDataC data) {
 		return getTask().removeEntry(data);
 	}
 	
-	protected ThreadPoolExecutor getExecutor() {
+	public ThreadPoolExecutor getExecutor() {
 		return executor;
+	}
+	
+	public SendIF getSendIF() {
+		return parent.getSendIF();
 	}
 	
 }

@@ -1,11 +1,7 @@
 package io.github.scrier.opus.common.aoc;
 
 import static org.junit.Assert.*;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.TestHelper;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
@@ -39,7 +35,7 @@ public class BaseActiveObjectTest {
 		instance = Mockito.mock(HazelcastInstance.class);
 		idGen = Mockito.mock(IdGenerator.class);
 		settings = Mockito.mock(IMap.class);
-		Mockito.when(idGen.newId()).thenReturn(id).thenReturn(-1L);
+		Mockito.when(idGen.newId()).thenReturn(id).thenReturn(Constants.HC_UNDEFINED);
 		Mockito.when(instance.getIdGenerator(Shared.Hazelcast.COMMON_MAP_UNIQUE_ID)).thenReturn(idGen);
 		Mockito.when(instance.getMap(Shared.Hazelcast.SETTINGS_MAP)).thenReturn(settings);
 	}

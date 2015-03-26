@@ -22,7 +22,7 @@ import java.io.IOException;
 import io.github.scrier.opus.common.ObjectDataInputMock;
 import io.github.scrier.opus.common.ObjectDataOutputMock;
 import io.github.scrier.opus.common.TestHelper;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 
@@ -40,11 +40,11 @@ public class NukeInfoTest {
 	@Test
 	public void testDefaultConstructor() {
 		NukeInfo testObject = new NukeInfo();
-		assertEquals(NukeFactory.FACTORY_ID, testObject.getFactoryId());
-		assertEquals(NukeFactory.NUKE_INFO, testObject.getId());
+		assertEquals(NukeDataFactory.FACTORY_ID, testObject.getFactoryId());
+		assertEquals(NukeDataFactory.NUKE_INFO, testObject.getId());
 		assertEquals(0L, testObject.getNukeID());
-		assertEquals(0, testObject.getNumberOfUsers());
-		assertEquals(0, testObject.getRequestedUsers());
+		assertEquals(0, testObject.getNumberOfThreads());
+		assertEquals(0, testObject.getRequestedThreads());
 		assertEquals(NukeState.UNDEFINED, testObject.getState());
 		assertEquals(false, testObject.isRepeated());
 	}
@@ -53,9 +53,9 @@ public class NukeInfoTest {
 	public void testReadWriteData() throws IOException {
 		NukeInfo expected = new NukeInfo();
 		expected.setNukeID(12345L);
-		expected.setNumberOfUsers(12);
+		expected.setNumberOfThreads(12);
 		expected.setRepeated(true);
-		expected.setRequestedUsers(14);
+		expected.setRequestedThreads(14);
 		expected.setState(NukeState.RUNNING);
 		ObjectDataOutputMock out = new ObjectDataOutputMock();
 		expected.writeData(out);
@@ -64,9 +64,9 @@ public class NukeInfoTest {
 		NukeInfo actual = new NukeInfo();
 		actual.readData(in);
 		assertEquals(expected.getNukeID(), actual.getNukeID());
-		assertEquals(expected.getNumberOfUsers(), actual.getNumberOfUsers());
+		assertEquals(expected.getNumberOfThreads(), actual.getNumberOfThreads());
 		assertEquals(expected.isRepeated(), actual.isRepeated());
-		assertEquals(expected.getRequestedUsers(), actual.getRequestedUsers());
+		assertEquals(expected.getRequestedThreads(), actual.getRequestedThreads());
 		assertEquals(expected.getState(), actual.getState());
 	}
 

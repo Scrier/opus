@@ -1,4 +1,21 @@
-package io.github.scrier.opus.common.aoc;
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
+package io.github.scrier.opus.common.data;
+
+import io.github.scrier.opus.common.Constants;
 
 import java.io.IOException;
 
@@ -9,27 +26,26 @@ import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
 
-public class BaseNukeC implements IdentifiedDataSerializable {
+public class BaseDataC implements IdentifiedDataSerializable {
 	
-	private static Logger log = LogManager.getLogger(BaseNukeC.class);
+	private static Logger log = LogManager.getLogger(BaseDataC.class);
 	
-	private int txID;
 	private long key;
+	private int txID;
 	private int factoryID;
 	private int messageID;
 	
-	public BaseNukeC(int factoryID, int messageID) {
-		log.trace("BaseNukeC(" + factoryID + ", " + messageID + ")");
-		setTxID(-1);
-		setKey(-1L);
+	public BaseDataC(int factoryID, int messageID) {
+		log.trace("BaseDataC(" + factoryID + ", " + messageID + ")");
+		setKey(Constants.HC_UNDEFINED);
 		setFactoryID(factoryID);
 		setMessageID(messageID);
 	}
 	
-	public BaseNukeC(BaseNukeC obj2copy) {
-		log.trace("BaseNukeC(" + obj2copy + ")");
-		setTxID(obj2copy.getTxID());
+	public BaseDataC(BaseDataC obj2copy) {
+		log.trace("BaseDataC(" + obj2copy + ")");
 		setKey(obj2copy.getKey());
+		setTxID(obj2copy.getTxID());
 		setFactoryID(obj2copy.getFactoryId());
 		setMessageID(obj2copy.getId());
 	}
@@ -40,8 +56,8 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	@Override
 	public void readData(ObjectDataInput in) throws IOException {
 		log.trace("readData(" + in + ")"); 
-		setTxID(in.readInt());
 		setKey(in.readLong());
+		setTxID(in.readInt());
 		setFactoryID(in.readInt());
 		setMessageID(in.readInt());
 	}
@@ -52,8 +68,8 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	@Override
 	public void writeData(ObjectDataOutput out) throws IOException {
 		log.trace("writeData(" + out + ")");
-		out.writeInt(getTxID());
 		out.writeLong(getKey());
+		out.writeInt(getTxID());
 		out.writeInt(getFactoryId());
 		out.writeInt(getId());
 	}
@@ -91,16 +107,16 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	/**
 	 * @return the txID
 	 */
-	public int getTxID() {
-		return txID;
-	}
+  public int getTxID() {
+	  return txID;
+  }
 
 	/**
 	 * @param txID the txID to set
 	 */
-	public void setTxID(int txID) {
-		this.txID = txID;
-	}
+  public void setTxID(int txID) {
+	  this.txID = txID;
+  }
 
 	/**
 	 * @return the key
@@ -121,8 +137,8 @@ public class BaseNukeC implements IdentifiedDataSerializable {
 	 */
 	@Override
 	public String toString() {
-		String retValue = "BaseNukeC{txID:" + getTxID();
-		retValue += ", key: " + getKey();
+		String retValue = "BaseDataC{key: " + getKey();
+		retValue += ", txID:" + getTxID();
 		retValue += ", factoryID:" + getFactoryId();
 		retValue += ", messageID:" + getId() + "}";
 		return retValue;

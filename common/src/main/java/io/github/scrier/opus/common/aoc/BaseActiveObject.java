@@ -15,8 +15,12 @@
  */
 package io.github.scrier.opus.common.aoc;
 
+import io.github.scrier.opus.common.Constants;
 import io.github.scrier.opus.common.Shared;
 import io.github.scrier.opus.common.exception.InvalidOperationException;
+import io.github.scrier.opus.common.message.MessageIF;
+import io.github.scrier.opus.common.message.MessageService;
+import io.github.scrier.opus.common.message.SendIF;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 
-public abstract class BaseActiveObject {
+public abstract class BaseActiveObject implements MessageIF {
 	
 	public static Logger log = LogManager.getLogger(BaseActiveObject.class);
 
@@ -32,6 +36,7 @@ public abstract class BaseActiveObject {
 	private long identity;
 	private HazelcastInstance instance;
 	private IMap<String, String> settings;
+	private MessageService msgService;
 	
 	/**
 	 * Constructor
@@ -39,9 +44,10 @@ public abstract class BaseActiveObject {
 	 */
 	public BaseActiveObject(HazelcastInstance instance) {
 		setInstance(instance);
-		setIdentity(-1L);
+		setIdentity(Constants.HC_UNDEFINED);
 		setCorrectInitPerformed(false);
 		setSettings(null);
+		setMsgService(null);
 	}
 
 	/**
@@ -66,6 +72,7 @@ public abstract class BaseActiveObject {
 	/**
 	 * @return the instance
 	 */
+	@Override
 	public HazelcastInstance getInstance() {
 		return instance;
 	}
@@ -104,7 +111,16 @@ public abstract class BaseActiveObject {
 		setCorrectInitPerformed(true);
 		setIdentity(getInstance().getIdGenerator(Shared.Hazelcast.COMMON_MAP_UNIQUE_ID).newId());
 		settings = getInstance().getMap(Shared.Hazelcast.SETTINGS_MAP);
+		setMsgService(new MessageService(this));
 		init();
+	}
+	
+	/**
+	 * Returns a unique identifier for a saga id.
+	 * @return long
+	 */
+	public long getNextSagaID() {
+		return getInstance().getIdGenerator(Shared.Hazelcast.COMMON_SAGA_ID).newId();
 	}
 	
 	/**
@@ -133,5 +149,37 @@ public abstract class BaseActiveObject {
 	private void setCorrectInitPerformed(boolean correctInitPerformed) {
 		this.correctInitPerformed = correctInitPerformed;
 	}
+
+	/**
+	 * @return the msgService
+	 */
+  public SendIF getSendIF() {
+	  return msgService;
+  }
+
+	/**
+	 * @param msgService the msgService to set
+	 */
+  public void setMsgService(MessageService msgService) {
+	  this.msgService = msgService;
+  }
+  
+  /**
+   * Register on a factory id of messages.
+   * @param factoryID int
+   * @return boolean if successfull.
+   */
+  public boolean registerOnFactory(int factoryID) {
+  	return this.msgService.registerOnFactory(factoryID);
+  }
+  
+  /**
+   * Un register on a factory id of messages.
+   * @param factoryID int of the factory id to subscibe to
+   * @return boolean if successfull.
+   */
+  public boolean unRegisterOnFactory(int factoryID) {
+  	return this.msgService.unRegisterOnFactory(factoryID);
+  }
 	
 }

@@ -21,7 +21,6 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public enum TestHelper {

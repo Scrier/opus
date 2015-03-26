@@ -1,10 +1,26 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
 package io.github.scrier.opus.nuke.task.procedures;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.github.scrier.opus.common.aoc.BaseNukeC;
-import io.github.scrier.opus.common.nuke.NukeFactory;
+import io.github.scrier.opus.common.data.BaseDataC;
+import io.github.scrier.opus.common.message.BaseMsgC;
+import io.github.scrier.opus.common.nuke.NukeDataFactory;
 import io.github.scrier.opus.common.nuke.NukeInfo;
 import io.github.scrier.opus.common.nuke.NukeState;
 import io.github.scrier.opus.nuke.task.BaseTaskProcedure;
@@ -18,20 +34,13 @@ public class NukeProcedure extends BaseTaskProcedure {
 
 	private static Logger log = LogManager.getLogger(NukeProcedure.class);
 
-	private long identity;
 
 	public final int WAITING_TO_BE_TAKEN = CREATED + 1;
 	public final int INITIALIZING        = CREATED + 2;
 	public final int RUNNING             = CREATED + 3;
 	public final int SHUTTING_DOWN       = CREATED + 4;
 	
-	boolean stopped;
-	boolean terminated;
-	
-	public NukeProcedure(long identity) {
-		setIdentity(identity);
-		setStopped(false);
-		setTerminated(false);
+	public NukeProcedure() {
 	}
 
 	/**
@@ -54,26 +63,19 @@ public class NukeProcedure extends BaseTaskProcedure {
 	@Override
 	public void shutDown() throws Exception {
 		log.trace("shutDown()");
-		// TODO Auto-generated method stub
-
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnUpdated(BaseNukeC data) {
+	public int handleOnUpdated(BaseDataC data) {
 		log.trace("handleOnUpdated(" + data + ")");
 		if( data.getKey() == getNukeInfo().getKey() ) {
 			switch( data.getId() ) {
-				case NukeFactory.NUKE_INFO: {
+				case NukeDataFactory.NUKE_INFO: {
 					NukeInfo nukeInfo = new NukeInfo(data);
 					handleUpdate(nukeInfo);
-					break;
-				}
-				case NukeFactory.NUKE_COMMAND:
-				default: {
-					// do nothing.
 					break;
 				}
 			}
@@ -85,15 +87,14 @@ public class NukeProcedure extends BaseTaskProcedure {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int handleOnEvicted(BaseNukeC data) {
+	public int handleOnEvicted(BaseDataC data) {
 		log.trace("handleOnEvicted(" + data + ")");
 		if( data.getKey() == getNukeInfo().getKey() ) {
 			switch( data.getId() ) {
-				case NukeFactory.NUKE_INFO: {
+				case NukeDataFactory.NUKE_INFO: {
 					log.fatal("[" + getTxID() + "] Nuke info about this node was evicted from the map. Terminating.");
 					throw new RuntimeException("Nuke info about node " + getNukeInfo().getKey() + " was evicted from the map. Terminating.");
 				}
-				case NukeFactory.NUKE_COMMAND:
 				default: {
 					log.fatal("[" + getTxID() + "] Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnEvicted.");
 					throw new RuntimeException("Unimplemented id " + data.getId() + " received in NukeProcedure.handleOnEvicted.");
@@ -109,11 +110,19 @@ public class NukeProcedure extends BaseTaskProcedure {
 	@Override
 	public int handleOnRemoved(Long key) {
 		log.trace("handleOnRemoved(" + key + ")");
-		if( key == getNukeInfo().getKey() ) {
+		if( key == getNukeInfo() .getKey() ) {
 			setState(ABORTED);
 		}
 		return getState();
 	}
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+  public int handleInMessage(BaseMsgC message) {
+	  return getState();
+  }
 
 	/**
 	 * Method to handle updates of the NukeInfo message.
@@ -136,7 +145,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 			log.fatal("[" + getTxID() + "] Someone modified nuke id field.");
 			throw new RuntimeException("Someone modified nuke id field.");
 		}
-		if( 0 < (NukeInfo.NUMBER_OF_USERS_MODIFIED & fieldsChanged) ) {
+		if( 0 < (NukeInfo.NUMBER_OF_THREADS_MODIFIED & fieldsChanged) ) {
 			log.fatal("[" + getTxID() + "] Someone other than nuke id: " + getIdentity() + " modified Number of Users.");
 			throw new RuntimeException("Someone other than nuke id: " + getIdentity() + " modified Number of Users.");
 		}
@@ -149,7 +158,7 @@ public class NukeProcedure extends BaseTaskProcedure {
 //			log.fatal("[" + getTxID() + "] Someone other that nuke id: " + getIdentity() + " modified Requested Commands.");
 //			throw new RuntimeException("Someone other that nuke id: " + getIdentity() + " modified Requested Commands.");
 //		}
-		if( 0 < (NukeInfo.REQUESTED_USERS_MODIFIED & fieldsChanged) ) {
+		if( 0 < (NukeInfo.REQUESTED_THREADS_MODIFIED & fieldsChanged) ) {
 			log.fatal("[" + getTxID() + "] Someone other that nuke id: " + getIdentity() + " modified Requested Users.");
 			throw new RuntimeException("Someone other that nuke id: " + getIdentity() + " modified Requested Users.");
 		}
@@ -196,49 +205,5 @@ public class NukeProcedure extends BaseTaskProcedure {
 		log.fatal("[" + getTxID() + "] Not implemented handleUnresponsive.");
 		throw new RuntimeException("Not implemented handleUnresponsive.");
 	}
-
-	/**
-	 * @return the identity
-	 */
-	private long getIdentity() {
-		return identity;
-	}
-
-	/**
-	 * @param identity the identity to set
-	 */
-	private void setIdentity(long identity) {
-		this.identity = identity;
-	}
-	
-  /**
-   * @param stopped the stopped to set
-   */
-  public void setStopped(boolean stopped) {
-  	this.stopped = stopped;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isStopped() {
-	  return this.stopped;
-  }
-	
-  /**
-   * @param terminated the terminated to set
-   */
-  public void setTerminated(boolean terminated) {
-  	this.terminated = terminated;
-  }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-  public boolean isTerminated() {
-	  return this.terminated;
-  }
 
 }

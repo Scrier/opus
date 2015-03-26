@@ -1,6 +1,19 @@
 #!/bin/bash
 
-system=opus
+function replace() {
+  local directory=$1
+  local what=$2
+  local with=$3
+  cd $directory
+  for file in *; do
+    echo "Replacing $what with $with in file $file"
+    cat $file | sed -e "s/$what/$with/" >> $file.tmp
+    mv $file.tmp $file
+  done
+  cd -
+}
+
+system=${system-opus}
 if [ -z "$1" ]; then
   version=$(mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version | grep -Ev '(^\[|Download\w+:)')
 else
@@ -18,8 +31,8 @@ folder="$system-$version"
 _javadir=/usr/share/java
 _javadocdir=/usr/share/javadoc
 _initdir=/etc/rc.d/init.d
-_configdir=/etc/opus
-_logdir=/var/log/opus
+_configdir=/etc/$system
+_logdir=/var/log/$system
 _lognukedir=$_logdir/nuke
 _logdukedir=$_logdir/duke
 #_mavenpomdir=/usr/share/maven-poms
@@ -42,6 +55,10 @@ cp files/service/*.sh $folder/$_initdir
 cp files/log4j2/*.xml $folder/$_configdir
 cp files/config/* $folder/$_configdir
 cp files/setup/*.sh $folder
+
+# Modify files if needed.
+#sed -i '/name=opus/c\name=$system.' $folder/$_initdir/*.sh
+replace "$folder/$_initdir" "name=opus" "name=$system"
 
 # Edit rights
 chmod +x $folder/$_initdir/*

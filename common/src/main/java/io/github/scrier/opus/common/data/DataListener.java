@@ -1,4 +1,19 @@
-package io.github.scrier.opus.common.aoc;
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ * @author Andreas Joelsson (andreas.joelsson@gmail.com)
+ */
+package io.github.scrier.opus.common.data;
 
 import java.util.Collection;
 
@@ -12,14 +27,14 @@ import com.hazelcast.core.EntryListener;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 
-public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
+public abstract class DataListener implements EntryListener<Long, BaseDataC> {
 	
-	private static Logger log = LogManager.getLogger(BaseListener.class);
+	private static Logger log = LogManager.getLogger(DataListener.class);
 	
 	private HazelcastInstance instance;
-	private IMap<Long, BaseNukeC> sharedMap;
+	private IMap<Long, BaseDataC> sharedMap;
 	
-	public BaseListener(HazelcastInstance instance, String distributedMap) {
+	public DataListener(HazelcastInstance instance, String distributedMap) {
 		setInstance(instance);
 		sharedMap = instance.getMap(distributedMap);
 		sharedMap.addEntryListener(this, true);
@@ -31,13 +46,13 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	
 	public abstract void preEntry();
 	
-	public abstract void entryAdded(Long key, BaseNukeC value);
+	public abstract void entryAdded(Long key, BaseDataC value);
 	
-	public abstract void entryEvicted(Long key, BaseNukeC value);
+	public abstract void entryEvicted(Long key, BaseDataC value);
 	
 	public abstract void entryRemoved(Long key);
 	
-	public abstract void entryUpdated(Long key, BaseNukeC value);
+	public abstract void entryUpdated(Long key, BaseDataC value);
 	
 	public abstract void postEntry();
 	
@@ -45,7 +60,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	 * Method to add a new entry to the map.
 	 * @param data BaseNukeC to add to the map.
 	 */
-	public void addEntry(BaseNukeC data) {
+	public void addEntry(BaseDataC data) {
 		log.trace("addEntry(" + data + ")");
 		if( 0 > data.getKey() ) {
 			data.setKey(getInstance().getIdGenerator(Shared.Hazelcast.COMMON_MAP_UNIQUE_ID).newId());
@@ -53,7 +68,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 		sharedMap.put(data.getKey(), data);
 	}
 	
-	public boolean updateEntry(BaseNukeC data) {
+	public boolean updateEntry(BaseDataC data) {
 		log.trace("updateEntry(" + data + ")");
 		boolean retValue = true;
 		if( sharedMap.containsKey(data.getKey()) ) {
@@ -64,18 +79,18 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 		return retValue;
 	}
 	
-	public boolean removeEntry(BaseNukeC data) {
+	public boolean removeEntry(BaseDataC data) {
 		log.trace("removeEntry(" + data + ")");
 		return null != sharedMap.remove(data.getKey());
 	}
 	
-	public Collection<BaseNukeC> getEntries() {
+	public Collection<BaseDataC> getEntries() {
 		log.trace("getEntries()");
 		return sharedMap.values();
 	}
 	
 	@Override
-	public synchronized void entryAdded(EntryEvent<Long, BaseNukeC> added) {
+	public synchronized void entryAdded(EntryEvent<Long, BaseDataC> added) {
 		log.trace("entryAdded(" + added + ")");
 		if( added.getKey() != added.getValue().getKey() ) {
 			log.fatal("Received a mismatch mapkey and BasenukeC key in entryAdded!!");
@@ -88,7 +103,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 
 	@Override
-	public synchronized void entryEvicted(EntryEvent<Long, BaseNukeC> evicted) {
+	public synchronized void entryEvicted(EntryEvent<Long, BaseDataC> evicted) {
 		log.trace("entryEvicted(" + evicted + ")");
 		preEntry();
 		entryEvicted(evicted.getKey(), evicted.getValue());
@@ -96,7 +111,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 
 	@Override
-	public synchronized void entryRemoved(EntryEvent<Long, BaseNukeC> removed) {
+	public synchronized void entryRemoved(EntryEvent<Long, BaseDataC> removed) {
 		log.trace("entryRemoved(" + removed + ")");
 		preEntry();
 		entryRemoved(removed.getKey());
@@ -104,7 +119,7 @@ public abstract class BaseListener implements EntryListener<Long, BaseNukeC> {
 	}
 
 	@Override
-	public synchronized void entryUpdated(EntryEvent<Long, BaseNukeC> updated) {
+	public synchronized void entryUpdated(EntryEvent<Long, BaseDataC> updated) {
 		log.trace("entryUpdated(" + updated + ")");
 		if( updated.getKey() != updated.getValue().getKey() ) {
 			log.fatal("Received a mismatch mapkey and BasenukeC key in entryUpdated!!");
