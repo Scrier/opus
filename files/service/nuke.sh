@@ -133,12 +133,12 @@ function stopService {
 function startLogTail {
    getServicePID
    if [ $? -ne 0 ]; then echo -n "$serviceName is not running"; RETVAL=0; echo ""; return 0; fi
-   tail -f /var/log/opus/nuke.log; }
+   tail -f /var/log/$name/nuke.log; }
 
 function startDebugTail {
    getServicePID
    if [ $? -ne 0 ]; then echo -n "$serviceName is not running"; RETVAL=0; echo ""; return 0; fi
-   tail -f /var/log/opus/nuke/nuke.log; }
+   tail -f /var/log/$name/nuke/nuke.log; }
 
 function debugShowHelp {
    [[ -n $1 ]] && echo "$1"
